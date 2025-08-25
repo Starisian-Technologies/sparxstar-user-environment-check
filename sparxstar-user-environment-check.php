@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: SPARXSTAR User Environment Check
+ * Plugin Name: Environment Check & Diagnostics
  * Description: A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.
- * Version: 2.0
+ * Version: 2.1 (Hardened)
  * Author: Starisian Technologies
  */
 
@@ -18,40 +18,30 @@ function envcheck_enqueue_assets() {
     $script_path = __DIR__ . '/environment-check.js';
     $style_path  = __DIR__ . '/environment-check.css';
 
-    // Only enqueue if the files actually exist.
     if ( ! file_exists( $script_path ) || ! file_exists( $style_path ) ) {
         return;
     }
 
-    // Enqueue the JavaScript file.
     wp_enqueue_script(
         'envcheck-js',
         plugins_url( 'environment-check.js', __FILE__ ),
         [],
-        filemtime( $script_path ), // Auto-versioning for cache-busting.
-        true // Load in the footer.
+        filemtime( $script_path ),
+        true
     );
 
-    // Enqueue the CSS for the warning banner.
     wp_enqueue_style(
         'envcheck-css',
         plugins_url( 'environment-check.css', __FILE__ ),
         [],
-        filemtime( $style_path ) // Auto-versioning.
+        filemtime( $style_path )
     );
 
-    /**
-     * Filter the consent category used for diagnostics.
-     * Allows other plugins to change this from 'statistics' to 'statistics-anonymous', etc.
-     *
-     * @param string $category The consent category to check for.
-     */
     $consent_category = apply_filters( 'envcheck_consent_category', 'statistics' );
 
-    // Pass data from PHP to our JavaScript file.
     wp_localize_script(
         'envcheck-js',
-        'envCheckData', // The JS expects an object with this name.
+        'envCheckData',
         [
             'ajax_url'    => admin_url( 'admin-ajax.php' ),
             'nonce'       => wp_create_nonce( 'envcheck_log_nonce' ),
@@ -62,47 +52,72 @@ function envcheck_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', 'envcheck_enqueue_assets' );
 add_action( 'login_enqueue_scripts', 'envcheck_enqueue_assets' );
 
+
 /**
  * Creates the AJAX endpoint to securely receive and log the diagnostic data.
+ * This version includes server-side consent validation and a secure, rotating log file system.
  */
 function envcheck_handle_log_data() {
     // 1. Security First: Verify the nonce.
     check_ajax_referer( 'envcheck_log_nonce', 'nonce' );
 
-    // 2. Get and decode the JSON data sent from the browser.
-    $raw_data = isset( $_POST['data'] ) ? json_decode( stripslashes( $_POST['data'] ), true ) : null;
+    // 2. HARDENING: Add a server-side consent gate.
+    // This prevents malicious clients from posting data without consent, even if they bypass the JS check.
+    $consent_category = apply_filters( 'envcheck_consent_category', 'statistics' );
+    if ( function_exists( 'wp_has_consent' ) && ! wp_has_consent( $consent_category ) ) {
+        wp_send_json_error( 'Consent not provided on the server.' );
+    }
 
+    // 3. Get and decode the JSON data sent from the browser.
+    $raw_data = isset( $_POST['data'] ) ? json_decode( stripslashes( $_POST['data'] ), true ) : null;
     if ( ! is_array( $raw_data ) ) {
         wp_send_json_error( 'Invalid data provided.' );
     }
     
-    // 3. Respect server-side privacy signals (Do Not Track / Global Privacy Control).
+    // 4. Respect server-side privacy signals (Do Not Track / Global Privacy Control).
     $privacy_signals = $raw_data['privacy'] ?? [];
-    if ( ! empty( $privacy_signals['doNotTrack'] ) || ! empty( $privacy_signals['gpc'] ) ) {
-        // If DNT/GPC is on, we only log the bare minimum for operational purposes.
-        $log_data_diagnostics = [
+    $diagnostics_payload = ( ! empty( $privacy_signals['doNotTrack'] ) || ! empty( $privacy_signals['gpc'] ) )
+        ? [ // If DNT/GPC is on, log only the bare minimum.
             'privacy'    => $privacy_signals,
             'userAgent'  => $raw_data['userAgent'] ?? 'N/A',
             'os'         => $raw_data['os'] ?? 'N/A',
             'compatible' => $raw_data['compatible'] ?? 'unknown',
-        ];
-    } else {
-        // Otherwise, log the full diagnostic payload.
-        $log_data_diagnostics = $raw_data;
-    }
+        ]
+        : $raw_data; // Otherwise, log the full diagnostic payload.
 
-    // 4. Prepare the final log entry in a structured, machine-readable format.
+    // 5. Prepare the final log entry in a structured, machine-readable format.
     $log_entry = [
         'timestamp_utc' => gmdate( 'Y-m-d H:i:s' ),
         'session_id'    => 'sid_' . substr( md5( ( $raw_data['userAgent'] ?? '' ) . ( $raw_data['os'] ?? '' ) ), 0, 12 ),
-        'diagnostics'   => $log_data_diagnostics,
+        'diagnostics'   => $diagnostics_payload,
     ];
 
-    // 5. Write the entry as a single JSON line to the log file.
-    $log_file_path = WP_CONTENT_DIR . '/envcheck-diagnostics.log';
-    error_log( wp_json_encode( $log_entry ) . "\n", 3, $log_file_path );
+    // 6. HARDENING: Log to a secure, private, rotating file in the uploads directory.
+    $uploads = wp_upload_dir();
+    $log_dir = trailingslashit( $uploads['basedir'] ) . 'envcheck-logs';
+    
+    // Create the directory if it doesn't exist.
+    if ( ! is_dir( $log_dir ) ) {
+        wp_mkdir_p( $log_dir );
+    }
+    
+    // Create a .htaccess file to block direct web access to the logs.
+    $htaccess_file = $log_dir . '/.htaccess';
+    if ( ! file_exists( $htaccess_file ) ) {
+        $htaccess_content = "Require all denied\nDeny from all\n";
+        @file_put_contents( $htaccess_file, $htaccess_content );
+    }
+
+    // Define the rotating log file name (e.g., envcheck-2025-08-25.ndjson).
+    $log_file = $log_dir . '/envcheck-' . gmdate( 'Y-m-d' ) . '.ndjson';
+    $log_line = wp_json_encode( $log_entry, JSON_INVALID_UTF8_SUBSTITUTE ) . "\n";
+
+    // Append the JSON line to the log file with an exclusive lock to prevent race conditions.
+    if ( false === @file_put_contents( $log_file, $log_line, FILE_APPEND | LOCK_EX ) ) {
+        wp_send_json_error( 'Failed to write to log file.' );
+    }
 
     wp_send_json_success( 'Data logged.' );
 }
 add_action( 'wp_ajax_envcheck_log', 'envcheck_handle_log_data' );
-add_action( 'wp_ajax_nopriv_envcheck_log', 'envcheck_handle_log_data' ); // For logged-out users.
+add_action( 'wp_ajax_nopriv_envcheck_log', 'envcheck_handle_log_data' );
