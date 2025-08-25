@@ -1,5 +1,5 @@
 /* global envCheckData */
-// sparxstar-environment-check.js — consent via WP Consent API; standalone “envcheck” prefixes.
+// sparxstar-user-environment-check.js — consent via WP Consent API; standalone “envcheck” prefixes.
 
 (function () {
   'use strict';
