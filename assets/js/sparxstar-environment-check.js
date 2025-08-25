@@ -158,6 +158,7 @@
 
     onConsent(async () => {
       const data = await collect();
+      // If DNT/GPC true, server minimizes; you can also minimize here if desired.
       await send(data);
     });
   });
