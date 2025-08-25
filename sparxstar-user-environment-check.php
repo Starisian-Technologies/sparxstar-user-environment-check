@@ -1,9 +1,18 @@
 <?php
 /**
- * Plugin Name: Environment Check & Diagnostics
- * Description: A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.
- * Version: 2.1 (Hardened)
- * Author: Starisian Technologies
+ * Plugin Name:       SPARXSTAR User Environment Check
+ * Plugin URI:        https://github.com/Starisian-Technologies/sparxstar-user-environment-check
+ * Description:       A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.
+ * Version:           2.1 (Hardened)
+ * Requires at least: 6.4
+ * Requires PHP:      8.2
+ * Author:            Starisian Technologies (Max Barrett)
+ * Author URI:        https://starisian.com
+ * Text Domain:       sparxstar-user-environment-check
+ * Domain Path:       /languages
+ * License:           
+ * License URI:       https://github.com/Starisian-Technologies/sparxstar-user-environment-check/LICENSE
+ * Update URI:        https://github.com/Starisian-Technologies/sparxstar-user-environment-check.git
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
