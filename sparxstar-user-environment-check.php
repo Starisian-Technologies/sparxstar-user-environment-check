@@ -24,8 +24,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Runs on both the front-end and the login page.
  */
 function envcheck_enqueue_assets() {
-    $script_path = __DIR__ . '/environment-check.js';
-    $style_path  = __DIR__ . '/environment-check.css';
+    $script_path = __DIR__ . '/assets/js/sparxstar-user-environment-check.js';
+    $style_path  = __DIR__ . '/assets/css/sparxstar-user-environment-check.css';
 
     if ( ! file_exists( $script_path ) || ! file_exists( $style_path ) ) {
         return;
@@ -33,7 +33,7 @@ function envcheck_enqueue_assets() {
 
     wp_enqueue_script(
         'envcheck-js',
-        plugins_url( 'environment-check.js', __FILE__ ),
+        plugins_url( 'sparxstar-user-environment-check.js', __FILE__ ),
         [],
         filemtime( $script_path ),
         true
@@ -41,7 +41,7 @@ function envcheck_enqueue_assets() {
 
     wp_enqueue_style(
         'envcheck-css',
-        plugins_url( 'environment-check.css', __FILE__ ),
+        plugins_url( 'sparxstar-user-environment-check.css', __FILE__ ),
         [],
         filemtime( $style_path )
     );
