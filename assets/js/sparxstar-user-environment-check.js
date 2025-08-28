@@ -32,10 +32,10 @@
     if (localStorage.getItem('envcheckBannerDismissed') === 'true') return;
     const el = document.createElement('div');
     el.id = 'envcheck-banner';
-    el.innerHTML = `
-      <p><strong>Notice:</strong> Your browser may be outdated. For the best experience, please
-      <a href="https://browsehappy.com/" target="_blank" rel="noopener">update your browser</a>.</p>
-      <button id="envcheck-dismiss" aria-label="Dismiss">&times;</button>`;
+      el.innerHTML = `
+        <p><strong>${envCheckData.i18n.notice}</strong> ${envCheckData.i18n.update_message}
+        <a href="https://browsehappy.com/" target="_blank" rel="noopener">${envCheckData.i18n.update_link}</a>.</p>
+        <button id="envcheck-dismiss" aria-label="${envCheckData.i18n.dismiss}">&times;</button>`;
     document.body.appendChild(el);
     document.getElementById('envcheck-dismiss').addEventListener('click', () => {
       el.style.display = 'none';
