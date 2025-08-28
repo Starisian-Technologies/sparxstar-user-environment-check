@@ -81,14 +81,14 @@ function envcheck_enqueue_assets() {
 		return;
 	}
 
-	$script_path = __DIR__ . '/assets/js/sparxstar-user-environment-check.js';
-	$style_path  = __DIR__ . '/assets/css/sparxstar-user-environment-check.css';
+	$script_path = __DIR__ . '/assets/js/sparxstar-user-environment-check.min.js';
+	$style_path  = __DIR__ . '/assets/css/sparxstar-user-environment-check.min.css';
 	$base_url    = plugin_dir_url( __FILE__ );
 
 	// Enqueue the main JavaScript file.
 	wp_enqueue_script(
 		'envcheck-js',
-		$base_url . 'assets/js/sparxstar-user-environment-check.js',
+		$base_url . 'assets/js/sparxstar-user-environment-check.min.js',
 		[],
 		filemtime( $script_path ), // Use file modification time for cache busting.
 		true
@@ -97,7 +97,7 @@ function envcheck_enqueue_assets() {
 	// Enqueue the main CSS file.
 	wp_enqueue_style(
 		'envcheck-css',
-		$base_url . 'assets/css/sparxstar-user-environment-check.css',
+		$base_url . 'assets/css/sparxstar-user-environment-check.min.css',
 		[],
 		filemtime( $style_path ) // Use file modification time for cache busting.
 	);
