@@ -1,0 +1,101 @@
+# =================================================================
+#  SPARXSTAR User Environment Check - Git Ignore
+# =================================================================
+
+# -----------------------------------------------------------------
+# >> Plugin-Specific Ignores
+# -----------------------------------------------------------------
+
+# Ignore the log directory created by this plugin.
+# If you customize ENVCHECK_LOG_DIR, add your custom path here too.
+/wp-content/envcheck-logs/
+
+# Ignore dependency directories managed by Composer and NPM/Yarn.
+# These should be installed by developers locally, not stored in Git.
+/vendor/
+/node_modules/
+
+# Ignore build artifacts if you have a build process (e.g., for minification).
+/dist/
+/build/
+
+
+# -----------------------------------------------------------------
+# >> WordPress Core & Content
+#
+# Ignore the entire WordPress core, which should be managed separately.
+# Useful if you develop inside a full WordPress installation.
+# -----------------------------------------------------------------
+/wp-admin/
+/wp-includes/
+/wp-*.php
+/index.php
+/xmlrpc.php
+/license.txt
+/readme.html
+/wp-content/upgrade/
+
+# Ignore user-generated content and other plugins/themes.
+/wp-content/uploads/
+/wp-content/blogs.dir/
+/wp-content/cache/
+/wp-content/plugins/!(sparxstar-user-environment-check-universe)/
+/wp-content/themes/
+
+# Ignore Must-Use plugin loader files if they are environment-specific.
+# Keep the plugin itself, but ignore the loader if needed.
+# /wp-content/mu-plugins/envcheck-loader.php
+
+# Ignore sensitive configuration files.
+wp-config.php
+wp-config-local.php
+
+
+# -----------------------------------------------------------------
+# >> OS & IDE Generated Files
+# -----------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.idea/      # PhpStorm / JetBrains
+.vscode/    # Visual Studio Code
+*.sublime-project
+*.sublime-workspace
+nbproject/  # NetBeans
+
+# Vim
+*.swp
+*~
+
+
+# -----------------------------------------------------------------
+# >> General Purpose Ignores
+# -----------------------------------------------------------------
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Compressed files (backups, releases)
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Environment configuration files
+.env
+.env.*
+!.env.example
