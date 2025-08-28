@@ -1,165 +1,216 @@
-/* global envCheckData */
-// sparxstar-user-environment-check.js — consent via WP Consent API; standalone “envcheck” prefixes.
+/**
+ * @file Main client-side script for SPARXSTAR User Environment Check.
+ * @author Starisian Technologies (Max Barrett)
+ * @version 2.2
+ *
+ * @description This script performs two primary functions:
+ * 1. Checks for modern browser API compatibility and displays a dismissible banner if required APIs are missing.
+ * 2. Collects and sends anonymized, consent-based diagnostic data once per day to a WordPress AJAX endpoint.
+ */
 
-(function () {
-  'use strict';
+(function() {
+	'use strict';
 
-  // -------- Compatibility (runs for everyone; no storage) --------
-  const ENVCHECK_MINIMUMS = { Chrome: 49, Firefox: 47, Edge: 79, Safari: 14.1, iOS: 14.3 };
-  function hasRequired() {
-    return ('MediaRecorder' in window) &&
-           (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') &&
-           ('Promise' in window) && ('fetch' in window);
-  }
-  function browserInfo() {
-    const ua = navigator.userAgent; let m;
-    if ((m = ua.match(/(Edg|Edge)\/([\d.]+)/))) return { name: 'Edge', version: parseFloat(m[2]) };
-    if ((m = ua.match(/Firefox\/([\d.]+)/)))    return { name: 'Firefox', version: parseFloat(m[1]) };
-    if ((m = ua.match(/Chrome\/([\d.]+)/)) && !ua.includes('Edg')) return { name: 'Chrome', version: parseFloat(m[1]) };
-    if ((m = ua.match(/Version\/([\d.]+).*Safari/))) {
-      if (/(iPhone|iPod|iPad)/.test(ua)) return { name: 'iOS', version: parseFloat(m[1]) };
-      return { name: 'Safari', version: parseFloat(m[1]) };
-    }
-    return null;
-  }
-  function isCompatible() {
-    if (!hasRequired()) return false;
-    const b = browserInfo(); if (!b) return false;
-    const need = ENVCHECK_MINIMUMS[b.name];
-    return need ? b.version >= need : false;
-  }
-  function showBanner() {
-    if (localStorage.getItem('envcheckBannerDismissed') === 'true') return;
-    const el = document.createElement('div');
-    el.id = 'envcheck-banner';
-      el.innerHTML = `
-        <p><strong>${envCheckData.i18n.notice}</strong> ${envCheckData.i18n.update_message}
-        <a href="https://browsehappy.com/" target="_blank" rel="noopener">${envCheckData.i18n.update_link}</a>.</p>
-        <button id="envcheck-dismiss" aria-label="${envCheckData.i18n.dismiss}">&times;</button>`;
-    document.body.appendChild(el);
-    document.getElementById('envcheck-dismiss').addEventListener('click', () => {
-      el.style.display = 'none';
-      localStorage.setItem('envcheckBannerDismissed', 'true');
-    });
-  }
+	/**
+	 * A namespaced wrapper for browser localStorage to prevent key collisions with other scripts.
+	 * @const {object}
+	 */
+	const LS = {
+		/**
+		 * Retrieves an item from localStorage under the plugin's namespace.
+		 * @param {string} k - The key for the item.
+		 * @returns {string|null} The value of the item, or null if not found.
+		 */
+		get: (k) => localStorage.getItem(`envcheck:${k}`),
 
-  // -------- Consent via WP Consent API --------
-  const CONSENT_CAT = envCheckData.consent_cat || 'statistics';
-  function hasConsent() {
-    try {
-      return !!(window.wp_consent_api && typeof window.wp_consent_api.hasConsent === 'function'
-                && window.wp_consent_api.hasConsent(CONSENT_CAT));
-    } catch { return false; }
-  }
-  function onConsent(fn) {
-    if (hasConsent()) return void fn();
-    document.addEventListener('wp_listen_for_consent_change', (e) => {
-      const d = (e && e.detail) || {};
-      const allowed = d[CONSENT_CAT] === true || d[CONSENT_CAT] === 'allow' || hasConsent();
-      if (allowed) fn();
-    });
-  }
+		/**
+		 * Sets an item in localStorage under the plugin's namespace.
+		 * @param {string} k - The key for the item.
+		 * @param {string} v - The value to store.
+		 */
+		set: (k, v) => localStorage.setItem(`envcheck:${k}`, v),
+	};
 
-  // -------- Data collection (privacy-aware) --------
-  async function collect() {
-    const o = {};
-    o.userAgent = navigator.userAgent || 'N/A';
-    o.os = navigator.platform || 'N/A';
-    o.browser = browserInfo();
-    o.compatible = isCompatible();
-    o.deviceType = /mobi|android|iphone/i.test(o.userAgent) ? 'mobile'
-                 : /tablet|ipad/i.test(o.userAgent) ? 'tablet' : 'desktop';
-    o.lang = navigator.language || null;
-    o.languages = navigator.languages || null;
-    o.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || null;
-    o.cores = navigator.hardwareConcurrency ?? null;
-    o.memoryGB = navigator.deviceMemory ?? null;
-    o.cookies = navigator.cookieEnabled === true;
-    o.screen = { w: screen.width, h: screen.height, dpr: window.devicePixelRatio || 1, depth: screen.colorDepth };
-    o.prefers = {
-      reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-      darkMode: matchMedia('(prefers-color-scheme: dark)').matches,
-      gamutP3: matchMedia('(color-gamut: p3)').matches,
-      hdr: matchMedia('(dynamic-range: high)').matches
-    };
-    if (navigator.connection) {
-      o.network = {
-        type: navigator.connection.effectiveType || null,
-        downlink: navigator.connection.downlink || null,
-        rtt: navigator.connection.rtt || null,
-        saveData: !!navigator.connection.saveData
-      };
-    }
-    if (navigator.storage?.estimate) {
-      try {
-        const e = await navigator.storage.estimate();
-        o.storage = {
-          quotaMB: e.quota ? Math.round(e.quota / 1048576) : null,
-          usageMB: e.usage ? Math.round(e.usage / 1048576) : null
-        };
-      } catch {}
-    }
-    if (navigator.permissions?.query) {
-      try {
-        const mic = await navigator.permissions.query({ name: 'microphone' });
-        o.permissions = { microphone: mic.state };
-      } catch {}
-    }
-    const canType = typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.isTypeSupported === 'function';
-    o.media = {
-      opusRecording: canType ? MediaRecorder.isTypeSupported('audio/webm;codecs=opus') : null,
-      mp4Recording:  canType ? MediaRecorder.isTypeSupported('audio/mp4') : null
-    };
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) { const ac = new AC(); o.audio = { sampleRate: ac.sampleRate, state: ac.state }; await ac.close(); }
-    } catch {}
-    o.privacy = {
-      doNotTrack: (navigator.doNotTrack == '1' || window.doNotTrack == '1') || false,
-      gpc: !!navigator.globalPrivacyControl
-    };
-    if (navigator.userAgentData?.getHighEntropyValues) {
-      try {
-        const he = await navigator.userAgentData.getHighEntropyValues(['platformVersion','architecture','model','uaFullVersion']);
-        o.clientHints = { brands: navigator.userAgentData.brands, mobile: navigator.userAgentData.mobile, platform: navigator.userAgentData.platform, ...he };
-      } catch {}
-    }
-    if (navigator.getBattery) {
-      try {
-        const b = await navigator.getBattery();
-        o.battery = `Level: ${Math.round(b.level * 100)}%, Charging: ${b.charging}`;
-      } catch {}
-    }
-    return o;
-  }
+	/**
+	 * Data passed from WordPress via `wp_localize_script`.
+	 * @const {object}
+	 * @property {string} nonce - The security nonce for the AJAX request.
+	 * @property {string} ajax_url - The URL for WordPress's admin-ajax.php.
+	 * @property {object} i18n - An object containing translated strings.
+	 */
+	const { nonce, ajax_url, i18n } = window.envCheckData || {};
 
-  function send(payload) {
-    const fd = new FormData();
-    fd.append('action', 'envcheck_log');
-    fd.append('nonce', envCheckData.nonce);
-    fd.append('data', JSON.stringify(payload));
-    return fetch(envCheckData.ajax_url, { method: 'POST', body: fd })
-      .then(r => r.json())
-      .then(j => {
-        if (j && j.success) {
-          localStorage.setItem('envcheckLastLog', String(Date.now()));
-        }
-      })
-      .catch(() => {});
-  }
+	/**
+	 * Checks for the presence of essential browser APIs.
+	 *
+	 * @returns {boolean} Returns `true` if all required APIs are present, otherwise `false`.
+	 */
+	function isBrowserCompatible() {
+		return (
+			'Promise' in window &&
+			'fetch' in window &&
+			'MediaRecorder' in window &&
+			(navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices)
+		);
+	}
 
-  // -------- Main --------
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!isCompatible()) showBanner();
+	/**
+	 * Creates and displays the browser upgrade banner if the browser is incompatible.
+	 */
+	function displayUpgradeBanner() {
+		// Banner guard: Do not show the banner if the user has previously dismissed it.
+		if (LS.get('bannerDismissed') === 'true') {
+			return;
+		}
 
-    const day = 24 * 60 * 60 * 1000;
-    const last = Number(localStorage.getItem('envcheckLastLog') || 0);
-    if (Date.now() - last < day) return;
+		if (isBrowserCompatible()) {
+			return;
+		}
 
-    onConsent(async () => {
-      const data = await collect();
-      // If DNT/GPC true, server minimizes; you can also minimize here if desired.
-      await send(data);
-    });
-  });
+		const banner = document.createElement('div');
+		banner.className = 'envcheck-banner';
+		banner.innerHTML = `
+            <div class="envcheck-banner-content">
+                <strong>${i18n.notice}</strong> ${i18n.update_message}
+                <a href="https://browsehappy.com/" target="_blank" rel="noopener noreferrer">${i18n.update_link}</a>.
+            </div>
+            <button class="envcheck-banner-dismiss" aria-label="${i18n.dismiss}">&times;</button>
+        `;
+
+		document.body.appendChild(banner);
+
+		// Add event listener to the dismiss button.
+		banner.querySelector('.envcheck-banner-dismiss').addEventListener('click', () => {
+			banner.remove();
+			LS.set('bannerDismissed', 'true');
+		});
+	}
+
+	/**
+	 * Asynchronously collects a wide range of browser and platform diagnostics.
+	 *
+	 * @returns {Promise<object>} A promise that resolves with the diagnostic data object.
+	 */
+	async function collectDiagnostics() {
+		let data = {
+			privacy: {
+				doNotTrack: navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.msDoNotTrack === '1',
+				gpc: !!navigator.globalPrivacyControl,
+			},
+			userAgent: navigator.userAgent || 'N/A',
+			os: navigator.platform || 'N/A',
+			language: navigator.language || 'N/A',
+			screen: {
+				width: window.screen.width,
+				height: window.screen.height,
+				colorDepth: window.screen.colorDepth,
+			},
+			compatible: isBrowserCompatible(),
+		};
+
+		// Parallelize expensive or slow API queries for performance.
+		const [storage, mic, battery] = await Promise.allSettled([
+			navigator.storage?.estimate?.(),
+			navigator.permissions?.query?.({ name: 'microphone' }),
+			navigator.getBattery?.(),
+		]);
+
+		// Safely process the results of the parallel queries.
+		if (storage.status === 'fulfilled' && storage.value) {
+			data.storage = { quota: storage.value.quota, usage: storage.value.usage };
+		}
+		if (mic.status === 'fulfilled' && mic.value) {
+			data.micPermission = mic.value.state;
+		}
+		if (battery.status === 'fulfilled' && battery.value) {
+			data.battery = { level: battery.value.level, charging: battery.value.charging };
+		}
+
+		// Client-side data minimization: If DNT or GPC signals are present,
+		// strip the payload down to the bare essentials before sending.
+		if (data.privacy.doNotTrack || data.privacy.gpc) {
+			data = {
+				privacy: data.privacy,
+				userAgent: data.userAgent,
+				os: data.os,
+				compatible: data.compatible,
+			};
+		}
+
+		return data;
+	}
+
+	/**
+	 * Sends the collected diagnostic data to the server.
+	 *
+	 * @param {object} diagnosticData - The object containing the data to log.
+	 */
+	async function sendDiagnostics(diagnosticData) {
+		const formData = new FormData();
+		formData.append('action', 'envcheck_log');
+		formData.append('nonce', nonce);
+		formData.append('data', JSON.stringify(diagnosticData));
+
+		try {
+			await fetch(ajax_url, {
+				method: 'POST',
+				body: formData,
+			});
+		} catch (error) {
+			console.error('SPARXSTAR EnvCheck: Failed to send diagnostics.', error);
+		}
+	}
+
+	/**
+	 * The main execution function for logging.
+	 * Checks if a log has been sent today and proceeds if not.
+	 */
+	async function runDiagnosticsOncePerDay() {
+		const oneDay = 24 * 60 * 60 * 1000;
+		const lastCheck = LS.get('lastCheck');
+
+		// Check if we have already logged in the last 24 hours.
+		if (lastCheck && (Date.now() - parseInt(lastCheck, 10) < oneDay)) {
+			return;
+		}
+
+		// Collect and send the data, then update the timestamp.
+		const data = await collectDiagnostics();
+		await sendDiagnostics(data);
+		LS.set('lastCheck', Date.now().toString());
+	}
+
+	/**
+	 * Sets up a listener for the WordPress Consent API.
+	 * If consent for 'statistics' is granted after the page loads, it triggers the diagnostic check.
+	 */
+	function initializeConsentListener() {
+		// Feature detection: Only run if a WP Consent API provider is active.
+		if (window.wp_consent_api) {
+			document.addEventListener('wp_listen_for_consent_change', (event) => {
+				const { consent_changed, new_consent } = event.detail;
+				// If consent was just granted for the 'statistics' category, run the check.
+				if (consent_changed && new_consent && new_consent.includes('statistics')) {
+					runDiagnosticsOncePerDay();
+				}
+			});
+		}
+	}
+
+
+	/**
+	 * Initialize the script once the DOM is fully loaded.
+	 */
+	document.addEventListener('DOMContentLoaded', () => {
+		// Stop if essential data from WordPress is missing.
+		if (!nonce || !ajax_url || !i18n) {
+			console.error('SPARXSTAR EnvCheck: Missing localization data.');
+			return;
+		}
+
+		displayUpgradeBanner();
+		runDiagnosticsOncePerDay();
+		initializeConsentListener();
+	});
+
 })();
