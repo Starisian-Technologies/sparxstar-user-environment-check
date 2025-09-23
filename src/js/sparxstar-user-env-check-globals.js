@@ -1,7 +1,7 @@
 /**
  * @file Client-side script for SPARXSTAR Global Helper Methods.
  * @author Starisian Technologies (Max Barrett)
- * @version 1.0
+ * @version 1.1 (Patched)
  *
  * @description This script exposes a few common utility methods globally for easy access
  * from other scripts or the console, under the window.SPARXSTAR.Utils namespace.
@@ -10,12 +10,14 @@
 (function() {
     'use strict';
 
-    const Logger = window.SPARXSTAR?.Logger || console; // Fallback to console if Logger isn't ready
+    const Logger = window.SPARXSTAR?.Logger || console;
 
-    // Ensure core modules are loaded
-    if (!window.SPARXSTAR?.DeviceDetector || !window.SPARXSTAR?.NetworkMonitor || !window.SPARXSTAR?.EnvCheck) {
-        Logger.warn('Core SPARXSTAR modules not fully loaded, some global utilities might be unavailable.');
-    }
+    // Wait a tick to ensure other modules are loaded before logging warnings
+    setTimeout(() => {
+        if (!window.SPARXSTAR?.DeviceDetector || !window.SPARXSTAR?.NetworkMonitor || !window.SPARXSTAR?.EnvCheck) {
+            Logger.warn('Core SPARXSTAR modules not fully loaded, some global utilities might be unavailable.');
+        }
+    }, 10);
 
     /**
      * Retrieves the client's current IP address (as seen by the browser).
@@ -68,9 +70,32 @@
         return networkInfo?.effectiveType || 'unknown';
     }
 
+    /**
+     * ## NEW: Collects a complete, unified snapshot of the environment. ##
+     * Gathers data from all available SPARXSTAR modules into a single object.
+     * @returns {Promise<object>} A promise that resolves with the combined snapshot object.
+     */
+    async function getSnapshot() {
+        // Use the core data collection as the base
+        const snapshot = await window.SPARXSTAR.EnvCheck?.collectDiagnostics() || {};
+        
+        // Ensure the latest data from other modules is present, in case it was not in the base collection
+        snapshot.device = window.SPARXSTAR.DeviceDetector?.getDeviceInfo() || snapshot.device || {};
+        snapshot.network = window.SPARXSTAR.NetworkMonitor?.getNetworkInfo() || snapshot.network || {};
+
+        Logger.debug('Unified snapshot collected via global helper', snapshot);
+        return snapshot;
+    }
+
     // Expose utility methods globally under the SPARXSTAR.Utils namespace
     window.SPARXSTAR = window.SPARXSTAR || {};
     window.SPARXSTAR.Utils = {
         getUserIP: getUserIP,
         getDeviceType: getDeviceType,
-        getBrowserName: getBrowserName
+        getBrowserName: getBrowserName,
+        isOnline: isOnline,
+        getEffectiveConnectionType: getEffectiveConnectionType,
+        getSnapshot: getSnapshot // Add the new helper
+    };
+
+})();
