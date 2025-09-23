@@ -110,8 +110,17 @@
 		sessionId = sessionStorage.getItem("envcheck_session_id");
 		if (!sessionId) {
 			// Fallback for older browsers without crypto.randomUUID
-			sessionId = crypto.randomUUID ? crypto.randomUUID() :
-				'ses_' + Date.now() + '_' + generateSecureRandomString(12);
+			if (crypto.randomUUID) {
+				sessionId = crypto.randomUUID();
+			} else {
+				const randStr = generateSecureRandomString(12);
+				if (!randStr) {
+					// Could not securely generate session ID
+					Logger.error('Session ID cannot be generated securely. Aborting.');
+					return;
+				}
+				sessionId = 'ses_' + Date.now() + '_' + randStr;
+			}
 			sessionStorage.setItem("envcheck_session_id", sessionId);
 			Logger.debug('Generated new session ID', { sessionId });
 		} else {
@@ -119,7 +128,12 @@
 		}
 	} catch (e) {
 		// Fallback if sessionStorage is not available
-		sessionId = 'ses_' + Date.now() + '_' + generateSecureRandomString(12);
+		const randStr = generateSecureRandomString(12);
+		if (!randStr) {
+			Logger.error('Session ID cannot be generated securely. Aborting.');
+			return;
+		}
+		sessionId = 'ses_' + Date.now() + '_' + randStr;
 		Logger.warn('SessionStorage unavailable, using temporary session ID', { sessionId, error: e.message });
 	}
 // Utility function to generate a cryptographically secure random string
@@ -130,8 +144,9 @@ function generateSecureRandomString(length) {
 		window.crypto.getRandomValues(array);
 		return Array.from(array).map((b) => b.toString(36)).join('');
 	} else {
-		// Fallback to Math.random (should not happen given the API check, but preserve legacy behavior)
-		return Array.from(array).map(() => Math.floor(Math.random() * 36).toString(36)).join('');
+		// Secure random generation unavailable; fail safely.
+		Logger.error('Secure random number generation unavailable. Aborting session ID generation.');
+		return null;
 	}
 }
 
