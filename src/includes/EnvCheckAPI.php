@@ -149,14 +149,14 @@ class EnvCheckAPI {
 		$client_hints = $this->collect_client_hints();
 
 		// Determine user and session context
-		$user_id    = get_current_user_id() ?: null;
+		$user_id    = \get_current_user_id() ?: null;
 		$session_id = $sanitized_client_data['sessionId'] ?? null;
 		$client_ip  = $this->get_client_ip();
 
 		// For anonymous users, create a robust fingerprint (combining IP and User-Agent)
 		$user_fingerprint = null;
 		if ( ! $user_id ) {
-			$user_fingerprint = hash( 'sha256', $client_ip . $server_side_data['userAgent'] );
+			$user_fingerprint = \hash( 'sha256', $client_ip . $server_side_data['userAgent'] );
 		}
 
 		// Hash the combined environment data to detect changes
@@ -172,40 +172,40 @@ class EnvCheckAPI {
 		// Remove highly dynamic data before hashing for environment change detection
 		unset( $env_hash_data['client_side']['battery'], $env_hash_data['client_side']['network']['rtt'] );
 
-		$snapshot_hash = hash( 'sha256', wp_json_encode( $env_hash_data ) );
+		$snapshot_hash = \hash( 'sha256', \wp_json_encode( $env_hash_data ) );
 
 		// 6. Store/Update Snapshot in DB
 		$result = $this->store_diagnostic_snapshot(
 			$user_id,
 			$user_fingerprint,
 			$session_id,
-			hash( 'sha256', $client_ip ), // Store hashed IP for privacy
+			\hash( 'sha256', $client_ip ), // Store hashed IP for privacy
 			$snapshot_hash,
 			$server_side_data,
 			$sanitized_client_data,
 			$client_hints
 		);
 
-		if ( is_wp_error( $result ) ) {
+		if ( \is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		$log_message = sprintf(
+		$log_message = \sprintf(
 			'[EnvCheck] Diagnostic data %s: User: %s, Session: %s, IP: %s, Hash: %s',
 			( $result['status'] === 'updated' ? 'updated' : 'stored' ),
-			$user_id ?: ( $user_fingerprint ? 'Anon-' . substr( $user_fingerprint, 0, 8 ) : 'Unknown' ),
+			$user_id ?: ( $user_fingerprint ? 'Anon-' . \substr( $user_fingerprint, 0, 8 ) : 'Unknown' ),
 			$session_id ?: 'none',
 			$client_ip,
-			substr( $snapshot_hash, 0, 8 )
+			\substr( $snapshot_hash, 0, 8 )
 		);
-		error_log( $log_message );
+		\error_log( $log_message );
 
 		return new \WP_REST_Response(
 			[
 				'status'      => 'ok',
 				'action'      => $result['status'],
 				'snapshot_id' => $result['id'],
-				'timestamp'   => current_time( 'mysql', true ),
+				'timestamp'   => \current_time( 'mysql', true ),
 			],
 			200
 		);
@@ -220,16 +220,16 @@ class EnvCheckAPI {
 		return [
 			'ip'         => $this->get_client_ip(),
 			'userAgent'  => $this->get_user_agent(),
-			'sessionID'  => session_id() ?: 'none',
-			'currentURL' => home_url( $_SERVER['REQUEST_URI'] ?? '' ),
-			'referrerURL' => wp_get_referer() ?: '',
-			'language'   => get_locale(),
+			'sessionID'  => \session_id() ?: 'none',
+			'currentURL' => \home_url( $_SERVER['REQUEST_URI'] ?? '' ),
+			'referrerURL' => \wp_get_referer() ?: '',
+			'language'   => \get_locale(),
 			'os'         => $this->detect_os(),
 			'browser'    => $this->detect_browser(),
 			'isBot'      => $this->is_bot(),
 			'requestMethod' => $_SERVER['REQUEST_METHOD'] ?? 'GET',
-			'isAjax'     => wp_doing_ajax(),
-			'wpEnvType'  => wp_get_environment_type(),
+			'isAjax'     => \wp_doing_ajax(),
+			'wpEnvType'  => \wp_get_environment_type(),
 			'geolocation' => [], // Placeholder for geo data
 		];
 	}
@@ -241,7 +241,7 @@ class EnvCheckAPI {
 		$client_hints = [];
 		
 		// ## REFINED: Added a filter to make the list of Client Hints extensible. ##
-		$hint_headers = apply_filters(
+		$hint_headers = \apply_filters(
 			'sparxstar_env_client_hint_headers',
 			[
 				'Sec-CH-UA'                  => 'userAgentBrand',
@@ -258,9 +258,9 @@ class EnvCheckAPI {
 
 		foreach ( $hint_headers as $header => $key ) {
 			// Headers are in $_SERVER as HTTP_SEC_CH_UA...
-			$server_key = 'HTTP_' . strtoupper( str_replace( '-', '_', $header ) );
+			$server_key = 'HTTP_' . \strtoupper( \str_replace( '-', '_', $header ) );
 			if ( ! empty( $_SERVER[ $server_key ] ) ) {
-				$client_hints[ $key ] = sanitize_text_field( wp_unslash( $_SERVER[ $server_key ] ) );
+				$client_hints[ $key ] = \sanitize_text_field( \wp_unslash( $_SERVER[ $server_key ] ) );
 			}
 		}
 
@@ -277,16 +277,16 @@ class EnvCheckAPI {
 	private function check_rate_limit(): bool {
 		$client_ip = $this->get_client_ip();
 		// Use a hashed IP for transient key to avoid exposing raw IP in options table.
-		$rate_key = 'sparxstar_env_rate_' . hash( 'md5', $client_ip );
+		$rate_key = 'sparxstar_env_rate_' . \hash( 'md5', $client_ip );
 
-		$current_requests = (int) get_transient( $rate_key );
+		$current_requests = (int) \get_transient( $rate_key );
 
 		if ( $current_requests >= self::RATE_LIMIT_MAX_REQUESTS ) {
 			return false;
 		}
 
 		// Increment and set/update transient.
-		set_transient( $rate_key, $current_requests + 1, self::RATE_LIMIT_WINDOW_SECONDS );
+		\set_transient( $rate_key, $current_requests + 1, self::RATE_LIMIT_WINDOW_SECONDS );
 
 		return true;
 	}
@@ -334,7 +334,7 @@ class EnvCheckAPI {
 				} else {
 					return new \WP_Error(
 						'invalid_data_type',
-						sprintf( __( 'Invalid data type for field "%s". Expected %s.', 'sparxstar-user-environment-check' ), $field, $rules['type'] ),
+						\sprintf( \__( 'Invalid data type for field "%s". Expected %s.', 'sparxstar-user-environment-check' ), $field, $rules['type'] ),
 						[ 'status' => 400, 'field' => $field ]
 					);
 				}
@@ -350,8 +350,8 @@ class EnvCheckAPI {
 		}
 
 		// Specific validation for sessionId (if present)
-		if ( isset( $sanitized['sessionId'] ) && ! preg_match( '/^[a-zA-Z0-9_-]{10,128}$/', $sanitized['sessionId'] ) ) {
-			return new \WP_Error( 'invalid_session', __( 'Invalid session ID format.', 'sparxstar-user-environment-check' ), [ 'status' => 400 ] );
+		if ( isset( $sanitized['sessionId'] ) && ! \preg_match( '/^[a-zA-Z0-9_-]{10,128}$/', $sanitized['sessionId'] ) ) {
+			return new \WP_Error( 'invalid_session', \__( 'Invalid session ID format.', 'sparxstar-user-environment-check' ), [ 'status' => 400 ] );
 		}
 
 		// Data minimization if privacy signals are strong
@@ -360,7 +360,7 @@ class EnvCheckAPI {
 				'sessionId', 'privacy', 'userAgent', 'os', 'compatible', 'features', 'device', 'network',
 			];
 			// Filter to only include necessary fields
-			$sanitized = array_intersect_key( $sanitized, array_flip( $minimized_fields ) );
+			$sanitized = \array_intersect_key( $sanitized, \array_flip( $minimized_fields ) );
 		}
 
 		return $sanitized;
@@ -375,11 +375,11 @@ class EnvCheckAPI {
 	private function sanitize_array_recursively( array $array ): array {
 		$sanitized = [];
 		foreach ( $array as $key => $value ) {
-			$key = sanitize_key( $key );
+			$key = \sanitize_key( $key );
 			if ( is_array( $value ) ) {
 				$sanitized[ $key ] = $this->sanitize_array_recursively( $value );
 			} elseif ( is_scalar( $value ) ) {
-				$sanitized[ $key ] = sanitize_text_field( (string) $value );
+				$sanitized[ $key ] = \sanitize_text_field( (string) $value );
 			}
 		}
 		return $sanitized;
@@ -402,7 +402,7 @@ class EnvCheckAPI {
 			// If it exists, we don't need to re-insert the data. Just update the `updated_at` timestamp.
 			$wpdb->update(
 				$table_name,
-				[ 'updated_at' => current_time( 'mysql' ) ], // Touch the record
+				[ 'updated_at' => \current_time( 'mysql' ) ], // Touch the record
 				[ 'id' => $existing_id ],
 				[ '%s' ],
 				[ '%d' ]
@@ -423,11 +423,11 @@ class EnvCheckAPI {
 				'session_id'        => $session_id,
 				'snapshot_hash'     => $snapshot_hash,
 				'client_ip_hash'    => $client_ip_hash,
-				'server_side_data'  => wp_json_encode( $server_data ),
-				'client_side_data'  => wp_json_encode( $client_data ),
-				'client_hints_data' => ! empty( $client_hints ) ? wp_json_encode( $client_hints ) : null,
-				'created_at'        => current_time( 'mysql' ),
-				'updated_at'        => current_time( 'mysql' ),
+				'server_side_data'  => \wp_json_encode( $server_data ),
+				'client_side_data'  => \wp_json_encode( $client_data ),
+				'client_hints_data' => ! empty( $client_hints ) ? \wp_json_encode( $client_hints ) : null,
+				'created_at'        => \current_time( 'mysql' ),
+				'updated_at'        => \current_time( 'mysql' ),
 			],
 			[ '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' ]
 		);
@@ -443,9 +443,9 @@ class EnvCheckAPI {
 	 * Schedule the daily cleanup job using WP Cron.
 	 */
 	public function schedule_cleanup() {
-		if ( ! wp_next_scheduled( 'sparxstar_env_cleanup_hook' ) ) {
+		if ( ! \wp_next_scheduled( 'sparxstar_env_cleanup_hook' ) ) {
 			// Schedule to run daily, around midnight server time.
-			wp_schedule_event( time(), 'daily', 'sparxstar_env_cleanup_hook' );
+			\wp_schedule_event( \time(), 'daily', 'sparxstar_env_cleanup_hook' );
 		}
 	}
 
@@ -456,7 +456,7 @@ class EnvCheckAPI {
 	public function cleanup_old_snapshots() {
 		global $wpdb;
 		$table_name = $wpdb->base_prefix . self::TABLE_NAME;
-		$retention_days = (int) apply_filters( 'sparxstar_env_retention_days', self::SNAPSHOT_RETENTION_DAYS );
+		$retention_days = (int) \apply_filters( 'sparxstar_env_retention_days', self::SNAPSHOT_RETENTION_DAYS );
 
 		if ( $retention_days <= 0 ) {
 			return; // Retention disabled.
@@ -471,7 +471,7 @@ class EnvCheckAPI {
 		$rows_deleted = $wpdb->query( $sql );
 
 		if ( $rows_deleted > 0 ) {
-			error_log( sprintf( '[EnvCheck] Cleaned up %d old snapshot records.', $rows_deleted ) );
+			\error_log( \sprintf( '[EnvCheck] Cleaned up %d old snapshot records.', $rows_deleted ) );
 		}
 	}
 
@@ -492,13 +492,13 @@ class EnvCheckAPI {
 		];
 
 		foreach ( $ip_keys as $key ) {
-			if ( array_key_exists( $key, $_SERVER ) === true ) {
-				$ip = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
-				if ( strpos( $ip, ',' ) !== false ) {
-					$ip = explode( ',', $ip )[0];
+			if ( \array_key_exists( $key, $_SERVER ) === true ) {
+				$ip = \sanitize_text_field( \wp_unslash( $_SERVER[ $key ] ) );
+				if ( \strpos( $ip, ',' ) !== false ) {
+					$ip = \explode( ',', $ip )[0];
 				}
-				$ip = trim( $ip );
-				if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+				$ip = \trim( $ip );
+				if ( \filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 					return $ip;
 				}
 			}
@@ -508,7 +508,7 @@ class EnvCheckAPI {
 	}
 
 	private function get_user_agent(): string {
-		return sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? 'unknown' ) );
+		return \sanitize_text_field( \wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? 'unknown' ) );
 	}
 
 	private function detect_os(): string {
@@ -541,7 +541,7 @@ class EnvCheckAPI {
 		];
 
 		foreach ( $os_patterns as $regex => $os ) {
-			if ( preg_match( $regex, $user_agent ) ) {
+			if ( \preg_match( $regex, $user_agent ) ) {
 				return $os;
 			}
 		}
@@ -566,7 +566,7 @@ class EnvCheckAPI {
 		];
 
 		foreach ( $browser_patterns as $regex => $browser ) {
-			if ( preg_match( $regex, $user_agent ) ) {
+			if ( \preg_match( $regex, $user_agent ) ) {
 				return $browser;
 			}
 		}
@@ -581,7 +581,7 @@ class EnvCheckAPI {
 		];
 
 		foreach ( $bot_patterns as $pattern ) {
-			if ( preg_match( $pattern, $user_agent ) ) {
+			if ( \preg_match( $pattern, $user_agent ) ) {
 				return true;
 			}
 		}
