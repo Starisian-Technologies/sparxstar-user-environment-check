@@ -3,6 +3,7 @@
  * @author Starisian Technologies (Max Barrett)
  * @version 0.5.0
  * @since 0.1.0
+ * @license GLP-3.0-or-later
  *
  * @description This script performs two primary functions:
  * 1. Checks for modern browser API compatibility and displays a dismissible banner if required APIs are missing.

@@ -1,5 +1,5 @@
 {
-    "name": "maximilliangroup/sparxstar-user-environment-check",
+    "name": "Starisian/sparxstar-user-environment-check",
     "description": "A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.",
     "type": "wordpress-plugin",
     "require-dev": {
@@ -13,10 +13,10 @@
         "automattic/eslint-config-target-es": "^4.0",
         "automattic/eslint-changed": "^2.1"
     },
-    "license": "Proprietary",
+    "license": "proprietary",
     "autoload": {
         "psr-4": {
-            "Maximilliangroup\\SparxstarUserEnvironmentCheck\\": "src/"
+            "Starisian\\SparxstarUEC\\": "src/"
         }
     },
     "authors": [

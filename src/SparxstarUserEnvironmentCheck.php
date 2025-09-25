@@ -1,4 +1,15 @@
 <?php
+namespace Starisian\SparxstarUEC;
+/**
+ * Sparxstar User Environment Check
+ *
+ * This class handles the initialization and setup of the Sparxstar User Environment Check plugin.
+ *
+ * @package SparxstarUserEnvironmentCheck
+ * @version 1.0.0
+ * @since 1.0.0
+ * 
+ */
 
 
 

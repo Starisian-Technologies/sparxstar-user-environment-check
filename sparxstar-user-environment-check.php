@@ -13,6 +13,8 @@
  * License:           Proprietary
  * License URI:       https://github.com/Starisian-Technologies/sparxstar-user-environment-check/LICENSE
  * Update URI:        https://github.com/Starisian-Technologies/sparxstar-user-environment-check.git
+ * Copyright:         2025 Starisian Technologies
+ * Copyright URI:     https://starisian.com/copyright
  *
  * @package           SparxstarUserEnvironmentCheck
  */

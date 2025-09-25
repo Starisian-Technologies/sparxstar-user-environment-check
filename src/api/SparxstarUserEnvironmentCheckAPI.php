@@ -1,4 +1,5 @@
 <?php
+namespace Starisian\SparxstarUEC\api;
 /**
  * Sparxstar Environment Check REST API Handler
  *
@@ -7,7 +8,10 @@
  * specifically targeting MariaDB storage for snapshots.
  *
  * @package SparxstarUserEnvironmentCheck
- * @since 2.3.0
+ * @since 1.0.0
+ * @version 1.0.0
+ * @see StarUserUtils for server-side environment data collection.
+ * @see SparxstarUserEnvironmentCheckCacheHelper for caching layer integration.
  */
 
 namespace SparxstarUEC\includes;

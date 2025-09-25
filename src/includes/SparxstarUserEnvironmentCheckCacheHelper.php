@@ -1,5 +1,12 @@
 <?php
-namespace SparxstarUEC\includes;
+namespace Starisian\SparxstarUEC\includes;
+/**
+ * Caching helper for environment snapshots.
+ *
+ * @package SparxstarUserEnvironmentCheck
+ * @since 1.0.0
+ * @version 1.0.0
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

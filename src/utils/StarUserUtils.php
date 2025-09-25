@@ -3,10 +3,12 @@
  * Utility helpers for SPARXSTAR environment diagnostics.
  *
  * @package SparxstarUserEnvironmentCheck
+ * @version 1.0.0
  * @since 1.0.0
+ * @license GLP-3.0-or-later
  */
 
-namespace SparxstarUEC\utils;
+namespace Starisian\SparxstarUEC\utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

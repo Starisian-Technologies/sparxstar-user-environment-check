@@ -1,7 +1,9 @@
 /**
  * @file Client-side script for SPARXSTAR Global Helper Methods.
  * @author Starisian Technologies (Max Barrett)
- * @version 1.0
+ * @version 1.0.0
+ * @since 1.0.0
+ * @license GLP-3.0-or-later
  *
  * @description This script exposes a few common utility methods globally for easy access
  * from other scripts or the console, under the window.SPARXSTAR.Utils namespace.
