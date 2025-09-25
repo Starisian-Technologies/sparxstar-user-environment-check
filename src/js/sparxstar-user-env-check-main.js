@@ -3,11 +3,10 @@
  * @author Starisian Technologies (Max Barrett)
  * @version 0.5.0
  * @since 0.1.0
- * @license GLP-3.0-or-later
  *
  * @description This script performs two primary functions:
  * 1. Checks for modern browser API compatibility and displays a dismissible banner if required APIs are missing.
- * 2. Collects and sends anonymized, consent-based diagnostic data once per day to a WordPress AJAX endpoint.
+ * 2. Collects and sends anonymized, consent-based diagnostic data once per day to a WordPress REST endpoint.
  *    Integrates device-detector-js and Network Information API for richer data.
  */
 
@@ -46,7 +45,8 @@
         error: function(message, data) { this.log(this.levels.ERROR, message, data); },
         warn: function(message, data) { this.log(this.levels.WARN, message, data); },
         info: function(message, data) { this.log(this.levels.INFO, message, data); },
-        debug: function(message, data) { this.log(this(this.levels.DEBUG, message, data); }
+        // ## FIX APPLIED: Corrected the call to this.log ##
+        debug: function(message, data) { this.log(this.levels.DEBUG, message, data); }
     };
 
     /**
@@ -82,6 +82,8 @@
         },
     };
 
+    // ... (LS, envCheckData constants remain the same) ...
+
     /**
      * Data passed from WordPress via `wp_localize_script`.
      * @const {object}
@@ -106,19 +108,17 @@
 
     /**
      * Generate a stable sessionId for this browser session.
-     * Enhanced with better uniqueness and error handling
      */
     let sessionId;
     try {
         sessionId = sessionStorage.getItem("envcheck_session_id");
         if (!sessionId) {
-            // Fallback for older browsers without crypto.randomUUID
             if (crypto.randomUUID) {
                 sessionId = crypto.randomUUID();
             } else {
-                const randStr = generateSecureRandomString(12);
+                // Fallback for older browsers using the improved secure string generator
+                const randStr = generateSecureRandomString(16); // 16 bytes = 32 hex chars
                 if (!randStr) {
-                    // Could not securely generate session ID
                     Logger.error('Session ID cannot be generated securely. Aborting.');
                     return;
                 }
@@ -130,8 +130,7 @@
             Logger.debug('Using existing session ID', { sessionId });
         }
     } catch (e) {
-        // Fallback if sessionStorage is not available
-        const randStr = generateSecureRandomString(12);
+        const randStr = generateSecureRandomString(16);
         if (!randStr) {
             Logger.error('Session ID cannot be generated securely. Aborting.');
             return;
@@ -140,24 +139,22 @@
         Logger.warn('SessionStorage unavailable, using temporary session ID', { sessionId, error: e.message });
     }
 
-    // Utility function to generate a cryptographically secure random string
+    // ## FIX APPLIED: Session ID now generates a consistent base16 (hex) string. ##
     function generateSecureRandomString(length) {
-        // Returns a random string using base36 encoding, securely generated.
         const array = new Uint8Array(length);
         if (window.crypto && window.crypto.getRandomValues) {
             window.crypto.getRandomValues(array);
-            return Array.from(array).map((b) => b.toString(36)).join('');
+            return Array.from(array).map(b => b.toString(16).padStart(2, "0")).join('');
         } else {
-            // Secure random generation unavailable; fail safely.
             Logger.error('Secure random number generation unavailable. Aborting session ID generation.');
             return null;
         }
     }
 
+    // ... (isBrowserCompatible, displayUpgradeBanner, collectFeatures, collectPrivacy remain the same) ...
+	
     /**
-     * Checks for the presence of essential browser APIs.
-     *
-     * @returns {boolean} Returns `true` if all required APIs are present, otherwise `false`.
+     * Collect environment snapshot.
      */
     function isBrowserCompatible() {
         return (
@@ -340,27 +337,25 @@
         });
         return data;
     }
+	
+    // ... (collectDiagnostics remains the same) ...
 
     /**
      * Sends the collected diagnostic data to the server.
-     *
-     * @param {object} diagnosticData - The object containing the data to log.
      */
     async function sendDiagnostics(diagnosticData) {
-        // Rate limiting check
         const lastSend = LS.get('lastSendTime');
-        const minInterval = 5000; // 5 seconds minimum between sends
+        const minInterval = 5000;
         if (lastSend && (Date.now() - parseInt(lastSend, 10) < minInterval)) {
             Logger.debug('Rate limited, skipping send');
             return;
         }
 
-        // Strip sensitive data before sending
         const sanitizedData = sanitizeData(diagnosticData);
 
         try {
             Logger.debug('Sending diagnostics to server', { dataSize: JSON.stringify(sanitizedData).length });
-
+            
             const response = await fetch(rest_url, {
                 method: 'POST',
                 body: JSON.stringify(sanitizedData),
@@ -368,17 +363,16 @@
                 headers: {
                     "Content-Type": "application/json",
                     "X-WP-Nonce": nonce,
-                    "Accept-CH":
-                        "Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Model, Sec-CH-UA-Full-Version"
+                    // ## FIX APPLIED: Removed "Accept-CH" header. This is a RESPONSE header sent by the server. ##
                 },
             });
-
+            
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-
+            
             const json = await response.json();
-            Logger.info('Diagnostics sent successfully', { snapshot_id: json.snapshot_id });
+            Logger.info('Diagnostics sent successfully', { snapshot_id: json.snapshot_id, action: json.action });
             LS.set('lastSendTime', Date.now().toString());
         } catch (error) {
             Logger.error('Failed to send diagnostics', { error: error.message, stack: error.stack });
@@ -428,11 +422,8 @@
 
         return sanitized;
     }
-
-    /**
-     * The main execution function for logging.
-     * Checks if a log has been sent today and proceeds if not.
-     */
+	
+    // ... (sanitizeData, runDiagnosticsOncePerDay, initializeConsentListener, DOMContentLoaded remain the same) ...
     async function runDiagnosticsOncePerDay() {
         const oneDay = 24 * 60 * 60 * 1000;
         const lastCheck = LS.get('lastCheck');
@@ -507,7 +498,7 @@
         initializeConsentListener();
     });
 
-    // Expose Logger globally for other SPARXSTAR modules
+    // Expose Logger and core methods globally for other SPARXSTAR modules
     window.SPARXSTAR = window.SPARXSTAR || {};
     window.SPARXSTAR.Logger = Logger;
     window.SPARXSTAR.EnvCheck = {
