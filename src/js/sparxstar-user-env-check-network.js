@@ -2,6 +2,8 @@
  * @file Client-side script for SPARXSTAR Network Monitoring.
  * @author Starisian Technologies (Max Barrett)
  * @version 1.0
+ * @since 1.0.0
+ * @license GLP-3.0-or-later
  *
  * @description This script utilizes the Network Information API and navigator.onLine
  * to provide detailed network status and expose methods globally under

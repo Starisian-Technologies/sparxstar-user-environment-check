@@ -1,7 +1,8 @@
 /**
  * @file Main client-side script for SPARXSTAR User Environment Check.
  * @author Starisian Technologies (Max Barrett)
- * @version 2.4 (Patched)
+ * @version 0.5.0
+ * @since 0.1.0
  *
  * @description This script performs two primary functions:
  * 1. Checks for modern browser API compatibility and displays a dismissible banner if required APIs are missing.

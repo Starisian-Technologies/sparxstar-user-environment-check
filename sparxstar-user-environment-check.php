@@ -13,6 +13,8 @@
  * License:           Proprietary
  * License URI:       https://github.com/Starisian-Technologies/sparxstar-user-environment-check/LICENSE
  * Update URI:        https://github.com/Starisian-Technologies/sparxstar-user-environment-check.git
+ * Copyright:         2025 Starisian Technologies
+ * Copyright URI:     https://starisian.com/copyright
  *
  * @package           SparxstarUserEnvironmentCheck
  */
@@ -20,6 +22,9 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+// Define the plugin file constant for the new EnvCheckAPI
+define( 'SPX_ENV_CHECK_PLUGIN_FILE', __FILE__ );
 
 /**
  * Primary plugin controller for SPARXSTAR User Environment Check.
@@ -92,6 +97,9 @@ final class Sparxstar_User_Environment_Check {
 		$this->network_id = function_exists( 'get_current_network_id' ) ? (int) get_current_network_id() : 1;
 		$this->log_dir    = trailingslashit( WP_CONTENT_DIR ) . 'envcheck-logs/network-' . $this->network_id;
 		$this->cron_hook  = 'envcheck_cron_housekeeping_' . $this->network_id;
+
+		// Load the enhanced EnvCheckAPI
+		require_once __DIR__ . '/src/includes/EnvCheckAPI.php';
 
 		add_action( 'init', [ $this, 'load_textdomain' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );

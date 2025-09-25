@@ -1,7 +1,16 @@
-/* ==============================
-   SPARXSTAR EnvCheck Banner
-   Modern, accessible design
-   ============================== */
+
+   /**  
+    * @file
+    * CSS for the Sparxstar User Environment Check banner.
+    * 
+    * This stylesheet provides styles for the notification banner displayed
+    * by the Sparxstar User Environment Check plugin. It includes styles for
+    * layout, colors, typography, and animations to ensure a modern and
+    * accessible user experience.
+    *
+    * @package SparxstarUserEnvironmentCheck
+    * @version 1.0.0
+    */
 
 .envcheck-banner {
   position: fixed;

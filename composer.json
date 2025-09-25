@@ -1,0 +1,30 @@
+{
+    "name": "Starisian/sparxstar-user-environment-check",
+    "description": "A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.",
+    "type": "wordpress-plugin",
+    "require-dev": {
+        "php-stubs/wordpress-stubs": "^6.8",
+        "psr/simple-cache": "^3.0",
+        "wp-coding-standards/wpcs": "^3.2",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.1",
+        "friendsofphp/php-cs-fixer": "^3.88",
+        "squizlabs/php_codesniffer": "^4.0",
+        "automattic/eslint-config-target-es": "^4.0",
+        "automattic/eslint-changed": "^2.1"
+    },
+    "license": "proprietary",
+    "autoload": {
+        "psr-4": {
+            "Starisian\\SparxstarUEC\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Starisian Technologies (Max Barrett)",
+            "email": "support@starisian.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}

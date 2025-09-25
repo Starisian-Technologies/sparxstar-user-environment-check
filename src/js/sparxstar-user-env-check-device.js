@@ -1,12 +1,17 @@
 /**
  * @file Client-side script for SPARXSTAR Device Detection.
  * @author Starisian Technologies (Max Barrett)
- * @version 1.0
+ * @version 1.0.0
+ * @since 1.0.0
+ * @license GLP-3.0-or-later
  *
  * @description This script integrates device-detector-js to parse the user agent
  * and provide detailed device, OS, and browser information.
  * It exposes methods globally under window.SPARXSTAR.DeviceDetector.
+ * 
  */
+
+
 
 (function() {
     'use strict';
