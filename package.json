@@ -1,0 +1,29 @@
+{
+  "name": "sparxstaruserenvironmentcheck",
+  "version": "1.0.0",
+  "description": "A network-wide utility that checks browser compatibility and logs anonymized technical data for diagnostics, with consent via the WP Consent API.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Starisian-Technologies/sparxstar-user-environment-check.git"
+  },
+  "keywords": [
+    "user-environment",
+    "network-information",
+    "device-detection",
+    "WordPress",
+    "wordpress-plugin"
+  ],
+  "author": "Starisian Technologies <support@starisian.com> (Max Barrett)",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/Starisian-Technologies/sparxstar-user-environment-check/issues"
+  },
+  "homepage": "https://github.com/Starisian-Technologies/sparxstar-user-environment-check#readme",
+  "dependencies": {
+    "device-detector-js": "^2.2.10"
+  }
+}
