@@ -101,15 +101,26 @@
          * Ensure we have a stable session identifier.
          * @type {string}
          */
-        // Helper to generate a secure random hex string.
+        /**
+         * Helper to generate a secure random hex string of the specified length.
+         * @param {number} length - Number of hex characters desired in the output string.
+         * @returns {string} Hex string of exactly the requested length.
+         */
         function generateSecureHex(length = 16) {
                 if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
-                        const array = new Uint8Array(length);
+                        // Each byte gives 2 hex characters, so need ceil(length/2) bytes
+                        const byteLength = Math.ceil(length / 2);
+                        const array = new Uint8Array(byteLength);
                         window.crypto.getRandomValues(array);
-                        return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+                        const hex = Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+                        return hex.slice(0, length);
                 } else {
                         // Worst-case fallback if crypto is not available (should be exceedingly rare)
-                        return Math.random().toString(16).slice(2);
+                        let hex = '';
+                        while (hex.length < length) {
+                                hex += Math.random().toString(16).slice(2);
+                        }
+                        return hex.slice(0, length);
                 }
         }
         let sessionId = '';
