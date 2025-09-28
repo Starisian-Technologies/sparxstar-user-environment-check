@@ -1,16 +1,10 @@
-
-   /**  
-    * @file
-    * CSS for the Sparxstar User Environment Check banner.
-    * 
-    * This stylesheet provides styles for the notification banner displayed
-    * by the Sparxstar User Environment Check plugin. It includes styles for
-    * layout, colors, typography, and animations to ensure a modern and
-    * accessible user experience.
-    *
-    * @package SparxstarUserEnvironmentCheck
-    * @version 1.0.0
-    */
+/**  
+ * @file
+ * CSS for the Sparxstar User Environment Check banner.
+ *
+ * @package SparxstarUserEnvironmentCheck
+ * @version 1.1.0
+ */
 
 .envcheck-banner {
   position: fixed;
@@ -56,7 +50,7 @@
   border-radius: 4px;
 }
 
-/* Dismiss button */
+/* Dismiss button (Only for the browser update banner) */
 .envcheck-dismiss {
   position: absolute;
   top: 50%;
@@ -85,6 +79,22 @@
   outline-offset: 2px;
   background: rgba(255,255,255,0.25);
   transform: translateY(-50%) scale(1.1);
+}
+
+/* --- NEW STYLES FOR OFFLINE BANNER --- */
+
+/**
+ * Offline Banner Styles
+ *
+ * Extends the base banner with a different color to indicate
+ * a network status change.
+ */
+.envcheck-banner-offline {
+  /* Use a different background color to signify a status/warning */
+  background: rgba(139, 69, 69, 0.9); /* A muted, dark red */
+
+  /* Adjust padding since there's no dismiss button on the right */
+  padding-right: 20px;
 }
 
 /* Animation */
