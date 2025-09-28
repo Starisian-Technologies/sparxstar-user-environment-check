@@ -1,99 +1,165 @@
 ![untitled-10-1536x864](https://github.com/user-attachments/assets/e1a42278-ba41-4c6f-8233-859de5267d1d)
 
-# SPARXSTAR<sup>&trade;</sup> User Environment Check (MU Plugin)
+# SPARXSTAR User Environment Check
 
-A consent-aware, network-wide environment checker for WordPress that (1) shows a lightweight upgrade banner to users on incompatible browsers and (2) captures a **once-per-day** anonymized diagnostics snapshot for R&D. Designed for multisite at scale, with centralized logging and strict privacy controls.
-
-## Why this exists
-
-- **Fewer support tickets:** nudge users with outdated browsers to upgrade.
-- **Faster root cause analysis:** minimal, structured telemetry (with consent) to spot breakage patterns.
-- **Privacy first:** honors WP Consent API + Do-Not-Track / Global Privacy Control; minimizes payload accordingly.
+A foundational, network-wide WordPress utility that captures detailed, client-side browser and device diagnostics. It uses a database-first architecture, a high-performance caching layer, and a clean developer API to make rich user environment data available across your entire platform.
 
 ---
 
-## Features
+## Overview
 
-- **Compatibility banner:** unobtrusive bottom banner if required APIs (e.g., `MediaRecorder`, `getUserMedia`, `fetch`, Promises) aren’t present.
-- **Daily diagnostics (opt-in):** one POST per user/day with browser + platform capabilities, trimmed when DNT/GPC are enabled.
-- **Consent-aware:** blocks logging unless `wp_has_consent( 'statistics' )` (filterable).
-- **Network-wide logs:** centralized newline-delimited JSON (`.ndjson`) rotated per day.
-- **Security:** nonce check, server-side consent gate, recursive sanitization, rate-limiting, and file locking on write.
+This plugin is designed to be an "always-on" service, ideally installed as a Must-Use (MU) plugin. On each user's first visit of the day, it collects a detailed "snapshot" of their technical environment using powerful client-side libraries. This data is stored efficiently in a custom database table and made available to other plugins and themes through a hyper-efficient, cached utility class.
 
----
+It solves the problem of unreliable, server-side user-agent guessing by trusting accurate, client-side detection.
 
-## Requirements
+## Key Features
 
-- WordPress **6.4+**
-- PHP **8.2+**
-- Multisite compatible (works on single-site too)
-- Optional: WP Consent API provider
+*   **Accurate Client-Side Detection:** Utilizes `device-detector-js` for precise device, OS, and browser identification, and the Network Information API for real-time bandwidth insights.
+*   **Database-First Architecture:** All snapshots are stored in a custom, optimized database table (`wp_sparxstar_env_snapshots`), not flat files.
+*   **Efficient Storage:** A smart hashing system prevents duplicate snapshots from being stored, saving significant database space.
+*   **Secure REST API Endpoint:** A dedicated endpoint handles the secure ingestion of diagnostic data, complete with nonce validation and rate-limiting.
+*   **High-Performance Caching Layer:** A production-ready utility class (`StarUserUtils`) serves snapshot data from a cache, hitting the database at most once per user session.
+*   **Scalable by Design:** The caching layer defaults to PHP sessions but can be switched to a persistent object cache (Redis, Memcached) with a single line of code, making it ready for high-traffic, multi-server environments.
+*   **Automated Cleanup:** Uses Action Scheduler to reliably run a daily cron job that prunes old data, keeping your database lean.
+*   **Clean Developer API:** Provides simple, globally-accessible static methods (e.g., `StarUserUtils::get_browser_name()`) for any other plugin or theme to use.
+*   **Browser Compatibility Banner:** Includes an optional, user-dismissible banner to notify users of outdated browsers.
 
----
+## Installation
 
-## Install (MU)
+### Recommended: As a Must-Use (MU) Plugin
 
-1. Copy the plugin folder into:  
-   `wp-content/mu-plugins/sparxstar-user-environment-check-universe/`
-2. Create a loader in `wp-content/mu-plugins/envcheck-loader.php` (if needed):
+This method ensures the plugin is always active and cannot be accidentally deactivated.
 
-   ```php
-   <?php
-   require_once __DIR__ . '/sparxstar-user-environment-check-universe/sparxstar-user-environment-check.php';
+1.  Place the entire `sparxstar-user-environment-check` plugin folder into your `/wp-content/mu-plugins/` directory.
+2.  That's it! The plugin is now active across your entire WordPress installation. The database table will be created automatically on the next page load.
 
+### Alternative: As a Standard Plugin
 
----
+This method is ideal for testing on a single site or if you prefer to manage it from the standard Plugins screen.
 
-## Configuration (Advanced)
+1.  Place the entire `sparxstar-user-environment-check` plugin folder into your `/wp-content/plugins/` directory.
+2.  Navigate to your WordPress Admin dashboard.
+3.  Go to the "Plugins" page.
+4.  Find "SPARXSTAR User Environment Check" and click **Activate**.
+5.  *(For Multisite)* Go to `Network Admin > Plugins` and click **Network Activate**.
 
-You can override the default settings by defining constants in your `wp-config.php` file. These must be placed before the `/* That's all, stop editing! */` line.
+## Usage (Developer API)
 
-**1. Custom Log Directory:**
-By default, logs are stored in `wp-content/envcheck-logs`. To change this, define `ENVCHECK_LOG_DIR`.
+To access user environment data from another plugin or your theme's `functions.php`, use the static methods provided by the `\Starisian\SparxstarUEC\StarUserUtils` class. The data is served from a cache, so these calls are extremely fast.
+
+### PHP Examples
 
 ```php
-// wp-config.php
-define( 'ENVCHECK_LOG_DIR', WP_CONTENT_DIR . '/private/env-logs' );
-```
----
-## Accessing & Understanding the Logs
+// Always check if the class exists to avoid errors if the plugin is disabled.
+if ( class_exists('\Starisian\SparxstarUEC\StarUserUtils') ) {
 
-The plugin stores diagnostic data in the `wp-content/envcheck-logs/` directory (or your custom directory) for 30 days. Log entries are automattically deleted after 30 days. This can be changed by adding in wp-config.php the following:
+    // Get the browser name (e.g., "Chrome", "Firefox")
+    $browser_name = \Starisian\SparxstarUEC\StarUserUtils::get_browser_name();
 
-```php
-// wp-config.php
-define( 'ENVCHECK_RETENTION_DAYS', 14 ); // Keep logs for 14 days
+    // Get the full OS details
+    $os_info = \Starisian\SparxstarUEC\StarUserUtils::get_os();
+    // $os_info is an array like ['name' => 'Windows', 'version' => '10', 'platform' => 'x64']
 
-```
-Additional details about the logs:
+    // Get the device type (e.g., "desktop", "smartphone", "tablet")
+    $device_type = \Starisian\SparxstarUEC\StarUserUtils::get_device_type();
 
-- **Format:** Logs are stored in newline-delimited JSON (`.ndjson`) files. This format is efficient and easy to parse, with each line being a valid JSON object.
-- **File Naming:** A new log file is created each day with the naming convention `envcheck-YYYY-MM-DD.ndjson`.
-- **Security:** The log directory is protected by `.htaccess` and `index.php` files to prevent direct web access.
+    // Get the network bandwidth (e.g., "4g", "3g", "slow-2g")
+    // This is perfect for deciding whether to load high-res assets.
+    $network_bandwidth = \Starisian\SparxstarUEC\StarUserUtils::get_network_effective_type();
 
-### Log Entry Example
+    if ( '4g' !== $network_bandwidth ) {
+        // User has a slower connection, maybe load a smaller image.
+    }
 
-Here is an example of a single log entry, with explanations for each key:
+    // Get the user's public IP address
+    $ip_address = \Starisian\SparxstarUEC\StarUserUtils::get_ip_address();
+    
+    // Get geolocation data (requires another plugin to hook into the geolocation filter)
+    $location = \Starisian\SparxstarUEC\StarUserUtils::get_location();
+    $country = $location['country'] ?? 'Unknown';
 
-```json
-{
-  "timestamp_utc": "2025-08-28T15:09:00+00:00",
-  "site": {
-    "home": "https://example.com",
-    "blog_id": 1
-  },
-  "diagnostics": {
-    "privacy": {
-      "doNotTrack": false,
-      "gpc": true
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...",
-    "os": "Win32",
-    "compatible": true
-  }
 }
+
 ```
----
+
+## Client-Side JavaScript API
+
+After the DOMContentLoaded event, a global SPARXSTAR object is available with a central state and simple utility functions.
+
+```javascript
+// Get the device type directly from the pre-populated state object.  const deviceType = SPARXSTAR.State.device.type;
+// Or use the simple utility function.
+const networkBandwidth = SPARXSTAR.Utils.getNetworkBandwidth();
+// "4g"
+console.log(`User is on a ${deviceType} with a ${networkBandwidth} connection.`);   
+
+```
+
+## Advanced Configuration
+
+You can tune the caching behavior by adding filters to your wp-config.php file or a custom functionality plugin.
+
+### Switching to a Persistent Object Cache (Redis/Memcached)
+
+For high-traffic, multi-server sites, switching to the WordPress Object Cache is highly recommended.
+
+
+```php
+
+// In wp-config.php or a custom MU-plugin
+add_filter( 'sparxstar_env_cache_handler', function( $handler ) {
+    // Check if a persistent object cache is actually in use.
+    if ( wp_using_ext_object_cache() ) {
+          return 'object_cache';
+    }
+
+    // Fall back to the default ('session') if no persistent cache is active.
+    return $handler;
+} );   `
+
+```
+
+### Tuning Cache Durations (TTLs)
+
+```php
+// In wp-config.php or a custom MU-plugin
+// Tune the snapshot cache TTL to 5 minutes for more frequent updates.
+add_filter( 'sparxstar_env_cache_ttl', function( $ttl_in_seconds ) {      return 5 * MINUTE_IN_SECONDS;  } );
+
+// Tune the geolocation cache TTL to 24 hours, as it rarely changes.
+add_filter( 'sparxstar_env_geolocation_ttl', function( $ttl_in_seconds ) {      return 24 * HOUR_IN_SECONDS;  } );   `
+
+```
+
+Plugin Architecture
+-------------------
+
+The plugin is built on a clean, decoupled architecture where each class has a single responsibility.
+
+*   sparxstar-user-environment-check.php: **The Loader** - The main plugin file WordPress sees. It defines constants, registers hooks, and initializes the orchestrator.
+    
+*   src/SparxstarUserEnvironmentCheck.php: **The Orchestrator** - The central "brain" that loads and initializes all other components.
+    
+*   src/api/SparxstarUECAPI.php: **The Writer** - Handles the REST API endpoint, database interactions, and the data cleanup cron job.
+    
+*   src/StarUserUtils.php: **The Reader** - Provides the public, cached API (get\_browser\_name(), etc.) for other plugins to use.
+    
+*   src/AssetManager.php: **The Asset Loader** - Manages the enqueuing of all CSS and JavaScript files with correct dependencies.
+    
+
+Filters Reference
+-----------------
+
+*   sparxstar\_env\_cache\_handler (string): Change the caching backend. Accepts 'session' (default) or 'object\_cache'.
+    
+*   sparxstar\_env\_cache\_ttl (int): Sets the cache duration in seconds for the main snapshot. Default is 900 (15 minutes).
+    
+*   sparxstar\_env\_geolocation\_ttl (int): Sets the cache duration in seconds for geolocation data. Default is 21600 (6 hours).
+    
+*   sparxstar\_env\_geolocation\_lookup (array|null, string $ip): Allows another plugin to provide geolocation data for a given IP address.
+    
+*   sparxstar\_env\_retention\_days (int): Sets the number of days to keep snapshots in the database. Default is 30.
+    
        
 ## FAQ
 
