@@ -14,15 +14,40 @@
  * @package           SparxstarUserEnvironmentCheck
  */
 
-// Prevent direct access to the file
+declare(strict_types=1);
+
+// Prevent direct access to the file.
 if (!defined('ABSPATH')) {
-	exit;
+    exit;
 }
 
 // --- 1. Define Plugin Constants ---
+/**
+ * Absolute path to the main plugin file.
+ *
+ * @var string
+ */
 define('SPX_ENV_CHECK_PLUGIN_FILE', __FILE__);
+
+/**
+ * Absolute path to the plugin directory.
+ *
+ * @var string
+ */
 define('SPX_ENV_CHECK_PLUGIN_PATH', plugin_dir_path(__FILE__));
+
+/**
+ * Current plugin version identifier.
+ *
+ * @var string
+ */
 define('SPX_ENV_CHECK_VERSION', '6.0.0');
+
+/**
+ * Text domain used for localization.
+ *
+ * @var string
+ */
 define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
 
 // --- 2. Include the Main Plugin and Utility Classes ---
@@ -30,23 +55,37 @@ require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/SparxstarUserEnvironmentCheck.php'
 require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/StarUserUtils.php';
 
 // --- 3. Register Activation & Deactivation Hooks ---
-register_activation_hook(__FILE__, function () {
-	require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/api/SparxstarUECAPI.php';
-	\Starisian\SparxstarUEC\api\SparxstarUECAPI::init()->create_db_table();
-});
+register_activation_hook(
+    __FILE__,
+    static function (): void {
+        require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/Api/SparxstarUECAPI.php';
+        \Starisian\SparxstarUEC\Api\SparxstarUECAPI::init()->create_db_table();
+    }
+);
 
-register_deactivation_hook(__FILE__, function () {
-	if (function_exists('as_unschedule_all_actions')) {
-		as_unschedule_all_actions('sparxstar_env_cleanup_snapshots');
-	}
-});
+register_deactivation_hook(
+    __FILE__,
+    static function (): void {
+        if (function_exists('as_unschedule_all_actions')) {
+            as_unschedule_all_actions('sparxstar_env_cleanup_snapshots');
+        }
+    }
+);
 
 // --- 4. Global Helper Function ---
 if (!function_exists('sparxstar_get_env_snapshot')) {
-	function sparxstar_get_env_snapshot(?int $user_id = null, ?string $session_id = null): ?array
-	{
-		return \Starisian\SparxstarUEC\StarUserUtils::get_snapshot($user_id, $session_id);
-	}
+    /**
+     * Retrieve the latest environment snapshot for a user/session combination.
+     *
+     * @param int|null    $user_id    Optional WordPress user identifier.
+     * @param string|null $session_id Optional client session identifier.
+     *
+     * @return array|null Snapshot payload when available.
+     */
+    function sparxstar_get_env_snapshot(?int $user_id = null, ?string $session_id = null): ?array
+    {
+        return \Starisian\SparxstarUEC\StarUserUtils::get_snapshot($user_id, $session_id);
+    }
 }
 
 // --- 5. Initialize the Plugin ---
