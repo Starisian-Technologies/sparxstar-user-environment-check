@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="Starisian WordPress Plugin"
+         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd">
+
+  <description>
+    WordPress coding standards for Starisian Technologies plugins. Includes support for Docs, I18n, and performance best practices.
+  </description>
+
+  <!-- Scan all files in the plugin root -->
+  <file>.</file>
+
+  <!-- Exclude unnecessary paths -->
+  <exclude-pattern>vendor/*</exclude-pattern>
+  <exclude-pattern>node_modules/*</exclude-pattern>
+  <exclude-pattern>*.min.js</exclude-pattern>
+  <exclude-pattern>tests/*</exclude-pattern>
+  <exclude-pattern>wp-assets/*</exclude-pattern>
+
+  <!-- Basepath -->
+  <arg name="basepath" value="."/>
+
+  <!-- Parallel processing -->
+  <arg name="parallel" value="8"/>
+
+  <!-- Coding standard rules -->
+  <rule ref="WordPress-Extra"/>
+  <rule ref="WordPress-Docs"/>
+  <rule ref="Generic.Commenting.Todo"/>
+
+  <!-- Minimum WordPress version for compatibility checks -->
+  <config name="minimum_wp_version" value="6.4"/>
+
+  <!-- Text domain config (override per project if needed) -->
+  <rule ref="WordPress.WP.I18n">
+    <properties>
+      <property name="text_domain" type="array">
+        <element value="plugin-textdomain"/>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- Global prefix enforcement -->
+  <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+    <properties>
+      <property name="prefixes" type="array">
+        <element value="starisian"/>
+      </property>
+    </properties>
+  </rule>
+
+  <!-- Exclude certain sniffs in test files -->
+  <rule ref="WordPress.WP.GlobalVariablesOverride">
+    <exclude-pattern>tests/*Test.php</exclude-pattern>
+  </rule>
+  <rule ref="WordPress.Files.FileName">
+    <exclude-pattern>tests/*Test.php</exclude-pattern>
+  </rule>
+
+  <!-- Optional: Uncomment if PHPCompatibilityWP is installed -->
+  <!--
+  <config name="testVersion" value="8.2-"/>
+  <rule ref="PHPCompatibilityWP">
+    <include-pattern>*.php</include-pattern>
+  </rule>
+  -->
+
+</ruleset>

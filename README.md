@@ -14,15 +14,15 @@ It solves the problem of unreliable, server-side user-agent guessing by trusting
 
 ## Key Features
 
-*   **Accurate Client-Side Detection:** Utilizes `device-detector-js` for precise device, OS, and browser identification, and the Network Information API for real-time bandwidth insights.
-*   **Database-First Architecture:** All snapshots are stored in a custom, optimized database table (`wp_sparxstar_env_snapshots`), not flat files.
-*   **Efficient Storage:** A smart hashing system prevents duplicate snapshots from being stored, saving significant database space.
-*   **Secure REST API Endpoint:** A dedicated endpoint handles the secure ingestion of diagnostic data, complete with nonce validation and rate-limiting.
-*   **High-Performance Caching Layer:** A production-ready utility class (`StarUserUtils`) serves snapshot data from a cache, hitting the database at most once per user session.
-*   **Scalable by Design:** The caching layer defaults to PHP sessions but can be switched to a persistent object cache (Redis, Memcached) with a single line of code, making it ready for high-traffic, multi-server environments.
-*   **Automated Cleanup:** Uses Action Scheduler to reliably run a daily cron job that prunes old data, keeping your database lean.
-*   **Clean Developer API:** Provides simple, globally-accessible static methods (e.g., `StarUserUtils::get_browser_name()`) for any other plugin or theme to use.
-*   **Browser Compatibility Banner:** Includes an optional, user-dismissible banner to notify users of outdated browsers.
+-   **Accurate Client-Side Detection:** Utilizes `device-detector-js` for precise device, OS, and browser identification, and the Network Information API for real-time bandwidth insights.
+-   **Database-First Architecture:** All snapshots are stored in a custom, optimized database table (`wp_sparxstar_env_snapshots`), not flat files.
+-   **Efficient Storage:** A smart hashing system prevents duplicate snapshots from being stored, saving significant database space.
+-   **Secure REST API Endpoint:** A dedicated endpoint handles the secure ingestion of diagnostic data, complete with nonce validation and rate-limiting.
+-   **High-Performance Caching Layer:** A production-ready utility class (`StarUserEnv`) serves snapshot data from a cache, hitting the database at most once per user session.
+-   **Scalable by Design:** The caching layer defaults to PHP sessions but can be switched to a persistent object cache (Redis, Memcached) with a single line of code, making it ready for high-traffic, multi-server environments.
+-   **Automated Cleanup:** Uses Action Scheduler to reliably run a daily cron job that prunes old data, keeping your database lean.
+-   **Clean Developer API:** Provides simple, globally-accessible static methods (e.g., `StarUserEnv::get_browser_name()`) for any other plugin or theme to use.
+-   **Browser Compatibility Banner:** Includes an optional, user-dismissible banner to notify users of outdated browsers.
 
 ## Installation
 
@@ -41,41 +41,41 @@ This method is ideal for testing on a single site or if you prefer to manage it 
 2.  Navigate to your WordPress Admin dashboard.
 3.  Go to the "Plugins" page.
 4.  Find "SPARXSTAR User Environment Check" and click **Activate**.
-5.  *(For Multisite)* Go to `Network Admin > Plugins` and click **Network Activate**.
+5.  _(For Multisite)_ Go to `Network Admin > Plugins` and click **Network Activate**.
 
 ## Usage (Developer API)
 
-To access user environment data from another plugin or your theme's `functions.php`, use the static methods provided by the `\Starisian\SparxstarUEC\StarUserUtils` class. The data is served from a cache, so these calls are extremely fast.
+To access user environment data from another plugin or your theme's `functions.php`, use the static methods provided by the `\Starisian\SparxstarUEC\StarUserEnv` class. The data is served from a cache, so these calls are extremely fast.
 
 ### PHP Examples
 
 ```php
 // Always check if the class exists to avoid errors if the plugin is disabled.
-if ( class_exists('\Starisian\SparxstarUEC\StarUserUtils') ) {
+if ( class_exists('\Starisian\SparxstarUEC\StarUserEnv') ) {
 
     // Get the browser name (e.g., "Chrome", "Firefox")
-    $browser_name = \Starisian\SparxstarUEC\StarUserUtils::get_browser_name();
+    $browser_name = \Starisian\SparxstarUEC\StarUserEnv::get_browser_name();
 
     // Get the full OS details
-    $os_info = \Starisian\SparxstarUEC\StarUserUtils::get_os();
+    $os_info = \Starisian\SparxstarUEC\StarUserEnv::get_os();
     // $os_info is an array like ['name' => 'Windows', 'version' => '10', 'platform' => 'x64']
 
     // Get the device type (e.g., "desktop", "smartphone", "tablet")
-    $device_type = \Starisian\SparxstarUEC\StarUserUtils::get_device_type();
+    $device_type = \Starisian\SparxstarUEC\StarUserEnv::get_device_type();
 
     // Get the network bandwidth (e.g., "4g", "3g", "slow-2g")
     // This is perfect for deciding whether to load high-res assets.
-    $network_bandwidth = \Starisian\SparxstarUEC\StarUserUtils::get_network_effective_type();
+    $network_bandwidth = \Starisian\SparxstarUEC\StarUserEnv::get_network_effective_type();
 
     if ( '4g' !== $network_bandwidth ) {
         // User has a slower connection, maybe load a smaller image.
     }
 
     // Get the user's public IP address
-    $ip_address = \Starisian\SparxstarUEC\StarUserUtils::get_ip_address();
-    
+    $ip_address = \Starisian\SparxstarUEC\StarUserEnv::get_ip_address();
+
     // Get geolocation data (requires another plugin to hook into the geolocation filter)
-    $location = \Starisian\SparxstarUEC\StarUserUtils::get_location();
+    $location = \Starisian\SparxstarUEC\StarUserEnv::get_location();
     $country = $location['country'] ?? 'Unknown';
 
 }
@@ -91,8 +91,9 @@ After the DOMContentLoaded event, a global SPARXSTAR object is available wit
 // Or use the simple utility function.
 const networkBandwidth = SPARXSTAR.Utils.getNetworkBandwidth();
 // "4g"
-console.log(`User is on a ${deviceType} with a ${networkBandwidth} connection.`);   
-
+console.log(
+    `User is on a ${deviceType} with a ${networkBandwidth} connection.`
+);
 ```
 
 ## Advanced Configuration
@@ -102,7 +103,6 @@ You can tune the caching behavior by adding filters to your wp-config.php file
 ### Switching to a Persistent Object Cache (Redis/Memcached)
 
 For high-traffic, multi-server sites, switching to the WordPress Object Cache is highly recommended.
-
 
 ```php
 
@@ -131,46 +131,31 @@ add_filter( 'sparxstar_env_geolocation_ttl', function( $ttl_in_seconds ) {      
 
 ```
 
-Plugin Architecture
--------------------
+## Plugin Architecture
 
 The plugin is built on a clean, decoupled architecture where each class has a single responsibility.
 
-*   sparxstar-user-environment-check.php: **The Loader** - The main plugin file WordPress sees. It defines constants, registers hooks, and initializes the orchestrator.
-    
-*   src/SparxstarUserEnvironmentCheck.php: **The Orchestrator** - The central "brain" that loads and initializes all other components.
-    
-*   src/api/SparxstarUECAPI.php: **The Writer** - Handles the REST API endpoint, database interactions, and the data cleanup cron job.
-    
-*   src/StarUserUtils.php: **The Reader** - Provides the public, cached API (get\_browser\_name(), etc.) for other plugins to use.
-    
-*   src/AssetManager.php: **The Asset Loader** - Manages the enqueuing of all CSS and JavaScript files with correct dependencies.
-    
+-   sparxstar-user-environment-check.php: **The Loader** - The main plugin file WordPress sees. It defines constants, registers hooks, and initializes the orchestrator.
+-   src/SparxstarUserEnvironmentCheck.php: **The Orchestrator** - The central "brain" that loads and initializes all other components.
+-   src/api/SparxstarUECAPI.php: **The Writer** - Handles the REST API endpoint, database interactions, and the data cleanup cron job.
+-   src/StarUserEnv.php: **The Reader** - Provides the public, cached API (get_browser_name(), etc.) for other plugins to use.
+-   src/AssetManager.php: **The Asset Loader** - Manages the enqueuing of all CSS and JavaScript files with correct dependencies.
 
-Filters Reference
------------------
+## Filters Reference
 
-*   sparxstar\_env\_cache\_handler (string): Change the caching backend. Accepts 'session' (default) or 'object\_cache'.
-    
-*   sparxstar\_env\_cache\_ttl (int): Sets the cache duration in seconds for the main snapshot. Default is 900 (15 minutes).
-    
-*   sparxstar\_env\_geolocation\_ttl (int): Sets the cache duration in seconds for geolocation data. Default is 21600 (6 hours).
-    
-*   sparxstar\_env\_geolocation\_lookup (array|null, string $ip): Allows another plugin to provide geolocation data for a given IP address.
-    
-*   sparxstar\_env\_retention\_days (int): Sets the number of days to keep snapshots in the database. Default is 30.
-    
-       
+-   sparxstar_env_cache_handler (string): Change the caching backend. Accepts 'session' (default) or 'object_cache'.
+-   sparxstar_env_cache_ttl (int): Sets the cache duration in seconds for the main snapshot. Default is 900 (15 minutes).
+-   sparxstar_env_geolocation_ttl (int): Sets the cache duration in seconds for geolocation data. Default is 21600 (6 hours).
+-   sparxstar_env_geolocation_lookup (array|null, string $ip): Allows another plugin to provide geolocation data for a given IP address.
+-   sparxstar_env_retention_days (int): Sets the number of days to keep snapshots in the database. Default is 30.
+
 ## FAQ
 
 **Q: What happens if I don't have a WP Consent API plugin installed?**  
-A: The plugin is designed to be "privacy-first." If the `wp_has_consent()` function does not exist, the plugin will **not** enqueue its scripts or log any data. To enable logging without a consent plugin (e.g., for an internal tool where all users have implicitly consented), you can use the `envcheck_consent_category` filter to bypass the check. *This is not recommended for public sites.*
+A: The plugin is designed to be "privacy-first." If the `wp_has_consent()` function does not exist, the plugin will **not** enqueue its scripts or log any data. To enable logging without a consent plugin (e.g., for an internal tool where all users have implicitly consented), you can use the `envcheck_consent_category` filter to bypass the check. _This is not recommended for public sites._
 
 **Q: Why a Must-Use (MU) plugin?**  
 A: As an environment and diagnostics tool, it should run consistently across an entire network without the risk of being deactivated on a site-by-site basis. The MU-plugin approach ensures it is always active.
 
 **Q: How much of a performance impact does this have?**  
 A: Minimal. The client-side script is small and uses modern, efficient APIs like `Promise.allSettled`. The server-side logging is rate-limited to one request per user per day and writes to a simple file, avoiding database queries.
-
-  
-
