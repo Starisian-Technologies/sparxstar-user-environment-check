@@ -4,6 +4,10 @@
 
 A foundational, network-wide WordPress utility that captures detailed, client-side browser and device diagnostics. It uses a database-first architecture, a high-performance caching layer, and a clean developer API to make rich user environment data available across your entire platform.
 
+[![Copilot](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/copilot-swe-agent/copilot/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/copilot-swe-agent/copilot) [![CodeQL](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/github-code-scanning/codeql) [![Dependabot Updates](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/dependabot/dependabot-updates)
+
+[![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml) [![Security Checks](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml) [![Tests](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml)
+
 ---
 
 ## Overview
