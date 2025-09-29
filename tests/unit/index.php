@@ -1,7 +1,6 @@
 <?php
 /**
- * I have known the silence of the stars and of the sea
- * 
- * @package Starmus
- * 
+ * PHPUnit discovers tests automatically; this file exists to appease WordPress tooling.
+ *
+ * @package Starisian\SparxstarUEC\Tests\Unit
  */

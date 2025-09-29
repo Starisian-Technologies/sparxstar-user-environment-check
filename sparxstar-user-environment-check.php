@@ -25,8 +25,16 @@ define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
 define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
 
 
-// add autoload for any composer dependencies
-require_once SPX_ENV_CHECK_PLUGIN_PATH . 'vendor/autoload.php';
+// Add autoload for any composer dependencies when installed.
+/**
+ * Path to the Composer autoloader when dependencies are installed.
+ *
+ * @var string
+ */
+$spx_autoload = SPX_ENV_CHECK_PLUGIN_PATH . 'vendor/autoload.php';
+if (file_exists($spx_autoload)) {
+        require_once $spx_autoload;
+}
 
 
 use Starisian\SparxstarUEC\SparxstarUserEnvironmentCheck;
