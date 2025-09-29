@@ -209,20 +209,6 @@ final class SparxstarUECAdmin
     }
 
     /**
-     * Outputs descriptive text for the snapshot viewer section within the settings form.
-     */
-    public function render_snapshot_viewer_section_description(): void
-    {
-        printf(
-            '<p>%s</p>',
-            esc_html__(
-                'Review the most recent environment snapshot captured for your account below.',
-                'sparxstar-user-environment-check'
-            )
-        );
-    }
-
-    /**
      * Displays admin notices when required configuration is missing.
      */
     public function admin_notices(): void
