@@ -221,12 +221,9 @@ final class StarUserEnv
             self::$snapshot_cache = $cached;
             return $cached;
         }
-
-        $database_accessor = SparxstarUECAPI::get_instance();
-        $database = $database_accessor->get_database();
         // Use the appropriate identifier for the database lookup.
-        $from_db = $database->get_latest_snapshot($resolved_user_id, $visitor_id, $session_id);
 
+        $from_db = SparxstarUECAPI::get_instance()->get_latest_snapshot_from_db($resolved_user_id, $session_id);
         if ($from_db !== null) {
             SparxstarUECCacheHelper::set($cache_key, $from_db);
             self::$snapshot_cache = $from_db;

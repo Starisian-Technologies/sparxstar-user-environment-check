@@ -65,7 +65,7 @@ class SparxstarUserEnvironmentCheck
 	{
 		try {
 			error_log('Instantiating SparxstarUECAPI');
-			$this->api = new SparxstarUECAPI();
+			$this->api = SparxstarUECAPI::get_instance();
 			error_log('Instantiating SparxstarUECAssetManager');
 			$this->asset_manager = new SparxstarUECAssetManager();
 			error_log('Instantiating SparxstarUECGeoIPService');

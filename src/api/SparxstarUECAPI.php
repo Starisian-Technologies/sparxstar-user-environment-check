@@ -22,6 +22,7 @@ use WP_REST_Response;
 
 final class SparxstarUECAPI
 {
+	public static ?SparxstarUECAPI $instance = null;
 	private \wpdb $wpdb;
 	private const DB_TABLE_NAME = SPX_ENV_CHECK_DB_TABLE_NAME;
 
@@ -39,7 +40,19 @@ final class SparxstarUECAPI
 		'language' => 'client_side_data.context.language',
 	];
 
-	public function __construct()
+	/**
+	 * Retrieve the singleton instance and bootstrap the plugin.
+	 */
+	public static function get_instance(): SparxstarUECAPI
+	{
+		if (self::$instance === null) {
+			self::$instance = new self();
+		}
+
+		return self::$instance;
+	}
+
+	private function __construct()
 	{
 		global $wpdb;
 		$this->wpdb = $wpdb;

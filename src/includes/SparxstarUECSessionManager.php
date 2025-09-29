@@ -2,8 +2,12 @@
 declare(strict_types=1);
 namespace Starisian\SparxstarUEC\includes;
 
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
     exit;
+}
+
+use Starisian\SparxstarUEC\StarUserEnv;
+use Starisian\SparxstarUEC\api\SparxstarUECAPI;
 
 final class SparxstarUECSessionManager
 {
@@ -65,7 +69,7 @@ final class SparxstarUECSessionManager
             return $default;
         }
 
-        return self::_get_value_from_array($snapshot, $path, $default);
+        return self::get_value_from_array($snapshot, $path, $default);
     }
     /**
      * Retrieve the active PHP session identifier when available.
@@ -74,6 +78,18 @@ final class SparxstarUECSessionManager
     {
         self::ensure_session(); // Make sure the session is active before checking
         return session_status() === PHP_SESSION_ACTIVE ? (string) session_id() : '';
+    }
+
+    public static function get_value_from_array(array $array, string $path, $default = null)
+    {
+        $keys = explode('.', $path);
+        foreach ($keys as $key) {
+            if (!is_array($array) || !array_key_exists($key, $array)) {
+                return $default;
+            }
+            $value = $array[$key];
+        }
+        return $value;
     }
 
 }
