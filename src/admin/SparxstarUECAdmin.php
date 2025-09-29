@@ -195,12 +195,12 @@ final class SparxstarUECAdmin
                 'This is the most recent data collected by the plugin for your user account. The snapshot ID is',
                 'sparxstar-user-environment-check'
             ),
-            isset($snapshot['id']) ? esc_html((string) $snapshot['id']) : esc_html__('unknown', 'sparxstar-user-environment-check'),
+            esc_html((string) $snapshot['id']),
             esc_html__(
                 'last updated on',
                 'sparxstar-user-environment-check'
             ),
-            isset($snapshot['updated_at']) ? esc_html((string) $snapshot['updated_at']) : esc_html__('an unknown date', 'sparxstar-user-environment-check')
+            esc_html((string) $snapshot['updated_at'])
         );
 
         echo '<pre style="background-color: #f1f1f1; padding: 15px; border-radius: 4px; max-height: 500px; overflow: auto;"><code>';
