@@ -163,7 +163,6 @@ final class SparxstarUECAdmin
         // Fetch the snapshot. We pass null for session_id as it's not relevant here.
         $snapshot = StarUserEnv::get_full_snapshot($current_user_id, SparxstarUECSessionManager::get_session_id());
 
-        printf('<h2>%s</h2>', esc_html__('Your Current Environment Snapshot', 'sparxstar-user-environment-check'));
 
         if ($snapshot === null) {
             printf(
