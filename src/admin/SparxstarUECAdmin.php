@@ -149,7 +149,8 @@ final class SparxstarUECAdmin
     }
 
     /**
-     * Fetches the snapshot for the current admin user and displays it as formatted JSON.
+     * Renders the content for the snapshot viewer section in the settings form.
+     * This includes fetching the current admin user's environment snapshot and displaying it as formatted JSON.
      */
     public function render_snapshot_viewer_section(): void
     {
