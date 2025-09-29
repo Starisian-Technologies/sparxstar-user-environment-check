@@ -1,248 +1,187 @@
 <?php
 /**
- * Minimal WordPress shims and configuration for unit testing.
+ * PHPUnit bootstrap for unit tests without a full WordPress stack.
  *
- * @package SparxstarUserEnvironmentCheck\Tests
+ * This loader wires up Composer's autoloader, defines the plugin constants
+ * that production code expects, and registers lightweight shims for the small
+ * subset of WordPress functions referenced by the isolated unit tests.
+ *
+ * @package Starisian\SparxstarUEC\Tests
  */
 
 declare(strict_types=1);
 
-/**
- * Attempt to include the Composer autoloader when available.
- */
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
 if (file_exists($autoload)) {
     require $autoload;
+} else {
+    spl_autoload_register(
+        /**
+         * Minimal PSR-4 loader for the plugin namespace when Composer is unavailable.
+         *
+         * @param string $class Fully-qualified class name.
+         * @return void
+         */
+        static function (string $class): void {
+            $prefix = 'Starisian\\SparxstarUEC\\';
+            if (str_starts_with($class, $prefix) === false) {
+                return;
+            }
+
+            $relative = substr($class, strlen($prefix));
+            $path = dirname(__DIR__) . '/src/' . str_replace('\\', '/', $relative) . '.php';
+            if (file_exists($path)) {
+                require $path;
+            }
+        }
+    );
 }
-
-/**
- * Registered WordPress-style actions captured during unit tests.
- *
- * @var array<string, array<int, array{callback:mixed, priority:int, accepted_args:int}>>
- */
-$GLOBALS['spx_registered_actions'] = array();
-
-/**
- * Registered REST routes captured during unit tests.
- *
- * @var array<int, array{namespace:string, route:string, args:array}>
- */
-$GLOBALS['spx_registered_routes'] = array();
-
-/**
- * Headers emitted by header() calls during unit tests.
- *
- * @var array<int, array{header:string, replace:bool}>
- */
-$GLOBALS['spx_sent_headers'] = array();
-
-/**
- * Flag indicating whether tests should simulate the WordPress admin area.
- *
- * @var bool
- */
-$GLOBALS['spx_is_admin'] = false;
-
-/**
- * Records the last text domain loaded by load_plugin_textdomain().
- *
- * @var array<int, array{text_domain:string, deprecated:bool|string, path:string|false}>
- */
-$GLOBALS['spx_loaded_textdomains'] = array();
-
-/**
- * Styles registered through wp_register_style().
- *
- * @var array<string, array{src:string, deps:array<int, string>, ver:string}>
- */
-$GLOBALS['spx_registered_styles'] = array();
-
-/**
- * Styles enqueued for output during unit tests.
- *
- * @var array<int, string>
- */
-$GLOBALS['spx_enqueued_styles'] = array();
-
-/**
- * Scripts registered through wp_register_script().
- *
- * @var array<string, array{src:string, deps:array<int, string>, ver:string, in_footer:bool}>
- */
-$GLOBALS['spx_registered_scripts'] = array();
-
-/**
- * Scripts enqueued for output during unit tests.
- *
- * @var array<int, string>
- */
-$GLOBALS['spx_enqueued_scripts'] = array();
-
-/**
- * Localized script payloads captured during unit tests.
- *
- * @var array<string, array{name:string, data:array<mixed>}>
- */
-$GLOBALS['spx_localized_scripts'] = array();
-
-/**
- * Database inserts captured by the wpdb shim.
- *
- * @var array<int, array{table:string, data:array<string, mixed>}>
- */
-$GLOBALS['spx_db_inserts'] = array();
-
-/**
- * Database queries executed by the wpdb shim.
- *
- * @var array<int, string>
- */
-$GLOBALS['spx_db_queries'] = array();
 
 if (!defined('ABSPATH')) {
-    /**
-     * Placeholder for the WordPress ABSPATH constant required by plugin files.
-     */
-    define('ABSPATH', '/tmp/');
+    define('ABSPATH', __DIR__ . '/../');
 }
 
-if (!defined('WP_DEBUG')) {
-    /**
-     * Enables WordPress debug mode for unit testing.
-     */
-    define('WP_DEBUG', true);
-}
-
-if (!defined('WP_DEBUG_LOG')) {
-    /**
-     * Enables logging while running unit tests.
-     */
-    define('WP_DEBUG_LOG', true);
-}
-
-if (!defined('SPX_ENV_CHECK_PLUGIN_PATH')) {
-    /**
-     * Absolute path to the plugin root for resolving assets in unit tests.
-     */
-    define('SPX_ENV_CHECK_PLUGIN_PATH', dirname(__DIR__) . '/');
+if (!defined('DAY_IN_SECONDS')) {
+    define('DAY_IN_SECONDS', 86400);
 }
 
 if (!defined('SPX_ENV_CHECK_PLUGIN_FILE')) {
-    /**
-     * Absolute path to the main plugin file for unit testing hooks.
-     */
-    define('SPX_ENV_CHECK_PLUGIN_FILE', SPX_ENV_CHECK_PLUGIN_PATH . 'sparxstar-user-environment-check.php');
+    define('SPX_ENV_CHECK_PLUGIN_FILE', dirname(__DIR__) . '/sparxstar-user-environment-check.php');
+}
+
+if (!defined('SPX_ENV_CHECK_PLUGIN_PATH')) {
+    define('SPX_ENV_CHECK_PLUGIN_PATH', dirname(__DIR__) . '/');
 }
 
 if (!defined('SPX_ENV_CHECK_VERSION')) {
-    /**
-     * Default plugin version used for cache-busting in unit tests.
-     */
-    define('SPX_ENV_CHECK_VERSION', '0.0.0-test');
+    define('SPX_ENV_CHECK_VERSION', 'test');
 }
 
 if (!defined('SPX_ENV_CHECK_TEXT_DOMAIN')) {
-    /**
-     * Text domain identifier used during unit tests.
-     */
     define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
 }
 
 if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
-    /**
-     * Database table name placeholder used by unit tests.
-     */
     define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
 }
 
-if (!function_exists('add_action')) {
-    /**
-     * Mock implementation of add_action() that records hook registrations.
-     *
-     * @param string   $hook          Hook name being registered.
-     * @param callable $callback      Callback to execute.
-     * @param int      $priority      Hook priority.
-     * @param int      $accepted_args Number of accepted arguments.
-     */
-    function add_action(string $hook, callable $callback, int $priority = 10, int $accepted_args = 1): void
-    {
-        $GLOBALS['spx_registered_actions'][$hook][] = array(
-            'callback' => $callback,
-            'priority' => $priority,
-            'accepted_args' => $accepted_args,
-        );
-    }
-}
+/**
+ * In-memory cache store used by the WordPress cache shims.
+ *
+ * @var array<string, array<string, mixed>>
+ */
+$GLOBALS['wp_cache_store'] = $GLOBALS['wp_cache_store'] ?? [];
 
-if (!function_exists('add_filter')) {
-    /**
-     * Stub implementation mirroring add_action() semantics for filters.
-     *
-     * @param string   $hook          Filter name being registered.
-     * @param callable $callback      Callback to execute.
-     * @param int      $priority      Hook priority.
-     * @param int      $accepted_args Number of accepted arguments.
-     */
-    function add_filter(string $hook, callable $callback, int $priority = 10, int $accepted_args = 1): void
-    {
-        add_action($hook, $callback, $priority, $accepted_args);
-    }
-}
+/**
+ * Registry used by the action shim to capture hooks.
+ *
+ * @var array<string, array<int, array<string, mixed>>>
+ */
+$GLOBALS['registered_actions'] = $GLOBALS['registered_actions'] ?? [];
 
-if (!function_exists('register_rest_route')) {
+if (!function_exists('plugin_dir_path')) {
     /**
-     * Mock implementation of register_rest_route() that records REST routes.
+     * Shimmed version of plugin_dir_path for the unit test environment.
      *
-     * @param string $namespace REST namespace.
-     * @param string $route     Route path.
-     * @param array  $args      Route arguments.
+     * @param string $file Absolute path to a file inside the plugin.
+     * @return string Normalised directory path ending with a slash.
      */
-    function register_rest_route(string $namespace, string $route, array $args): void
+    function plugin_dir_path(string $file): string
     {
-        $GLOBALS['spx_registered_routes'][] = array(
-            'namespace' => $namespace,
-            'route' => $route,
-            'args' => $args,
-        );
-    }
-}
-
-if (!function_exists('load_plugin_textdomain')) {
-    /**
-     * Records load_plugin_textdomain() invocations for verification.
-     *
-     * @param string     $domain     Text domain identifier.
-     * @param bool       $deprecated Deprecated argument retained for parity.
-     * @param string|false $path     Relative path to the language files.
-     */
-    function load_plugin_textdomain(string $domain, bool $deprecated = false, $path = false): bool
-    {
-        $GLOBALS['spx_loaded_textdomains'][] = array(
-            'text_domain' => $domain,
-            'deprecated' => $deprecated,
-            'path' => $path,
-        );
-        return true;
+        return rtrim(dirname($file), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
     }
 }
 
 if (!function_exists('plugin_basename')) {
     /**
-     * Simplified plugin_basename() for unit testing.
+     * Shimmed version of plugin_basename mirroring WordPress behaviour.
      *
-     * @param string $file Plugin file path.
+     * @param string $file Absolute path to the plugin file.
+     * @return string Plugin basename composed of directory and file name.
      */
     function plugin_basename(string $file): string
     {
-        return basename($file);
+        return ltrim(str_replace(dirname($file) . DIRECTORY_SEPARATOR, '', $file), DIRECTORY_SEPARATOR);
+    }
+}
+
+if (!function_exists('load_plugin_textdomain')) {
+    /**
+     * Stubbed translation loader that simply records the request.
+     *
+     * @param string      $domain Text domain to load.
+     * @param bool        $deprecated Unused legacy parameter.
+     * @param string|bool $plugin_rel_path Optional relative path.
+     * @return bool       Always true in the test environment.
+     */
+    function load_plugin_textdomain(string $domain, bool $deprecated = false, $plugin_rel_path = false): bool
+    {
+        $GLOBALS['loaded_textdomains'][] = [$domain, $plugin_rel_path];
+        return true;
+    }
+}
+
+if (!function_exists('is_admin')) {
+    /**
+     * Indicates whether the current request targets the WordPress admin area.
+     * Always returns false in unit tests so that admin hooks are skipped.
+     *
+     * @return bool False to keep the environment minimal.
+     */
+    function is_admin(): bool
+    {
+        return false;
+    }
+}
+
+if (!function_exists('esc_html')) {
+    /**
+     * Basic HTML-escaping helper mirroring WordPress' esc_html.
+     *
+     * @param string $text Text to escape.
+     * @return string Escaped text safe for output.
+     */
+    function esc_html(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_html__')) {
+    /**
+     * Translation helper that proxies to the esc_html shim for tests.
+     *
+     * @param string $text   Text to translate.
+     * @param string $domain Optional text domain.
+     * @return string        Escaped translation string.
+     */
+    function esc_html__(string $text, string $domain = ''): string
+    {
+        unset($domain);
+        return esc_html($text);
+    }
+}
+
+if (!function_exists('esc_html_e')) {
+    /**
+     * Echoing translation helper mirroring WordPress' esc_html_e.
+     *
+     * @param string $text   Text to echo.
+     * @param string $domain Optional text domain.
+     * @return void
+     */
+    function esc_html_e(string $text, string $domain = ''): void
+    {
+        echo esc_html__($text, $domain);
     }
 }
 
 if (!function_exists('sanitize_text_field')) {
     /**
-     * Minimal sanitize_text_field() equivalent for unit testing.
+     * Minimal sanitiser matching the WordPress helper used by production code.
      *
-     * @param string $value Raw value to sanitize.
+     * @param string $value Raw input value.
+     * @return string Trimmed and stripped version suitable for tests.
      */
     function sanitize_text_field(string $value): string
     {
@@ -250,330 +189,154 @@ if (!function_exists('sanitize_text_field')) {
     }
 }
 
-if (!function_exists('esc_html')) {
-    /**
-     * Minimal esc_html() equivalent backed by htmlspecialchars().
-     *
-     * @param string $value Raw value to escape.
-     */
-    function esc_html(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-}
-
-if (!function_exists('is_admin')) {
-    /**
-     * Indicates whether the simulated environment is in the admin area.
-     */
-    function is_admin(): bool
-    {
-        return (bool) $GLOBALS['spx_is_admin'];
-    }
-}
-
-if (!function_exists('header')) {
-    /**
-     * Records header() calls for later assertions.
-     *
-     * @param string $header Header string.
-     * @param bool   $replace Whether to replace existing header.
-     */
-    function header(string $header, bool $replace = true): void
-    {
-        $GLOBALS['spx_sent_headers'][] = array(
-            'header' => $header,
-            'replace' => $replace,
-        );
-    }
-}
-
-if (!function_exists('rest_url')) {
-    /**
-     * Generates a deterministic REST URL for unit tests.
-     *
-     * @param string $path REST path fragment.
-     */
-    function rest_url(string $path = ''): string
-    {
-        return 'https://example.test/' . ltrim($path, '/');
-    }
-}
-
-if (!function_exists('wp_create_nonce')) {
-    /**
-     * Deterministic nonce generator for unit tests.
-     *
-     * @param string $action Action name.
-     */
-    function wp_create_nonce(string $action): string
-    {
-        return hash('sha256', $action);
-    }
-}
-
-if (!function_exists('esc_html__')) {
-    /**
-     * Simplified translation helper returning escaped text.
-     *
-     * @param string $text Text to translate.
-     * @param string $domain Translation domain.
-     */
-    function esc_html__(string $text, string $domain): string
-    {
-        return esc_html($text . '|' . $domain);
-    }
-}
-
-if (!function_exists('esc_url_raw')) {
-    /**
-     * Identity implementation for esc_url_raw().
-     *
-     * @param string $url URL to sanitize.
-     */
-    function esc_url_raw(string $url): string
-    {
-        return $url;
-    }
-}
-
-if (!function_exists('trailingslashit')) {
-    /**
-     * Ensures a path ends with a trailing slash.
-     *
-     * @param string $value Path to normalize.
-     */
-    function trailingslashit(string $value): string
-    {
-        return rtrim($value, "/\\") . '/';
-    }
-}
-
-if (!function_exists('plugin_dir_url')) {
-    /**
-     * Resolves a pseudo plugin directory URL for assets.
-     *
-     * @param string $file Plugin file path.
-     */
-    function plugin_dir_url(string $file): string
-    {
-        return 'https://example.test/wp-content/plugins/sparxstar-user-environment-check/';
-    }
-}
-
-if (!function_exists('wp_register_style')) {
-    /**
-     * Stubbed wp_register_style() for unit testing.
-     *
-     * @param string $handle Handle name.
-     * @param string $src    Stylesheet source.
-     * @param array  $deps   Dependencies.
-     * @param string $ver    Version string.
-     */
-    function wp_register_style(string $handle, string $src, array $deps = array(), string $ver = ''): void
-    {
-        $GLOBALS['spx_registered_styles'][$handle] = compact('src', 'deps', 'ver');
-    }
-}
-
-if (!function_exists('wp_enqueue_style')) {
-    /**
-     * Records enqueued styles during unit tests.
-     *
-     * @param string $handle Handle to enqueue.
-     */
-    function wp_enqueue_style(string $handle): void
-    {
-        $GLOBALS['spx_enqueued_styles'][] = $handle;
-    }
-}
-
-if (!function_exists('wp_register_script')) {
-    /**
-     * Stubbed wp_register_script() for unit testing.
-     *
-     * @param string $handle Script handle.
-     * @param string $src    Script source URL.
-     * @param array  $deps   Script dependencies.
-     * @param string $ver    Version string.
-     * @param bool   $in_footer Whether to load in footer.
-     */
-    function wp_register_script(string $handle, string $src, array $deps = array(), string $ver = '', bool $in_footer = false): void
-    {
-        $GLOBALS['spx_registered_scripts'][$handle] = compact('src', 'deps', 'ver', 'in_footer');
-    }
-}
-
-if (!function_exists('wp_enqueue_script')) {
-    /**
-     * Records enqueued scripts during unit tests.
-     *
-     * @param string $handle Handle to enqueue.
-     */
-    function wp_enqueue_script(string $handle): void
-    {
-        $GLOBALS['spx_enqueued_scripts'][] = $handle;
-    }
-}
-
-if (!function_exists('wp_localize_script')) {
-    /**
-     * Stores localization data registered for a script.
-     *
-     * @param string $handle Script handle.
-     * @param string $name   Object name exposed to JavaScript.
-     * @param array  $data   Data passed to the script.
-     */
-    function wp_localize_script(string $handle, string $name, array $data): void
-    {
-        $GLOBALS['spx_localized_scripts'][$handle] = compact('name', 'data');
-    }
-}
-
 if (!function_exists('get_current_user_id')) {
     /**
-     * Returns a deterministic user identifier for unit testing.
+     * Shim for get_current_user_id returning zero in the isolated environment.
+     *
+     * @return int Simulated user identifier.
      */
     function get_current_user_id(): int
     {
-        return 1;
+        return 0;
     }
 }
 
-if (!function_exists('wp_json_encode')) {
+if (!function_exists('wp_cache_get')) {
     /**
-     * Thin wrapper around json_encode mirroring WordPress' helper.
+     * Minimal stand-in for wp_cache_get using the in-memory store.
      *
-     * @param mixed $data Data to encode.
+     * @param string $key   Cache key to retrieve.
+     * @param string $group Cache group namespace.
+     * @return mixed        Stored value or false when no cache entry exists.
      */
-    function wp_json_encode($data): string
+    function wp_cache_get(string $key, string $group = ''): mixed
     {
-        return (string) json_encode($data, JSON_THROW_ON_ERROR);
+        return $GLOBALS['wp_cache_store'][$group][$key] ?? false;
     }
 }
 
-if (!function_exists('current_time')) {
+if (!function_exists('wp_cache_set')) {
     /**
-     * Returns an ISO8601 timestamp for deterministic testing.
+     * Minimal stand-in for wp_cache_set using the in-memory store.
      *
-     * @param string $type  Requested format (ignored).
-     * @param bool   $gmt   Whether GMT was requested.
+     * @param string $key     Cache key to store.
+     * @param mixed  $value   Arbitrary value to persist.
+     * @param string $group   Cache group namespace.
+     * @param int    $timeout Ignored timeout parameter kept for signature parity.
+     * @return bool           Whether the value was stored.
      */
-    function current_time(string $type, bool $gmt = false): string
+    function wp_cache_set(string $key, mixed $value, string $group = '', int $timeout = 0): bool
     {
-        return gmdate('Y-m-d H:i:s');
+        if (!isset($GLOBALS['wp_cache_store'][$group])) {
+            $GLOBALS['wp_cache_store'][$group] = [];
+        }
+
+        $GLOBALS['wp_cache_store'][$group][$key] = $value;
+        return true;
     }
 }
 
-if (!class_exists('WP_REST_Request')) {
+if (!function_exists('wp_cache_delete')) {
     /**
-     * Minimal WP_REST_Request stub for unit testing.
+     * Minimal stand-in for wp_cache_delete using the in-memory store.
+     *
+     * @param string $key   Cache key to delete.
+     * @param string $group Cache group namespace.
+     * @return bool         Whether the key existed prior to deletion.
      */
-    class WP_REST_Request
+    function wp_cache_delete(string $key, string $group = ''): bool
     {
-        /**
-         * Stored route parameters.
-         *
-         * @var array<string, mixed>
-         */
-        private array $params = array();
-
-        /**
-         * Retrieve parameters previously assigned via set_param().
-         *
-         * @return array<string, mixed>
-         */
-        public function get_json_params(): array
-        {
-            return $this->params;
+        if (!isset($GLOBALS['wp_cache_store'][$group][$key])) {
+            return false;
         }
 
-        /**
-         * Assign a parameter for retrieval.
-         *
-         * @param string $key   Parameter name.
-         * @param mixed  $value Parameter value.
-         */
-        public function set_param(string $key, $value): void
-        {
-            $this->params[$key] = $value;
-        }
+        unset($GLOBALS['wp_cache_store'][$group][$key]);
+        return true;
     }
 }
 
-if (!class_exists('WP_REST_Response')) {
+if (!function_exists('add_action')) {
     /**
-     * Minimal WP_REST_Response stub for unit testing.
+     * Test shim for add_action that records callbacks without executing them.
+     *
+     * @param string   $hook     Name of the hook being registered.
+     * @param callable $callback Callback to run when the hook fires.
+     * @param int      $priority Execution priority.
+     * @param int      $args     Number of accepted arguments.
+     * @return bool              Always true for testing.
      */
-    class WP_REST_Response
+    function add_action(string $hook, callable $callback, int $priority = 10, int $args = 1): bool
     {
-        /**
-         * Response payload.
-         *
-         * @var array<mixed>
-         */
-        public array $data;
-
-        /**
-         * HTTP status code for the response.
-         */
-        public int $status;
-
-        /**
-         * Instantiate a response representation.
-         *
-         * @param array<mixed> $data   Response body.
-         * @param int          $status HTTP status code.
-         */
-        public function __construct(array $data, int $status)
-        {
-            $this->data = $data;
-            $this->status = $status;
-        }
+        $GLOBALS['registered_actions'][$hook][] = [
+            'callback' => $callback,
+            'priority' => $priority,
+            'args' => $args,
+        ];
+        return true;
     }
 }
 
-if (!isset($GLOBALS['wpdb'])) {
+if (!function_exists('register_activation_hook')) {
     /**
-     * Minimal wpdb stand-in used by the REST API class during unit tests.
+     * Shim for register_activation_hook retained for parity with the plugin bootstrap.
+     *
+     * @param string   $file     Main plugin file path.
+     * @param callable $callback Activation callback.
+     * @return void
      */
-    $GLOBALS['wpdb'] = new class {
+    function register_activation_hook(string $file, callable $callback): void
+    {
+        $GLOBALS['registered_activation_hook'] = ['file' => $file, 'callback' => $callback];
+    }
+}
+
+if (!function_exists('register_deactivation_hook')) {
+    /**
+     * Shim for register_deactivation_hook retained for parity with the plugin bootstrap.
+     *
+     * @param string   $file     Main plugin file path.
+     * @param callable $callback Deactivation callback.
+     * @return void
+     */
+    function register_deactivation_hook(string $file, callable $callback): void
+    {
+        $GLOBALS['registered_deactivation_hook'] = ['file' => $file, 'callback' => $callback];
+    }
+}
+
+if (!class_exists('wpdb')) {
+    /**
+     * Lightweight stand-in for WordPress' wpdb class.
+     */
+    class wpdb
+    {
         /**
-         * Database table prefix.
+         * Simulated base prefix used when composing table names.
+         *
+         * @var string
          */
         public string $base_prefix = 'wp_';
 
         /**
-         * Returns a prepared SQL string.
+         * Logged queries executed via the insert helper.
          *
-         * @param string $query Query template.
-         * @param mixed  ...$args Values to substitute.
+         * @var array<int, array{table: string, data: array<string, mixed>}>
          */
-        public function prepare(string $query, ...$args): string
-        {
-            return vsprintf($query, $args);
-        }
+        public array $queries = [];
 
         /**
-         * Mock insert implementation that records inserted rows.
+         * Mimic WordPress' insert helper by capturing the provided arguments.
          *
-         * @param string $table Table name.
-         * @param array  $data  Data to insert.
+         * @param string               $table Table name being written to.
+         * @param array<string, mixed> $data  Data payload to store.
+         * @return bool                        True on success.
          */
-        public function insert(string $table, array $data): void
+        public function insert(string $table, array $data): bool
         {
-            $GLOBALS['spx_db_inserts'][] = compact('table', 'data');
+            $this->queries[] = ['table' => $table, 'data' => $data];
+            return true;
         }
-
-        /**
-         * Mock retrieval that always returns null to simulate an empty table.
-         *
-         * @param string $query SQL query.
-         */
-        public function get_row(string $query)
-        {
-            $GLOBALS['spx_db_queries'][] = $query;
-            return null;
-        }
-    };
+    }
 }
+
+$GLOBALS['wpdb'] = $GLOBALS['wpdb'] ?? new wpdb();

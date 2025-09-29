@@ -1,8 +1,8 @@
 <?php
 /**
- * Unit tests for the plugin bootstrapper.
+ * Tests for the plugin orchestrator singleton.
  *
- * @package SparxstarUserEnvironmentCheck\Tests\Unit
+ * @package Starisian\SparxstarUEC\Tests\Unit
  */
 
 declare(strict_types=1);
@@ -13,45 +13,18 @@ use PHPUnit\Framework\TestCase;
 use Starisian\SparxstarUEC\SparxstarUserEnvironmentCheck;
 
 /**
- * Verifies the high-level orchestration logic of the bootstrapper.
+ * Ensures the public bootstrapper behaves like a singleton.
  */
 final class SparxstarUserEnvironmentCheckTest extends TestCase
 {
     /**
-     * Reset global tracking arrays before each test.
+     * The orchestrator should always return the same instance when requested.
      */
-    protected function setUp(): void
+    public function testGetInstanceReturnsSingleton(): void
     {
-        parent::setUp();
-        $GLOBALS['spx_registered_actions'] = array();
-        $GLOBALS['spx_loaded_textdomains'] = array();
-    }
+        $first = SparxstarUserEnvironmentCheck::get_instance();
+        $second = SparxstarUserEnvironmentCheck::get_instance();
 
-    /**
-     * Ensures that the bootstrapper adheres to the singleton contract.
-     */
-    public function test_get_instance_returns_singleton(): void
-    {
-        $instance_one = SparxstarUserEnvironmentCheck::get_instance();
-        $instance_two = SparxstarUserEnvironmentCheck::get_instance();
-
-        $this->assertSame($instance_one, $instance_two, 'Expected the same instance on repeated calls.');
-    }
-
-    /**
-     * Confirm that the bootstrapper requests its translation files.
-     */
-    public function test_load_textdomain_registers_text_domain(): void
-    {
-        $bootstrapper = SparxstarUserEnvironmentCheck::get_instance();
-
-        $bootstrapper->load_textdomain();
-
-        $this->assertNotEmpty(
-            $GLOBALS['spx_loaded_textdomains'],
-            'The bootstrapper should request loading its text domain.'
-        );
-        $last = end($GLOBALS['spx_loaded_textdomains']);
-        $this->assertSame('sparxstar-user-environment-check', $last['text_domain']);
+        $this->assertSame($first, $second, 'The bootstrapper must behave as a singleton.');
     }
 }

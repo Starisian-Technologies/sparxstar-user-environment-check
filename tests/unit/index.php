@@ -1,8 +1,6 @@
 <?php
 /**
- * Prevent direct access to the unit test directory when served by a web server.
+ * PHPUnit discovers tests automatically; this file exists to appease WordPress tooling.
  *
- * @package SparxstarUserEnvironmentCheck\Tests
+ * @package Starisian\SparxstarUEC\Tests\Unit
  */
-
-declare(strict_types=1);
