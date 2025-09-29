@@ -8,6 +8,8 @@ A foundational, network-wide WordPress utility that captures detailed, client-si
 
 [![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml) [![Security Checks](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml) [![Tests](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml)
 
+[![Release Code Quality Final Review](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/release.yml)
+
 ---
 
 ## Overview
