@@ -234,7 +234,7 @@ final class StarUserEnv
     /**
      * Internal helper to get the LIVE IP of the CURRENT visitor.
      */
-    private static function _get_current_visitor_ip(): string
+    public static function get_current_visitor_ip(): string
     {
         $ip_headers = ['HTTP_CF_CONNECTING_IP', 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'];
         foreach ($ip_headers as $header) {

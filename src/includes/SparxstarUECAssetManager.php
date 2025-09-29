@@ -125,7 +125,7 @@ final class SparxstarUECAssetManager
 		$data = array(
 			'nonce' => wp_create_nonce('wp_rest'),
 			'rest_url' => esc_url_raw(rest_url('star-sparxstar-user-environment-check/v1/log')),
-			'ip_address' => StarUserEnv::getClientIP(),
+			'ip_address' => StarUserEnv::get_current_visitor_ip(),
 			'debug' => defined('WP_DEBUG') && WP_DEBUG,
 			'i18n' => array(
 				'notice' => esc_html__('Your browser is out of date.', SPX_ENV_CHECK_TEXT_DOMAIN),

@@ -22,7 +22,9 @@ use WP_REST_Response;
 
 final class SparxstarUECAPI
 {
-	public static ?SparxstarUECAPI $instance = null;
+	private static ?SparxstarUECAPI $instance = null;
+	private static ?StarUserEnv $star_user_env = null;
+
 	private \wpdb $wpdb;
 	private const DB_TABLE_NAME = SPX_ENV_CHECK_DB_TABLE_NAME;
 

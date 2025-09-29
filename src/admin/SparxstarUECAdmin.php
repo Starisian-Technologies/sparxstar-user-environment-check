@@ -24,6 +24,7 @@ final class SparxstarUECAdmin
         if (is_admin()) {
             add_action('admin_menu', array($this, 'add_admin_menu'));
             add_action('admin_init', array($this, 'register_settings'));
+            add_action('admin_notices', array($this, 'admin_notices'));
         }
     }
 
@@ -138,5 +139,16 @@ final class SparxstarUECAdmin
         echo '<pre style="background-color: #f1f1f1; padding: 15px; border-radius: 4px; max-height: 500px; overflow: auto;"><code>';
         echo esc_html($json_dump);
         echo '</code></pre>';
+    }
+
+    public function admin_notices(): void
+    {
+        // Check if the GeoIP API key is set
+        $api_key = get_option(self::OPTION_KEY, '');
+        if (empty($api_key)) {
+            echo '<div class="notice notice-warning is-dismissible">';
+            echo '<p><strong>SPARXSTAR User Environment Check:</strong> The GeoIP API key is not set. Please go to the <a href="' . esc_url(admin_url('options-general.php?page=' . self::PAGE_SLUG)) . '">settings page</a> to configure it.</p>';
+            echo '</div>';
+        }
     }
 }
