@@ -320,7 +320,7 @@ if (!class_exists('wpdb')) {
         /**
          * Logged queries executed via the insert helper.
          *
-         * @var array<int, array{table: string, data: array<string, mixed>}> 
+         * @var array<int, array{table: string, data: array<string, mixed>}>
          */
         public array $queries = [];
 
