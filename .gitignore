@@ -8,7 +8,7 @@
 
 # Ignore the log directory created by this plugin.
 # If you customize ENVCHECK_LOG_DIR, add your custom path here too.
-/wp-content/envcheck-logs/
+/wp-content/sparxstar-userenv-logs/
 
 # Ignore dependency directories managed by Composer and NPM/Yarn.
 # These should be installed by developers locally, not stored in Git.
@@ -45,7 +45,7 @@ src/node_modules/
 
 # Ignore Must-Use plugin loader files if they are environment-specific.
 # Keep the plugin itself, but ignore the loader if needed.
-# /wp-content/mu-plugins/envcheck-loader.php
+# /wp-content/mu-plugins/sparxstar-userenv-loader.php
 
 # Ignore sensitive configuration files.
 wp-config.php

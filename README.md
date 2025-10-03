@@ -158,7 +158,7 @@ The plugin is built on a clean, decoupled architecture where each class has a si
 ## FAQ
 
 **Q: What happens if I don't have a WP Consent API plugin installed?**  
-A: The plugin is designed to be "privacy-first." If the `wp_has_consent()` function does not exist, the plugin will **not** enqueue its scripts or log any data. To enable logging without a consent plugin (e.g., for an internal tool where all users have implicitly consented), you can use the `envcheck_consent_category` filter to bypass the check. _This is not recommended for public sites._
+A: The plugin is designed to be "privacy-first." If the `wp_has_consent()` function does not exist, the plugin will **not** enqueue its scripts or log any data. To enable logging without a consent plugin (e.g., for an internal tool where all users have implicitly consented), you can use the `sparxstar_userenv_consent_category` filter to bypass the check. _This is not recommended for public sites._
 
 **Q: Why a Must-Use (MU) plugin?**  
 A: As an environment and diagnostics tool, it should run consistently across an entire network without the risk of being deactivated on a site-by-site basis. The MU-plugin approach ensures it is always active.

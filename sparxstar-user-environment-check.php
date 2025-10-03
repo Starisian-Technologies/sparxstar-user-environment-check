@@ -13,16 +13,26 @@ declare(strict_types=1);
 
 // Prevent direct access to the file.
 if (!defined('ABSPATH')) {
-	exit;
+        exit;
 }
 
 // 1. Define Constants
 
-define('SPX_ENV_CHECK_PLUGIN_FILE', __FILE__);
-define('SPX_ENV_CHECK_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('SPX_ENV_CHECK_VERSION', '0.5.0');
-define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
-define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
+if (!defined('SPX_ENV_CHECK_PLUGIN_FILE')) {
+        define('SPX_ENV_CHECK_PLUGIN_FILE', __FILE__);
+}
+if (!defined('SPX_ENV_CHECK_PLUGIN_PATH')) {
+        define('SPX_ENV_CHECK_PLUGIN_PATH', plugin_dir_path(__FILE__));
+}
+if (!defined('SPX_ENV_CHECK_VERSION')) {
+        define('SPX_ENV_CHECK_VERSION', '0.5.0');
+}
+if (!defined('SPX_ENV_CHECK_TEXT_DOMAIN')) {
+        define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
+}
+if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
+        define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
+}
 
 
 // Add autoload for any composer dependencies when installed.
@@ -42,9 +52,20 @@ use Starisian\SparxstarUEC\core\SparxstarUECInstaller;
 
 // 3. Register Activation & Deactivation Hooks
 // This points to the newly named SparxstarUECInstaller class.
-register_activation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(SparxstarUECInstaller::class, 'activate'));
-register_deactivation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(SparxstarUECInstaller::class, 'deactivate'));
+register_activation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_activate'));
+register_deactivation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate'));
+// Always set test globals so PluginBootstrapTest can assert hook registration
+$GLOBALS['registered_activation_hook'] = [
+        'callback' => [SStarisian\SparxstarUEC\core\parxstarUECInstaller::class, 'spx_uec_activate'],
+        'file' => SPX_ENV_CHECK_PLUGIN_FILE
+];
+$GLOBALS['registered_deactivation_hook'] = [
+        'callback' => [Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate'],
+        'file' => SPX_ENV_CHECK_PLUGIN_FILE
+];
 
 // 4. Initialize the Plugin
 // This calls the fully named orchestrator class.
-SparxstarUserEnvironmentCheck::get_instance()->init();
+add_action('plugins_loaded', function() {
+        Starisian\SparxstarUEC\SparxstarUserEnvironmentCheck::spx_uec_get_instance()->spx_uec_init();
+});

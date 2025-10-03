@@ -1,9 +1,9 @@
 /* ==============================
-   SPARXSTAR EnvCheck Banner
+   SPARXSTAR UserEnv Banner
    Modern, accessible design
    ============================== */
 
-.envcheck-banner {
+.sparxstar-userenv-banner {
   position: fixed;
   bottom: 20px;
   left: 50%;
@@ -23,32 +23,32 @@
   justify-content: space-between;
   font-size: 15px;
   line-height: 1.5;
-  animation: envcheck-slideup 0.4s ease-out;
+  animation: sparxstar-userenv-slideup 0.4s ease-out;
 }
 
-.envcheck-banner p {
+.sparxstar-userenv-banner p {
   margin: 0;
   padding: 0;
 }
 
-.envcheck-banner a {
+.sparxstar-userenv-banner a {
   color: #00c6ff;
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s ease, text-decoration 0.2s ease;
 }
-.envcheck-banner a:hover {
+.sparxstar-userenv-banner a:hover {
   color: #66e0ff;
   text-decoration: underline;
 }
-.envcheck-banner a:focus {
+.sparxstar-userenv-banner a:focus {
   outline: 2px solid #00c6ff;
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Dismiss button */
-.envcheck-dismiss {
+.sparxstar-userenv-dismiss {
   position: absolute;
   top: 50%;
   right: 18px;
@@ -67,11 +67,11 @@
   justify-content: center;
   transition: background 0.2s ease, transform 0.15s ease;
 }
-.envcheck-dismiss:hover {
+.sparxstar-userenv-dismiss:hover {
   background: rgba(255,255,255,0.25);
   transform: translateY(-50%) scale(1.1);
 }
-.envcheck-dismiss:focus {
+.sparxstar-userenv-dismiss:focus {
   outline: 2px solid #00c6ff;
   outline-offset: 2px;
   background: rgba(255,255,255,0.25);
@@ -79,7 +79,7 @@
 }
 
 /* Animation */
-@keyframes envcheck-slideup {
+@keyframes sparxstar-userenv-slideup {
   from { opacity: 0; transform: translate(-50%, 20px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
 }

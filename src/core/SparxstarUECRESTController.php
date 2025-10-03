@@ -20,6 +20,7 @@ if (!defined('ABSPATH')) {
 final class SparxstarUECRESTController
 {
 
+
 	private const RATE_LIMIT_WINDOW_SECONDS = 300;
 	private const RATE_LIMIT_MAX_REQUESTS = 15;
 
@@ -36,13 +37,33 @@ final class SparxstarUECRESTController
 	public function register_routes(): void
 	{
 		register_rest_route(
-			'star-sparxstar-user-environment-check/v1',
+			'sparxstar-uec/v1',
 			'/log',
-			array(
-				'methods' => 'POST',
-				'callback' => array($this, 'handle_log_request'),
-				'permission_callback' => array($this, 'check_permissions'),
-			)
+			[
+				'methods'             => 'POST',
+				'callback'            => [$this, 'handle_log_request'],
+				'permission_callback' => [$this, 'check_permissions'],
+			]
+		);
+
+		register_rest_route(
+			'sparxstar-uec/v1',
+			'/fingerprint',
+			[
+				'methods'             => 'POST',
+				'callback'            => [$this, 'capture_fingerprint'],
+				'permission_callback' => '__return_true', // fingerprint is intentionally public
+				'args'                => [
+					'visitorId' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'components' => [
+						'type'     => 'array',
+						'required' => false,
+					],
+				],
+			]
 		);
 	}
 
@@ -249,6 +270,46 @@ final class SparxstarUECRESTController
 
 		// Fallback to the original if sanitization results in an empty string.
 		return $cleaned === '' ? $key_string : $cleaned;
+	}
+
+	/**
+	 * Store fingerprint ID in environment snapshots.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response
+	 */
+	function capture_fingerprint(\WP_REST_Request $request): \WP_REST_Response
+	{
+		global $wpdb;
+		$visitorId = sanitize_text_field($request->get_param('visitorId'));
+		$components = $request->get_param('components');
+
+		if (empty($visitorId)) {
+			return new \WP_REST_Response(['status' => 'error', 'message' => 'Missing visitorId'], 400);
+		}
+
+		// Insert into your diagnostics table if available
+		$table_name = $wpdb->base_prefix . 'sparxstar_uec_snapshots';
+		$wpdb->insert(
+			$table_name,
+			[
+				'user_id' => get_current_user_id(),
+				'snapshot_type' => 'fingerprint',
+				'snapshot_value' => maybe_serialize([
+					'visitorId' => $visitorId,
+					'components' => $components,
+					'timestamp' => time(),
+					'client_ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+				]),
+				'created_at' => current_time('mysql'),
+			],
+			['%d', '%s', '%s', '%s']
+		);
+
+		return new \WP_REST_Response([
+			'status' => 'success',
+			'visitorId' => $visitorId,
+		], 200);
 	}
 
 	/**

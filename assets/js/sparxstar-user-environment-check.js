@@ -21,14 +21,14 @@
 		 * @param {string} k - The key for the item.
 		 * @returns {string|null} The value of the item, or null if not found.
 		 */
-		get: (k) => localStorage.getItem(`envcheck:${k}`),
+		get: (k) => localStorage.getItem(`sparxstar_userenv_:${k}`),
 
 		/**
 		 * Sets an item in localStorage under the plugin's namespace.
 		 * @param {string} k - The key for the item.
 		 * @param {string} v - The value to store.
 		 */
-		set: (k, v) => localStorage.setItem(`envcheck:${k}`, v),
+		set: (k, v) => localStorage.setItem(`sparxstar_userenv_:${k}`, v),
 	};
 
 	/**
@@ -38,7 +38,7 @@
 	 * @property {string} ajax_url - The URL for WordPress's admin-ajax.php.
 	 * @property {object} i18n - An object containing translated strings.
 	 */
-	const { nonce, ajax_url, i18n } = window.envCheckData || {};
+	const { nonce, ajax_url, i18n } = window.sparxstarUserEnvData || {};
 
 	/**
 	 * Checks for the presence of essential browser APIs.
@@ -68,19 +68,19 @@
 		}
 
 		const banner = document.createElement('div');
-		banner.className = 'envcheck-banner';
+		banner.className = 'sparxstar-userenv-banner';
 		banner.innerHTML = `
-            <div class="envcheck-banner-content">
+            <div class="sparxstar-userenv-banner-content">
                 <strong>${i18n.notice}</strong> ${i18n.update_message}
                 <a href="https://browsehappy.com/" target="_blank" rel="noopener noreferrer">${i18n.update_link}</a>.
             </div>
-            <button class="envcheck-banner-dismiss" aria-label="${i18n.dismiss}">&times;</button>
+            <button class="sparxstar-userenv-banner-dismiss" aria-label="${i18n.dismiss}">&times;</button>
         `;
 
 		document.body.appendChild(banner);
 
 		// Add event listener to the dismiss button.
-		banner.querySelector('.envcheck-banner-dismiss').addEventListener('click', () => {
+		banner.querySelector('.sparxstar-userenv-banner-dismiss').addEventListener('click', () => {
 			banner.remove();
 			LS.set('bannerDismissed', 'true');
 		});
@@ -147,7 +147,7 @@
 	 */
 	async function sendDiagnostics(diagnosticData) {
 		const formData = new FormData();
-		formData.append('action', 'envcheck_log');
+		formData.append('action', 'sparxstar_userenv_log');
 		formData.append('nonce', nonce);
 		formData.append('data', JSON.stringify(diagnosticData));
 
@@ -157,7 +157,7 @@
 				body: formData,
 			});
 		} catch (error) {
-			console.error('SPARXSTAR EnvCheck: Failed to send diagnostics.', error);
+			console.error('SPARXSTAR UserEnv: Failed to send diagnostics.', error);
 		}
 	}
 
@@ -204,7 +204,7 @@
 	document.addEventListener('DOMContentLoaded', () => {
 		// Stop if essential data from WordPress is missing.
 		if (!nonce || !ajax_url || !i18n) {
-			console.error('SPARXSTAR EnvCheck: Missing localization data.');
+			console.error('SPARXSTAR UserEnv: Missing localization data.');
 			return;
 		}
 

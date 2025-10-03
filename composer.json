@@ -49,5 +49,8 @@
     "test:unit": "vendor/bin/phpunit --configuration=phpunit.xml.dist --colors=always",
     "test": "composer run lint && composer run analyze && composer run test:unit",
     "fix": "composer run lint:fix"
+  },
+  "require": {
+    "jcobhams/newsapi": "^1.0"
   }
 }

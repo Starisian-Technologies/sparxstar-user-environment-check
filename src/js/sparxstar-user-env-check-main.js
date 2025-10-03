@@ -8,10 +8,10 @@
     // ---------- Logger ----------
     const Logger = {
         levels: { ERROR: 0, WARN: 1, INFO: 2, DEBUG: 3 },
-        currentLevel: window.envCheckData?.debug ? 3 : 1,
+        currentLevel: window.sparxstarUserEnvData?.debug ? 3 : 1,
         log(level, message, data = null) {
             if (level <= this.currentLevel) {
-                const prefix = '[EnvCheck]';
+                const prefix = '[SparxstarUserEnv]';
                 const t = new Date().toISOString();
                 if (level === 0) return console.error(`${prefix} ${t} ERROR:`, message, data);
                 if (level === 1) return console.warn(`${prefix} ${t} WARN:`,  message, data);
@@ -24,22 +24,22 @@
 
     // ---------- Local Storage helper ----------
     const LS = {
-        get: (k) => { try { return localStorage.getItem(`envcheck:${k}`);} catch(e){ Logger.warn('localStorage get failed',{k,e:e.message}); return null;}},
-        set: (k,v) => { try { localStorage.setItem(`envcheck:${k}`, v);} catch(e){ Logger.warn('localStorage set failed',{k,e:e.message});}}
+        get: (k) => { try { return localStorage.getItem(`sparxstaruserenv:${k}`);} catch(e){ Logger.warn('localStorage get failed',{k,e:e.message}); return null;}},
+        set: (k,v) => { try { localStorage.setItem(`sparxstaruserenv:${k}`, v);} catch(e){ Logger.warn('localStorage set failed',{k,e:e.message});}}
     };
 
     // ---------- Env data from PHP ----------
-    const { nonce, rest_url, i18n, debug = false } = window.envCheckData || {};
-    if (!window.envCheckData) { Logger.error('envCheckData not found'); return; }
+    const { nonce, rest_url, i18n } = window.sparxstarUserEnvData || {};
+    if (!window.sparxstarUserEnvData) { Logger.error('sparxstarUserEnvData not found'); return; }
     if (!nonce || !rest_url)  { Logger.error('Missing REST config'); return; }
 
     // ---------- Session ID (stable in sessionStorage, robust fallback) ----------
     let sessionId;
     try {
-        sessionId = sessionStorage.getItem('envcheck_session_id');
+        sessionId = sessionStorage.getItem('sparxstaruserenv_session_id');
         if (!sessionId) {
             sessionId = (crypto?.randomUUID?.() ?? ('ses_' + Date.now() + '_' + secureRand(12)));
-            sessionStorage.setItem('envcheck_session_id', sessionId);
+            sessionStorage.setItem('sparxstaruserenv_session_id', sessionId);
             Logger.debug('New session ID', { sessionId });
         } else {
             Logger.debug('Existing session ID', { sessionId });
@@ -68,15 +68,15 @@
         if (LS.get('bannerDismissed') === 'true') return;
         if (isBrowserCompatible()) return;
         const banner = document.createElement('div');
-        banner.className = 'envcheck-banner';
+        banner.className = 'sparxstaruserenv-banner';
         banner.innerHTML = `
-            <div class="envcheck-banner-content">
+            <div class="sparxstaruserenv-banner-content">
                 <strong>${i18n.notice}</strong> ${i18n.update_message}
                 <a href="https://browsehappy.com/" target="_blank" rel="noopener noreferrer">${i18n.update_link}</a>.
             </div>
-            <button class="envcheck-dismiss" aria-label="${i18n.dismiss}">&times;</button>`;
+            <button class="sparxstaruserenv-dismiss" aria-label="${i18n.dismiss}">&times;</button>`;
         document.body.appendChild(banner);
-        banner.querySelector('.envcheck-dismiss').addEventListener('click', () => {
+        banner.querySelector('.sparxstaruserenv-dismiss').addEventListener('click', () => {
             banner.remove(); LS.set('bannerDismissed','true');
         });
     }
@@ -84,21 +84,21 @@
     // --- NEW: Offline Notification Banner ---
     function displayOfflineBanner() {
         // First, check if a banner is already there to avoid duplicates
-        if (document.getElementById('envcheck-offline-banner')) return;
+        if (document.getElementById('sparxstaruserenv-offline-banner')) return;
 
         Logger.warn('Displaying offline notification banner.');
         const banner = document.createElement('div');
-        banner.id = 'envcheck-offline-banner'; // Use an ID for easy removal
-        banner.className = 'envcheck-banner envcheck-banner-offline'; // Add a specific class for styling
+        banner.id = 'sparxstaruserenv-offline-banner'; // Use an ID for easy removal
+        banner.className = 'sparxstaruserenv-banner sparxstaruserenv-banner-offline'; // Add a specific class for styling
         banner.innerHTML = `
-            <div class="envcheck-banner-content">
+            <div class="sparxstaruserenv-banner-content">
                 <strong>Connection Offline:</strong> You are currently not connected to the internet.
             </div>`;
         document.body.appendChild(banner);
     }
 
     function hideOfflineBanner() {
-        const banner = document.getElementById('envcheck-offline-banner');
+        const banner = document.getElementById('sparxstaruserenv-offline-banner');
         if (banner) {
             Logger.info('Hiding offline notification banner.');
             banner.remove();
@@ -252,8 +252,10 @@
             return;
         }
 
-        Logger.info('EnvCheck initialized', { sessionId: window.SPARXSTAR.State.sessionId });
+        Logger.info('SparxstarUserEnv initialized', { sessionId: window.SPARXSTAR.State.sessionId });
         displayUpgradeBanner();
+        window.addEventListener('offline', displayOfflineBanner);
+        window.addEventListener('online', hideOfflineBanner);
 
         // Immediate lightweight snapshot each page load
         sendDiagnostics(collectEnvData());
@@ -266,11 +268,12 @@
     // Expose for other modules
     window.SPARXSTAR = window.SPARXSTAR || {};
     window.SPARXSTAR.Logger = Logger;
-    window.SPARXSTAR.EnvCheck = {
+    window.SPARXSTAR.SparxstarUserEnv = {
         collectEnvData,
         collectDiagnostics,
         sendDiagnostics,
         isBrowserCompatible,
         getSessionId: () => sessionId
     };
-})();
+}
+)();

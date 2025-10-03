@@ -85,7 +85,7 @@ The SPARXSTAR User Environment Check plugin has been completely refactored to im
 ```
 src/
 ├── includes/
-│   ├── EnvCheckAPI.php          # New REST API handler
+│   ├── UserEnvAPI.php          # New REST API handler
 │   └── StarUserEnv.php        # Existing utility functions
 ├── js/
 │   └── sparxstar-user-environment-check.js  # Refactored with all improvements
@@ -139,8 +139,8 @@ file_put_contents( $file, wp_json_encode( $entries, JSON_PRETTY_PRINT | JSON_UNE
 
 ### WordPress Hooks
 
--   `envcheck_cleanup_logs` - Daily cleanup cron job
--   `envcheck_consent_category` - Filter for consent requirements
+-   `sparxstar_userenv_cleanup_logs` - Daily cleanup cron job
+-   `sparxstar_userenv_consent_category` - Filter for consent requirements
 
 ## Security Considerations
 

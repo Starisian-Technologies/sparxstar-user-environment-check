@@ -7,13 +7,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use Starisian\SparxstarUEC\cron\SparxstarUECScheduler;
+use Starisian\SparxstarUEC\core\SparxstarUECDatabase;
+
 class SparxstarUECInstaller {
+
 
 	public static function activate(): void {
 		global $wpdb;
 
 		require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/core/SparxstarUECDatabase.php';
-		require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/core/SparxstarUECScheduler.php';
+		require_once SPX_ENV_CHECK_PLUGIN_PATH . 'src/cron/SparxstarUECScheduler.php';
 
 		// Use the Database class to create the table.
 		$database = new SparxstarUECDatabase( $wpdb );

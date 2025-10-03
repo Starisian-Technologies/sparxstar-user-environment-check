@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 }
 
 use Starisian\SparxstarUEC\api\SparxstarUECAPI;
-use Starisian\SparxstarUEC\includes\SparxstarUECAssetManager;
+use Starisian\SparxstarUEC\core\SparxstarUECAssetManager;
 use Starisian\SparxstarUEC\services\SparxstarUECGeoIPService;
 use Starisian\SparxstarUEC\admin\SparxstarUECAdmin;
 use Exception;
@@ -24,6 +24,7 @@ use Exception;
  */
 class SparxstarUserEnvironmentCheck
 {
+
 
 	/**
 	 * Shared singleton instance.
@@ -44,7 +45,7 @@ class SparxstarUserEnvironmentCheck
 	/**
 	 * Retrieve the singleton instance and bootstrap the plugin.
 	 */
-	public static function get_instance(): SparxstarUserEnvironmentCheck
+	public static function spx_uec_get_instance(): SparxstarUserEnvironmentCheck
 	{
 		if (self::$instance === null) {
 			self::$instance = new self();
@@ -61,7 +62,7 @@ class SparxstarUserEnvironmentCheck
 		// Intentionally left empty.
 	}
 
-	public function init(): void
+	public function spx_uec_init(): void
 	{
 		try {
 			error_log('Instantiating SparxstarUECAPI');
@@ -82,7 +83,7 @@ class SparxstarUserEnvironmentCheck
 	/**
 	 * Attach WordPress hooks owned by the bootstrapper.
 	 */
-	private function register_hooks(): void
+	public function register_hooks(): void
 	{
 		add_action('init', array($this, 'load_textdomain'));
 		add_action('send_headers', array($this, 'add_client_hints_header'));
@@ -123,16 +124,57 @@ class SparxstarUserEnvironmentCheck
 	{
 		return $this->api;
 	}
-	public function get_asset_manager(): SparxstarUECAssetManager
+
+	/**
+	 * Prevents cloning of the singleton instance.
+	 *
+	 * @since 0.1.0
+	 * @throws LogicException If someone tries to clone the object.
+	 */
+	public function __clone()
 	{
-		return $this->asset_manager;
+		throw new LogicException('Cloning of ' . esc_html(__CLASS__) . ' is not allowed.');
 	}
-	public function get_geoip(): SparxstarUECGeoIPService
+
+	/**
+	 * Prevents unserializing of the singleton instance.
+	 *
+	 * @since 0.1.0
+	 * @throws LogicException If someone tries to unserialize the object.
+	 */
+	public function __wakeup()
 	{
-		return $this->geoip;
+		throw new LogicException('Unserializing of ' . esc_html(__CLASS__) . ' is not allowed.');
 	}
-	public function get_admin(): SparxstarUECAdmin
+	
+	/**
+	 * Prevents serializing of the singleton instance.
+	 *
+	 * @since 0.1.0
+	 * @throws LogicException If someone tries to serialize the object.
+	 */
+	public function __sleep(): array
 	{
-		return $this->admin;
+		throw new LogicException("Cannot serialize class");
+		return [];
+	}
+	/**
+	 * Prevents serializing of the singleton instance.
+	 *
+	 * @since 0.1.0
+	 * @throws LogicException If someone tries to serialize the object.
+	 */
+	public function __serialize(): array {
+    	throw new LogicException('Serialization of ' . __CLASS__ . ' is not allowed.');
+
+	}
+	/**
+	 * Prevents serializing of the singleton instance.
+	 *
+	 * @since 0.1.0
+	 * @throws LogicException If someone tries to serialize the object.
+	 */
+	public function __unserialize(array $data): void {
+		throw new LogicException('Unserialization of ' . __CLASS__ . ' is not allowed.');
 	}
 }

@@ -1,5 +1,5 @@
 {
-  "name": "sparxstaruserenvironmentcheck",
+  "name": "sparxstar-user-environment-heck",
   "version": "1.0.0",
   "private": true,
   "description": "WordPress plugin utilities for collecting browser and environment diagnostics.",
@@ -10,9 +10,20 @@
     "lint:js:fix": "npx --yes eslint@8.57.0 \"src/js/**/*.js\" --fix",
     "lint:css": "npx --yes stylelint@16.8.0 \"src/css/**/*.css\"",
     "lint:css:fix": "npx --yes stylelint@16.8.0 \"src/css/**/*.css\" --fix",
-    "format": "npm run lint:js:fix && npm run lint:css:fix"
+    "format": "npm run lint:js:fix && npm run lint:css:fix",
+    "build:fingerprint": "mkdir -p assets/js/fingerprintjs && cp -r node_modules/@fingerprintjs/fingerprintjs/dist assets/js/fingerprintjs/",
+    "build:device-detector": "esbuild node_modules/device-detector-js/dist/index.js --bundle --minify --outfile=assets/js/device-detector.min.js --format=iife --global-name=DeviceDetector",
+    "build:all": "pnpm run build:fingerprint && pnpm run build:device-detector"
+  },
+  "devDependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
+    "esbuild": "^0.25.10",
+    "eslint": "^9.36.0",
+    "eslint-plugin-import": "^2.32.0",
+    "stylelint-config-standard": "latest"
   },
   "dependencies": {
-    "device-detector-js": "^2.2.10"
-  }
+    "device-detector-js": "latest"
+  },
+  "packageManager": "pnpm@10.17.1"
 }

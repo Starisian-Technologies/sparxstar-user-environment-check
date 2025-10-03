@@ -22,10 +22,7 @@ final class PluginBootstrapTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (!defined('SPX_ENV_CHECK_PLUGIN_FILE')) {
-            require dirname(__DIR__, 2) . '/sparxstar-user-environment-check.php';
-        }
+        require dirname(__DIR__, 2) . '/sparxstar-user-environment-check.php';
     }
 
     /**
