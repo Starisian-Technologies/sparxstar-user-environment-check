@@ -1,68 +1,65 @@
 <?xml version="1.0"?>
 <ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         name="Starisian WordPress Plugin"
+         name="SPARXSTAR Sky - Default Ruleset"
          xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PHPCSStandards/PHP_CodeSniffer/master/phpcs.xsd">
 
   <description>
-    WordPress coding standards for Starisian Technologies plugins. Includes support for Docs, I18n, and performance best practices.
+    Default strict coding standards for SPARXSTAR Sky.
+    Enforces WordPress VIP, PHP compatibility, modern PHP usage, naming conventions, and documentation.
+    This file is intended as the baseline for CI and contributors.
+    To override locally, create a `phpcs.xml` file (gitignored).
   </description>
 
-  <!-- Scan all files in the plugin root -->
+  <!-- Scan plugin source -->
   <file>.</file>
-
-  <!-- Exclude unnecessary paths -->
+  <include-pattern>src/*</include-pattern>
   <exclude-pattern>vendor/*</exclude-pattern>
   <exclude-pattern>node_modules/*</exclude-pattern>
   <exclude-pattern>*.min.js</exclude-pattern>
   <exclude-pattern>tests/*</exclude-pattern>
-  <exclude-pattern>wp-assets/*</exclude-pattern>
 
-  <!-- Basepath -->
-  <arg name="basepath" value="."/>
-
-  <!-- Parallel processing -->
+  <!-- PHPCS runtime args -->
+  <arg value="sp"/>
+  <arg name="colors"/>
+  <arg name="extensions" value="php"/>
   <arg name="parallel" value="8"/>
+  <arg name="basepath" value="./"/>
 
-  <!-- Coding standard rules -->
+  <!-- Installed standards -->
+  <config name="installed_paths" value="vendor/wp-coding-standards/wpcs,vendor/automattic/vipwpcs,vendor/phpcompatibility/php-compatibility,vendor/phpcompatibility/phpcompatibility-wp,vendor/phpcompatibility/phpcompatibility-paragonie,vendor/phpcsstandards/phpcsextra,vendor/phpcsstandards/phpcsutils,vendor/sirbrillig/phpcs-variable-analysis"/>
+
+  <!-- Target PHP version -->
+  <config name="testVersion" value="8.2-"/>
+
+  <!-- Core standards -->
+  <rule ref="WordPress-Core"/>
   <rule ref="WordPress-Extra"/>
   <rule ref="WordPress-Docs"/>
-  <rule ref="Generic.Commenting.Todo"/>
+  <rule ref="WordPressVIPMinimum"/>
 
-  <!-- Minimum WordPress version for compatibility checks -->
-  <config name="minimum_wp_version" value="6.4"/>
+  <!-- Modernization and compatibility -->
+  <rule ref="PHPCompatibility"/>
+  <rule ref="PHPCompatibilityWP"/>
+  <rule ref="PHPCompatibilityParagonieRandomCompat"/>
+  <rule ref="PHPCompatibilityParagonieSodiumCompat"/>
+  <rule ref="Modernize"/>
+  <rule ref="Universal"/>
+  <rule ref="VariableAnalysis"/>
 
-  <!-- Text domain config (override per project if needed) -->
-  <rule ref="WordPress.WP.I18n">
-    <properties>
-      <property name="text_domain" type="array">
-        <element value="plugin-textdomain"/>
-      </property>
-    </properties>
-  </rule>
-
-  <!-- Global prefix enforcement -->
+  <!-- Naming conventions -->
   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
     <properties>
       <property name="prefixes" type="array">
-        <element value="starisian"/>
+        <element value="sparxstar"/>
+        <element value="star"/>
       </property>
     </properties>
   </rule>
 
-  <!-- Exclude certain sniffs in test files -->
-  <rule ref="WordPress.WP.GlobalVariablesOverride">
-    <exclude-pattern>tests/*Test.php</exclude-pattern>
-  </rule>
-  <rule ref="WordPress.Files.FileName">
-    <exclude-pattern>tests/*Test.php</exclude-pattern>
-  </rule>
-
-  <!-- Optional: Uncomment if PHPCompatibilityWP is installed -->
-  <!--
-  <config name="testVersion" value="8.2-"/>
-  <rule ref="PHPCompatibilityWP">
-    <include-pattern>*.php</include-pattern>
-  </rule>
-  -->
-
-</ruleset>
+  <!-- Text domain enforcement -->
+  <rule ref="WordPress.WP.I18n">
+    <properties>
+      <property name="text_domain" type="array">
+        <element value="sparxstar"/>
+      </property>
+    <

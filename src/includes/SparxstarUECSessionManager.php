@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Starisian\SparxstarUEC\StarUserEnv;
 use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository;
 
 final class SparxstarUECSessionManager {
@@ -14,12 +13,15 @@ final class SparxstarUECSessionManager {
 	private const SESSION_NAMESPACE = 'sparxstar_uec_data';
 	private const SESSION_USER_VARS = array();
 
-	public function __construct(){
+	public function __construct() {
 		// empty
 	}
 
 	/** Set multiple values in the session at once. */
 	public static function set_all( array $data ): void {
+		if ( empty( $data ) ) {
+			return;
+		}
 		self::ensure_session();
 		foreach ( $data as $key => $value ) {
 			$_SESSION[ self::SESSION_NAMESPACE ][ $key ] = $value;
@@ -27,7 +29,7 @@ final class SparxstarUECSessionManager {
 	}
 
 	/** Get a single value from the session. */
-	public static function get( string $key, $default = null ) {
+	public static function get( string $key, ?string $default = null ): ?string {
 		self::ensure_session();
 		return $_SESSION[ self::SESSION_NAMESPACE ][ $key ] ?? $default;
 	}
@@ -50,24 +52,22 @@ final class SparxstarUECSessionManager {
 	/**
 	 * Looks up a value for ANY USER/SESSION by querying the historical database record.
 	 */
-	public static function lookup( string $key, ?int $user_id, ?string $session_id, $default = null ) {
+	public static function lookup( string $key, ?int $user_id, ?string $session_id, ?string $default = null ): ?string {
 		if ( empty( $user_id ) && empty( $session_id ) ) {
 			return $default;
 		}
 
 		$path = self::SESSION_USER_VARS[ $key ] ?? null;
-		if ( $path === null ) {
-			return $default;
-		}
-		// 2. Call the public method to get the snapshot.
-		$snapshot = SparxstarUECSnapshotRepository::get( $user_id, $session_id );
-		// ---------------
-
-		if ( $snapshot === null ) {
-			return $default;
+		if ( ! empty( $path ) ) {
+			// 2. Call the public method to get the snapshot.
+			$snapshot = SparxstarUECSnapshotRepository::get( $user_id, $session_id );
+			if ( ! is_array( $snapshot ) ) {
+				return $default;
+			}
+			return self::get_value_from_array( $snapshot, $path, $default );
 		}
 
-		return self::get_value_from_array( $snapshot, $path, $default );
+		return $default;
 	}
 	/**
 	 * Retrieve the active PHP session identifier when available.
@@ -77,14 +77,18 @@ final class SparxstarUECSessionManager {
 		return session_status() === PHP_SESSION_ACTIVE ? (string) session_id() : '';
 	}
 
-	public static function get_value_from_array( array $array, string $path, $default = null ) {
+	public static function get_value_from_array( array $array, string $path, ?string $default = null ): ?string {
 		$keys = explode( '.', $path );
 		foreach ( $keys as $key ) {
-			if ( ! is_array( $array ) || ! array_key_exists( $key, $array ) ) {
+			if ( empty( $array ) || ! is_array( $array ) || ! array_key_exists( $key, $array ) ) {
 				return $default;
 			}
-			$value = $array[ $key ];
+			$array = $array[ $key ];
 		}
-		return $value;
+		// Only return scalar values as strings; otherwise return default.
+		if ( is_scalar( $array ) ) {
+			return (string) $array;
+		}
+		return $default;
 	}
 }

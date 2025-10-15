@@ -1,8 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Service for performing GeoIP lookups.
  */
-declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\services;
 
@@ -29,7 +28,7 @@ final class SparxstarUECGeoIPService {
 
 		// 1. Check for a cached result first to save API calls.
 		$transient_key = 'sparxstar_geoip_' . md5( $ip_address );
-		$cached_data   = get_transient( $transient_key );
+		$cached_data = get_transient( $transient_key );
 		if ( $cached_data !== false && is_array( $cached_data ) ) {
 			return $cached_data;
 		}

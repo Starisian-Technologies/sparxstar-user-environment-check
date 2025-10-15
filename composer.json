@@ -30,7 +30,13 @@
     "yoast/phpunit-polyfills": "^4.0",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
     "automattic/eslint-config-target-es": "^4.0",
-    "automattic/eslint-changed": "^2.1"
+    "automattic/eslint-changed": "^2.1",
+    "wp-cli/i18n-command": "^2",
+    "automattic/vipwpcs": "^3.0",
+    "phpcsstandards/phpcsutils": "^1.0",
+    "phpcsstandards/phpcsextra": "^1.2",
+    "sirbrillig/phpcs-variable-analysis": "^2.11",
+    "phpcompatibility/phpcompatibility-paragonie": "^1.3"
   },
   "config": {
     "platform": {
@@ -41,8 +47,12 @@
       "phpstan/extension-installer": true
     }
   },
+
   "scripts": {
-    "phpcbf": "vendor/bin/phpcbf --standard=phpcs.xml.dist src/",
+    "phpcs": "phpcs --standard=phpcs.xml",
+    "phpcbf": "phpcbf --standard=phpcs.xml",
+    "phpstan": "phpstan analyse",
+    "makepot": "wp i18n make-pot" ,
     "lint": "vendor/bin/phpcs --standard=phpcs.xml.dist --extensions=php --report=full src/",
     "lint:fix": "vendor/bin/phpcbf --standard=phpcs.xml.dist --extensions=php src/",
     "analyze": "vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",

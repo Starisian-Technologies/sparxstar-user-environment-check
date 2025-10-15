@@ -21,7 +21,7 @@ final class SparxstarUECCacheHelper {
 	 * @param string $cache_key The deterministic key for the resource.
 	 * @return array|null Null on cache miss, array on hit.
 	 */
-	public static function get( string $cache_key ): ?array {
+	public static function get( string $cache_key ): null|array {
 		if ( ! function_exists( 'wp_cache_get' ) ) {
 			return null;
 		}
@@ -36,7 +36,7 @@ final class SparxstarUECCacheHelper {
 	 * @param string $cache_key The key to store the data under.
 	 * @param array  $snapshot The snapshot data to store.
 	 */
-	public static function set( string $cache_key, array $snapshot ): void {
+	public static function set( string $cache_key, array $snapshot = array()): void {
 		if ( ! function_exists( 'wp_cache_set' ) ) {
 			return;
 		}

@@ -12,26 +12,26 @@ declare(strict_types=1);
 
 
 // Prevent direct access to the file.
-if (!defined('ABSPATH')) {
-        exit;
+if ( ! defined( 'ABSPATH' ) ) {
+		exit;
 }
 
 // 1. Define Constants
 
-if (!defined('SPX_ENV_CHECK_PLUGIN_FILE')) {
-        define('SPX_ENV_CHECK_PLUGIN_FILE', __FILE__);
+if ( ! defined( 'SPX_ENV_CHECK_PLUGIN_FILE' ) ) {
+		define( 'SPX_ENV_CHECK_PLUGIN_FILE', __FILE__ );
 }
-if (!defined('SPX_ENV_CHECK_PLUGIN_PATH')) {
-        define('SPX_ENV_CHECK_PLUGIN_PATH', plugin_dir_path(__FILE__));
+if ( ! defined( 'SPX_ENV_CHECK_PLUGIN_PATH' ) ) {
+		define( 'SPX_ENV_CHECK_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 }
-if (!defined('SPX_ENV_CHECK_VERSION')) {
-        define('SPX_ENV_CHECK_VERSION', '0.5.0');
+if ( ! defined( 'SPX_ENV_CHECK_VERSION' ) ) {
+		define( 'SPX_ENV_CHECK_VERSION', '0.5.0' );
 }
-if (!defined('SPX_ENV_CHECK_TEXT_DOMAIN')) {
-        define('SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check');
+if ( ! defined( 'SPX_ENV_CHECK_TEXT_DOMAIN' ) ) {
+		define( 'SPX_ENV_CHECK_TEXT_DOMAIN', 'sparxstar-user-environment-check' );
 }
-if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
-        define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
+if ( ! defined( 'SPX_ENV_CHECK_DB_TABLE_NAME' ) ) {
+		define( 'SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots' );
 }
 
 
@@ -42,8 +42,8 @@ if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
  * @var string
  */
 $spx_autoload = SPX_ENV_CHECK_PLUGIN_PATH . 'vendor/autoload.php';
-if (file_exists($spx_autoload)) {
-        require_once $spx_autoload;
+if ( file_exists( $spx_autoload ) ) {
+		require_once $spx_autoload;
 }
 
 
@@ -52,20 +52,23 @@ use Starisian\SparxstarUEC\core\SparxstarUECInstaller;
 
 // 3. Register Activation & Deactivation Hooks
 // This points to the newly named SparxstarUECInstaller class.
-register_activation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_activate'));
-register_deactivation_hook(SPX_ENV_CHECK_PLUGIN_FILE, array(Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate'));
+register_activation_hook( SPX_ENV_CHECK_PLUGIN_FILE, array( Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_activate' ) );
+register_deactivation_hook( SPX_ENV_CHECK_PLUGIN_FILE, array( Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate' ) );
 // Always set test globals so PluginBootstrapTest can assert hook registration
-$GLOBALS['registered_activation_hook'] = [
-        'callback' => [Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_activate'],
-        'file' => SPX_ENV_CHECK_PLUGIN_FILE
-];
-$GLOBALS['registered_deactivation_hook'] = [
-        'callback' => [Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate'],
-        'file' => SPX_ENV_CHECK_PLUGIN_FILE
-];
+$GLOBALS['registered_activation_hook']   = array(
+	'callback' => array( Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_activate' ),
+	'file'     => SPX_ENV_CHECK_PLUGIN_FILE,
+);
+$GLOBALS['registered_deactivation_hook'] = array(
+	'callback' => array( Starisian\SparxstarUEC\core\SparxstarUECInstaller::class, 'spx_uec_deactivate' ),
+	'file'     => SPX_ENV_CHECK_PLUGIN_FILE,
+);
 
 // 4. Initialize the Plugin
 // This calls the fully named orchestrator class.
-add_action('plugins_loaded', function() {
-        Starisian\SparxstarUEC\SparxstarUserEnvironmentCheck::spx_uec_get_instance()->spx_uec_init();
-});
+add_action(
+	'plugins_loaded',
+	function () {
+		Starisian\SparxstarUEC\SparxstarUserEnvironmentCheck::spx_uec_get_instance()->spx_uec_init();
+	}
+);
