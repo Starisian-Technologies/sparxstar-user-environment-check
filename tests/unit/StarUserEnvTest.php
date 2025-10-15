@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Starisian\SparxstarUEC\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+
 use ReflectionClass;
 use Starisian\SparxstarUEC\StarUserEnv;
 
