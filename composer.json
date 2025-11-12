@@ -44,10 +44,16 @@
     },
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true,
-      "phpstan/extension-installer": true
+      "phpstan/extension-installer": true,
+      "composer/installers": true
     }
   },
-
+    "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
   "scripts": {
     "phpcs": "phpcs --standard=phpcs.xml",
     "phpcbf": "phpcbf --standard=phpcs.xml",
@@ -58,9 +64,26 @@
     "analyze": "vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
     "test:unit": "vendor/bin/phpunit --configuration=phpunit.xml.dist --colors=always",
     "test": "composer run lint && composer run analyze && composer run test:unit",
-    "fix": "composer run lint:fix"
+    "docs": "vendor/bin/phpdoc run -c phpdoc.xml.dist",
+    "docs:full": "@docs",
+    "comments:check": "phpcs --standard=phpcs.xml --sniffs=Squiz.Commenting.FunctionComment,Squiz.Commenting.ClassComment,Squiz.Commenting.FileComment src/",
+    "comments:fix": "phpcbf --standard=phpcs.xml --sniffs=Squiz.Commenting.FunctionComment,Squiz.Commenting.ClassComment,Squiz.Commenting.FileComment src/",
+    "rector": "rector process --dry-run",
+    "rector:fix": "rector process",
+    "refactor": "@rector:fix",
+    "check": [
+      "@phpcs",
+      "@phpstan",
+      "@comments:check"
+    ],
+    "fix": [
+      "@phpcbf",
+      "@comments:fix"
+    ]
   },
-  "require": {
-    "jcobhams/newsapi": "^1.0"
-  }
+"extra": {
+    "installer-paths": {
+      "vendor/{$name}/": ["type:wordpress-plugin"]
+    }
+  },
 }
