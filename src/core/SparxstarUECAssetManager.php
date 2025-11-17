@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace SparxStar\UserEnvironmentCheck;
+namespace Starisian\SparxstarUEC\core;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
  *
  * @version 2.0.0
  */
-final class AssetManager
+final class SparxstarUECAssetManager
 {
     private const VERSION = '2.0.0';
     private const TEXT_DOMAIN = 'sparxstar-user-environment-check';

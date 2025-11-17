@@ -27,8 +27,10 @@
     "@rollup/plugin-terser": "^0.4.4"
   },
   "dependencies": {
+    "csso": "^5.0.5",
     "device-detector-js": "latest",
-    "fingerprintjs": "^0.5.3"
+    "fingerprintjs": "^0.5.3",
+    "terser": "^5.44.1"
   },
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.22.0"
 }
