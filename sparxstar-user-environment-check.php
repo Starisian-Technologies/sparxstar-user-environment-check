@@ -66,9 +66,13 @@ if( ! defined( 'SPX_ENV_CHECK_DELETE_ON_UNINSTALL')) {
 //  2. COMPOSER AUTOLOADER
 // =========================================================================
 $autoloader = SPX_ENV_CHECK_PLUGIN_PATH . 'vendor/autoload.php';
-if ( file_exists( $autoloader ) ) {
-	require_once $autoloader;
+if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
+    // deactivate plugin and alert user.
+    deactivate_plugins( plugin_basename(__FILE__) );
+    wp_die('SPARXSTAR User Environment Check Error: Plugin deactivated as dependencies are missing. Please run composer install.');
 }
+require_once $autoloader;
+
 
 // =========================================================================
 //  3. LIFECYCLE HOOKS (ACTIVATION, DEACTIVATION, UNINSTALL)
