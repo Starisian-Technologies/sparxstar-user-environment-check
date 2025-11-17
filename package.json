@@ -11,9 +11,8 @@
     "lint:css": "npx --yes stylelint@16.8.0 \"src/css/**/*.css\"",
     "lint:css:fix": "npx --yes stylelint@16.8.0 \"src/css/**/*.css\" --fix",
     "format": "npm run lint:js:fix && npm run lint:css:fix",
-    "build:fingerprint": "mkdir -p assets/js/fingerprintjs && cp -r node_modules/@fingerprintjs/fingerprintjs/dist assets/js/fingerprintjs/",
-    "build:device-detector": "esbuild node_modules/device-detector-js/dist/index.js --bundle --minify --outfile=assets/js/device-detector.min.js --format=iife --global-name=DeviceDetector",
-    "build:all": "pnpm run build:fingerprint && pnpm run build:device-detector"
+    "build": "rollup -c",
+    "build:all": "npm run build"
   },
   "devDependencies": {
     "@fingerprintjs/fingerprintjs": "github:fingerprintjs/fingerprintjs",
@@ -25,8 +24,10 @@
   "dependencies": {
     "device-detector-js": "latest",
     "fingerprintjs": "^0.5.3"
-    "terser": "^5.31.0",
-    "csso": "^5.0.5"
+    "rollup": "^4.21.0",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-commonjs": "^26.0.0",
+    "@rollup/plugin-terser": "^0.4.4"
   },
   "packageManager": "pnpm@10.17.1"
 }
