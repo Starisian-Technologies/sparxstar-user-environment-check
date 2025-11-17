@@ -1,0 +1,69 @@
+# Development files
+wp-admin/
+tests/
+docs/
+scripts/
+tools/
+.github/
+.phpdoc/
+.vscode/
+.devcontainer
+playwright-report/
+test-results/
+test.js
+scripts/
+
+
+# WordPress Dev-Related
+wp-admin/
+wp-content/
+wp-plugins/
+wordpress/
+
+# Build files
+build/
+node_modules/
+package*.json
+build-starmus.js
+sync-version.js
+validate-build.js
+postcss.config.cjs
+eslint.config.js
+stylelint.config.js
+playwright.config.js
+phpunit*.xml*
+phpcs.xml*
+phpstan.neon*
+*.tgz
+
+# Config files
+.git/
+.editorconfig
+.gitignore
+.gitattributes
+.distignore
+.prettierignore
+.stylelintcache
+.wp-env.json
+.markdownlint.js
+.commitlintrc.js
+markdownlint.json
+prettierrc.json
+gl-codequality.yml
+*.yml
+*.xml
+*.cjs
+*.mjs
+*.dist
+
+# Documentation
+CHANGELOG.md
+ARCHITECTURE.md
+INSTRUCTIONS.md
+TESTING.md
+WORKSPACE.md
+AGENTS.md
+
+# Composer dev dependencies
+composer.lock
+auth.json*
