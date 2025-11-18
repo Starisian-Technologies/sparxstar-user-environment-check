@@ -74,8 +74,9 @@ final class SparxstarUECSessionManager {
 
 			$path = self::SESSION_USER_VARS[ $key ] ?? null;
 			if ( ! empty( $path ) ) {
-				// 2. Call the public method to get the snapshot.
-				$snapshot = SparxstarUECSnapshotRepository::get( $user_id, $session_id );
+				// Note: This is legacy code - repository now expects fingerprint/device_hash
+				// For backward compatibility, we pass null values which triggers fallback behavior
+				$snapshot = SparxstarUECSnapshotRepository::get( null, null );
 				if ( ! is_array( $snapshot ) ) {
 					return $default;
 				}

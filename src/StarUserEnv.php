@@ -257,6 +257,81 @@ final class StarUserEnv
 	public static function get_current_user_session_id(): ?string {
     return SparxstarUECSessionManager::get_session_id();
 }
+
+	// --- VI. Geolocation Data Access ---
+
+	/**
+	 * Get the visitor's city from geolocation data.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @param string      $default Default value if unavailable.
+	 * @return string City name.
+	 */
+	public static function get_city(?int $user_id = null, ?string $session_id = null, string $default = ''): string {
+		return (string) self::_get_value_from_snapshot('server_side_data.geolocation.city', $default, $user_id, $session_id);
+	}
+
+	/**
+	 * Get the visitor's state/province from geolocation data.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @param string      $default Default value if unavailable.
+	 * @return string State/province name.
+	 */
+	public static function get_state(?int $user_id = null, ?string $session_id = null, string $default = ''): string {
+		return (string) self::_get_value_from_snapshot('server_side_data.geolocation.state', $default, $user_id, $session_id);
+	}
+
+	/**
+	 * Get the visitor's postal/ZIP code from geolocation data.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @param string      $default Default value if unavailable.
+	 * @return string Postal code.
+	 */
+	public static function get_postal_code(?int $user_id = null, ?string $session_id = null, string $default = ''): string {
+		return (string) self::_get_value_from_snapshot('server_side_data.geolocation.postal_code', $default, $user_id, $session_id);
+	}
+
+	/**
+	 * Get the visitor's region from geolocation data.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @param string      $default Default value if unavailable.
+	 * @return string Region name.
+	 */
+	public static function get_region(?int $user_id = null, ?string $session_id = null, string $default = ''): string {
+		return (string) self::_get_value_from_snapshot('server_side_data.geolocation.region', $default, $user_id, $session_id);
+	}
+
+	/**
+	 * Get the visitor's country from geolocation data.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @param string      $default Default value if unavailable.
+	 * @return string Country name.
+	 */
+	public static function get_country(?int $user_id = null, ?string $session_id = null, string $default = ''): string {
+		return (string) self::_get_value_from_snapshot('server_side_data.geolocation.country', $default, $user_id, $session_id);
+	}
+
+	/**
+	 * Get the visitor's full geolocation data array.
+	 *
+	 * @param int|null    $user_id User ID (null for current user).
+	 * @param string|null $session_id Session ID (null for current session).
+	 * @return array Geolocation data with city, state, postal_code, region, country, latitude, longitude, timezone.
+	 */
+	public static function get_geolocation(?int $user_id = null, ?string $session_id = null): array {
+		$geo = self::_get_value_from_snapshot('server_side_data.geolocation', array(), $user_id, $session_id);
+		return is_array($geo) ? $geo : array();
+	}
+
 	/**
 	 * Retrieves the entire raw snapshot for debugging or full-data use cases.
 	 */

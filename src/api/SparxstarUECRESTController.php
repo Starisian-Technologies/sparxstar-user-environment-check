@@ -143,11 +143,28 @@ final class SparxstarUECRESTController {
 
 	private function collect_server_side_data( string $client_ip ): array {
 		$geoip_service = new SparxstarUECGeoIPService();
+		$geo_data      = $geoip_service->lookup( $client_ip );
+
+		// Structure geolocation as individual JSON nodes for easier querying
+		$geolocation = [];
+		if ( is_array( $geo_data ) && ! empty( $geo_data ) ) {
+			$geolocation = [
+				'city'        => $geo_data['city'] ?? '',
+				'state'       => $geo_data['state'] ?? '',
+				'postal_code' => $geo_data['postal_code'] ?? '',
+				'region'      => $geo_data['region'] ?? '',
+				'country'     => $geo_data['country'] ?? '',
+				'latitude'    => $geo_data['latitude'] ?? 0.0,
+				'longitude'   => $geo_data['longitude'] ?? 0.0,
+				'timezone'    => $geo_data['timezone'] ?? '',
+			];
+		}
+
 		return [
 			'ipAddress'     => $client_ip,
 			'language'      => get_locale(),
 			'serverTimeUTC' => gmdate( 'c' ),
-			'geolocation'   => $geoip_service->lookup( $client_ip ),
+			'geolocation'   => $geolocation,
 		];
 	}
 

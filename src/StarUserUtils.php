@@ -101,6 +101,114 @@ final class StarUserUtils {
 	}
 
 	/**
+	 * Get geolocation data for the current visitor.
+	 * Returns array with city, state, postal_code, region, country fields.
+	 *
+	 * @return array Geolocation data or empty array if unavailable.
+	 */
+	public static function getGeolocation(): array {
+		$snapshot = self::get_snapshot();
+		if ( ! is_array( $snapshot ) || empty( $snapshot ) ) {
+			return array();
+		}
+
+		$geo = $snapshot['server_side_data']['geolocation'] ?? array();
+		return is_array( $geo ) ? $geo : array();
+	}
+
+	/**
+	 * Get a specific geolocation field for the current visitor.
+	 *
+	 * @param string $field Field name: city, state, postal_code, region, country, latitude, longitude, timezone
+	 * @param mixed  $default Default value if field is not available.
+	 * @return mixed Field value or default.
+	 */
+	public static function getGeolocationField( string $field, $default = '' ) {
+		$geo = self::getGeolocation();
+		return $geo[ $field ] ?? $default;
+	}
+
+	/**
+	 * Get the visitor's city.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string City name.
+	 */
+	public static function getCity( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'city', $default );
+	}
+
+	/**
+	 * Get the visitor's state/province.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string State/province name.
+	 */
+	public static function getState( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'state', $default );
+	}
+
+	/**
+	 * Get the visitor's postal/ZIP code.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string Postal code.
+	 */
+	public static function getPostalCode( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'postal_code', $default );
+	}
+
+	/**
+	 * Get the visitor's region.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string Region name.
+	 */
+	public static function getRegion( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'region', $default );
+	}
+
+	/**
+	 * Get the visitor's country.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string Country name.
+	 */
+	public static function getCountry( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'country', $default );
+	}
+
+	/**
+	 * Get the visitor's latitude.
+	 *
+	 * @param float $default Default value if unavailable.
+	 * @return float Latitude.
+	 */
+	public static function getLatitude( float $default = 0.0 ): float {
+		return (float) self::getGeolocationField( 'latitude', $default );
+	}
+
+	/**
+	 * Get the visitor's longitude.
+	 *
+	 * @param float $default Default value if unavailable.
+	 * @return float Longitude.
+	 */
+	public static function getLongitude( float $default = 0.0 ): float {
+		return (float) self::getGeolocationField( 'longitude', $default );
+	}
+
+	/**
+	 * Get the visitor's timezone.
+	 *
+	 * @param string $default Default value if unavailable.
+	 * @return string IANA timezone identifier.
+	 */
+	public static function getTimezone( string $default = '' ): string {
+		return (string) self::getGeolocationField( 'timezone', $default );
+	}
+
+	/**
 	 * Remove a cached snapshot entry.
 	 */
 	public static function flush_cache( ?int $user_id = null, ?string $session_id = null ): void {
