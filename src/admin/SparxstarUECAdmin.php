@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Starisian\SparxstarUEC\StarUserEnv;
+use Starisian\SparxstarUEC\helpers\StarLogger;
 
 final class SparxstarUECAdmin {
 
@@ -27,50 +28,58 @@ final class SparxstarUECAdmin {
 
 	/** Register the options menu */
 	public function add_admin_menu(): void {
-		add_options_page(
-			esc_html__( 'SPARXSTAR UserEnv Settings', 'sparxstar-user-environment-check' ),
-			esc_html__( 'SPARXSTAR UserEnv', 'sparxstar-user-environment-check' ),
-			'manage_options',
-			self::PAGE_SLUG,
-			[ $this, 'render_settings_page' ]
-		);
+		try {
+			add_options_page(
+				esc_html__( 'SPARXSTAR UserEnv Settings', 'sparxstar-user-environment-check' ),
+				esc_html__( 'SPARXSTAR UserEnv', 'sparxstar-user-environment-check' ),
+				'manage_options',
+				self::PAGE_SLUG,
+				[ $this, 'render_settings_page' ]
+			);
+		} catch ( \Exception $e ) {
+			StarLogger::error( 'SparxstarUECAdmin', $e, array( 'method' => 'add_admin_menu' ) );
+		}
 	}
 
 	/** Register settings and fields */
 	public function register_settings(): void {
-		register_setting(
-			'sparxstar_uec_options_group',
-			self::OPTION_KEY,
-			[
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-			]
-		);
+		try {
+			register_setting(
+				'sparxstar_uec_options_group',
+				self::OPTION_KEY,
+				[
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+					'default'           => '',
+				]
+			);
 
-		add_settings_section(
-			'sparxstar_uec_geoip_section',
-			esc_html__( 'GeoIP Settings', 'sparxstar-user-environment-check' ),
-			function() {
-				echo '<p>' . esc_html__( 'Enter the API key for your chosen GeoIP service (e.g., ipinfo.io).', 'sparxstar-user-environment-check' ) . '</p>';
-			},
-			self::PAGE_SLUG
-		);
+			add_settings_section(
+				'sparxstar_uec_geoip_section',
+				esc_html__( 'GeoIP Settings', 'sparxstar-user-environment-check' ),
+				function() {
+					echo '<p>' . esc_html__( 'Enter the API key for your chosen GeoIP service (e.g., ipinfo.io).', 'sparxstar-user-environment-check' ) . '</p>';
+				},
+				self::PAGE_SLUG
+			);
 
-		add_settings_field(
-			'sparxstar_uec_geoip_api_key_field',
-			esc_html__( 'GeoIP API Key', 'sparxstar-user-environment-check' ),
-			[ $this, 'render_api_key_field' ],
-			self::PAGE_SLUG,
-			'sparxstar_uec_geoip_section'
-		);
+			add_settings_field(
+				'sparxstar_uec_geoip_api_key_field',
+				esc_html__( 'GeoIP API Key', 'sparxstar-user-environment-check' ),
+				[ $this, 'render_api_key_field' ],
+				self::PAGE_SLUG,
+				'sparxstar_uec_geoip_section'
+			);
 
-		add_settings_section(
-			'sparxstar_uec_snapshot_viewer_section',
-			esc_html__( 'Raw Snapshot Dump', 'sparxstar-user-environment-check' ),
-			[ $this, 'render_snapshot_viewer_section' ],
-			self::PAGE_SLUG
-		);
+			add_settings_section(
+				'sparxstar_uec_snapshot_viewer_section',
+				esc_html__( 'Raw Snapshot Dump', 'sparxstar-user-environment-check' ),
+				[ $this, 'render_snapshot_viewer_section' ],
+				self::PAGE_SLUG
+			);
+		} catch ( \Exception $e ) {
+			StarLogger::error( 'SparxstarUECAdmin', $e, array( 'method' => 'register_settings' ) );
+		}
 	}
 
 	/** Settings page output */
@@ -110,7 +119,7 @@ final class SparxstarUECAdmin {
 				$session_id
 			);
 		} catch ( \Throwable $e ) {
-			error_log('[UEC Admin Snapshot Error] ' . $e->getMessage());
+			StarLogger::error( 'SparxstarUECAdmin', $e, array( 'method' => 'render_snapshot_viewer_section' ) );
 			echo '<p>' . esc_html__( 'Snapshot retrieval failed. Check the error log.', 'sparxstar-user-environment-check' ) . '</p>';
 			return;
 		}

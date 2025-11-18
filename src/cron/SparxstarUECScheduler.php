@@ -40,12 +40,7 @@ final class SparxstarUECScheduler {
 				\wp_schedule_event( time(), self::CRON_SCHEDULE_KEY, $hook, $args );
 			}
 		} catch ( \Throwable $e ) {
-			error_log( sprintf(
-				'[SparxstarUECScheduler] schedule_recurring failed: %s at %s:%d',
-				$e->getMessage(),
-				$e->getFile(),
-				$e->getLine()
-			) );
+			StarLogger::error( 'SparxstarUECScheduler', $e, array( 'method' => 'schedule_recurring', 'hook' => $hook ) );
 		}
 	}
 
@@ -66,12 +61,7 @@ final class SparxstarUECScheduler {
 				}
 			}
 		} catch ( \Throwable $e ) {
-			error_log( sprintf(
-				'[SparxstarUECScheduler] clear failed: %s at %s:%d',
-				$e->getMessage(),
-				$e->getFile(),
-				$e->getLine()
-			) );
+			StarLogger::error( 'SparxstarUECScheduler', $e, array( 'method' => 'clear', 'hook' => $hook ) );
 		}
 	}
 
@@ -98,12 +88,7 @@ final class SparxstarUECScheduler {
 			// Force WordPress to refresh its cached cron schedules immediately.
 			wp_get_schedules();
 		} catch ( \Throwable $e ) {
-			error_log( sprintf(
-				'[SparxstarUECScheduler] register_custom_interval failed: %s at %s:%d',
-				$e->getMessage(),
-				$e->getFile(),
-				$e->getLine()
-			) );
+			StarLogger::error( 'SparxstarUECScheduler', $e, array( 'method' => 'register_custom_interval', 'interval' => $interval_in_seconds ) );
 		}
 	}
 }

@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\api;
 
+use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\core\SparxstarUECDatabase;
 use Starisian\SparxstarUEC\StarUserEnv; // Ensure this class is correctly included and exists
 use Starisian\SparxstarUEC\services\SparxstarUECGeoIPService; // Ensure this class is correctly included and exists

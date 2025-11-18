@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Exception;
 use LogicException;
+use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\admin\SparxstarUECAdmin;
 use Starisian\SparxstarUEC\api\SparxstarUECRESTController;
 use Starisian\SparxstarUEC\core\SparxstarUECAssetManager;
@@ -76,82 +77,88 @@ final class SparxstarUserEnvironmentCheck
 	/**
 	 * Wire the plugin components together.
 	 */
-        private function __construct()
-        {
-                try {
-                        global $wpdb; // Access the global WordPress database object
+	private function __construct()
+	{
+		try {
+			global $wpdb; // Access the global WordPress database object
 
-                        // 1. Initialize the database handler
-            			$this->database = new SparxstarUECDatabase( $wpdb );
-            
-            			// 2. Initialize the REST API controller (SparxstarUECRESTController)
-            			// Pass the database handler as a dependency to its constructor.
-                        error_log( 'Instantiating SparxstarUECRESTController' );
-                        $this->api = new SparxstarUECRESTController( $this->database );
-                        error_log( 'Instantiating SparxstarUECSnapshotRepository' );
-                        $this->repository = new SparxstarUECSnapshotRepository();
-                        error_log( 'Instantiating SparxstarUECAssetManager' );
-                        $this->asset_manager = new SparxstarUECAssetManager();
-                        error_log( 'Instantiating SparxstarUECSessionManager' );
-                        $this->session_manager = new SparxstarUECSessionManager();
-                        error_log( 'Instantiating SparxstarUECAdmin' );
-                        $this->admin = new SparxstarUECAdmin();
-                        error_log( 'SparxstarUserEnvironmentCheck: Services instantiated successfully.' );
-                        $this->register_hooks();
-                } catch ( Exception $e ) {
-                        error_log( 'Error initializing SparxstarUserEnvironmentCheck: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() );
-                        return;
-                }
-                $trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
-                error_log( '[UEC INIT CALLED] ' . json_encode( array_column( $trace, 'function' ) ) );
-        }
+			// 1. Initialize the database handler
+			$this->database = new SparxstarUECDatabase( $wpdb );
 
-
+			// 2. Initialize the REST API controller (SparxstarUECRESTController)
+			// Pass the database handler as a dependency to its constructor.
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECRESTController' );
+			$this->api = new SparxstarUECRESTController( $this->database );
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECSnapshotRepository' );
+			$this->repository = new SparxstarUECSnapshotRepository();
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECAssetManager' );
+			$this->asset_manager = new SparxstarUECAssetManager();
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECSessionManager' );
+			$this->session_manager = new SparxstarUECSessionManager();
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECAdmin' );
+			$this->admin = new SparxstarUECAdmin();
+			StarLogger::info( 'SparxstarUserEnvironmentCheck', 'Services instantiated successfully.' );
+			$this->register_hooks();
+		} catch ( Exception $e ) {
+			StarLogger::error( 'SparxstarUserEnvironmentCheck', $e, array( 'method' => '__construct' ) );
+			return;
+		}
+		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
+		StarLogger::debug( 'SparxstarUserEnvironmentCheck', '[UEC INIT CALLED] ' . json_encode( array_column( $trace, 'function' ) ) );
+	}
 	/**
 	 * Attach WordPress hooks owned by the bootstrapper.
 	 */
-        public function register_hooks(): void
-        {
-                add_action( 'init', array( $this, 'load_textdomain' ) );
-                add_action( 'send_headers', array( $this, 'add_client_hints_header' ) );
+	public function register_hooks(): void
+	{
+		try{
+			add_action( 'init', array( $this, 'load_textdomain' ) );
+			add_action( 'send_headers', array( $this, 'add_client_hints_header' ) );
 
-                if ( $this->api instanceof SparxstarUECRESTController ) {
-                        add_action( 'rest_api_init', array( $this->api, 'register_routes' ) );
-                        error_log( 'SparxstarUserEnvironmentCheck: REST routes registered.' );
-                } else {
-                        error_log( 'SparxstarUserEnvironmentCheck: REST controller unavailable, routes not registered.' );
-                }
-        }
-
-	/**
+			if ( $this->api instanceof SparxstarUECRESTController ) {
+				add_action( 'rest_api_init', array( $this->api, 'register_routes' ) );
+				StarLogger::info( 'SparxstarUserEnvironmentCheck', 'REST routes registered.' );
+			} else {
+				StarLogger::warning( 'SparxstarUserEnvironmentCheck', 'REST controller unavailable, routes not registered.' );
+			}
+			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Registering hooks.' );
+		} catch ( Exception $e ) {
+			StarLogger::error( 'SparxstarUserEnvironmentCheck', $e, array( 'method' => 'register_hooks' ) );
+		}
+		
+	}	/**
 	 * Load the plugin translation files.
 	 */
 	public function load_textdomain(): void
 	{
-                load_plugin_textdomain(
-                        SPX_ENV_CHECK_TEXT_DOMAIN,
-                        false,
-                        dirname( plugin_basename( SPX_ENV_CHECK_PLUGIN_FILE ) ) . '/languages'
-                );
-	}
-
-	/**
+		try {
+			load_plugin_textdomain(
+				SPX_ENV_CHECK_TEXT_DOMAIN,
+				false,
+				dirname( plugin_basename( SPX_ENV_CHECK_PLUGIN_FILE ) ) . '/languages'
+			);
+		} catch ( Exception $e ) {
+			StarLogger::error( 'SparxstarUserEnvironmentCheck', $e, array( 'method' => 'load_textdomain' ) );
+		}
+	}	/**
 	 * Advertise the client hints required by the diagnostics pipeline.
 	 */
 	public function add_client_hints_header(): void
 	{
-                if ( is_admin() ) {
-                        return;
-                }
+		try {
+			if ( is_admin() ) {
+				return;
+			}
 
-                header(
-                        'Accept-CH: Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Model, '
-			. 'Sec-CH-UA-Full-Version, Sec-CH-UA-Platform-Version, Sec-CH-UA-Bitness',
-			false
-		);
-	}
-
-	/**
+			header(
+				'Accept-CH: Sec-CH-UA, Sec-CH-UA-Mobile, Sec-CH-UA-Platform, Sec-CH-UA-Model, '
+				. 'Sec-CH-UA-Full-Version, Sec-CH-UA-Platform-Version, Sec-CH-UA-Bitness',
+				false
+			);
+		} catch ( Exception $e ) {
+			StarLogger::error( 'SparxstarUserEnvironmentCheck', $e, array( 'method' => 'add_client_hints_header' ) );
+		}
+	}	/**
 	 * Expose the REST API handler for dependent services.
 	 */
         public function get_api(): ?SparxstarUECRESTController

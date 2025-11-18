@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Starisian\SparxstarUEC;
 
 use Starisian\SparxstarUEC\includes\SparxstarUECCacheHelper;
+use Starisian\SparxstarUEC\helpers\StarLogger;
 use Throwable;
 use function __;
 use function apply_filters;
@@ -112,7 +113,7 @@ final class StarUserUtils {
 		try {
 			session_start( $options );
 		} catch ( Throwable $throwable ) {
-			error_log( '[SPARXSTAR] Session start failed: ' . $throwable->getMessage() );
+			StarLogger::error( 'StarUserUtils', $throwable, array( 'method' => 'ensure_session' ) );
 			return;
 		}
 
