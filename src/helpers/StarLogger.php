@@ -31,6 +31,7 @@ class StarLogger
 
     protected static ?string $log_file_path = null;
     protected static int $min_log_level = self::INFO;
+    protected static bool $initialized = false;
 
     protected static array $levels = [
         'debug'     => self::DEBUG,
@@ -47,6 +48,25 @@ class StarLogger
     protected static bool $json_mode = false;
     protected static ?string $correlation_id = null;
     protected static array $timers = [];
+
+    /*==============================================================
+     * INITIALIZATION
+     *=============================================================*/
+
+    protected static function init(): void {
+        if (self::$initialized) {
+            return;
+        }
+
+        // Auto-adjust log level based on WordPress debug settings
+        $env_type = function_exists('wp_get_environment_type') ? wp_get_environment_type() : 'production';
+        
+        if ((defined('WP_DEBUG') && WP_DEBUG) || $env_type !== 'production') {
+            self::$min_log_level = self::DEBUG;
+        }
+
+        self::$initialized = true;
+    }
 
     /*==============================================================
      * CONFIGURATION
@@ -135,6 +155,8 @@ class StarLogger
     }
 
     public static function log(string $context, $msg, string $level = 'error', array $extra = []): void {
+        self::init();
+        
         $current_level_int = self::getLevelInt($level);
         if (!defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
             if ($current_level_int < self::ERROR) {
