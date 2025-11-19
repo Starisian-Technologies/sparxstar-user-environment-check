@@ -22,6 +22,11 @@ if ( defined( 'SPX_ENV_CHECK_LOADED' ) ) {
     return;
 }
 define( 'SPX_ENV_CHECK_LOADED', true );
+if (defined('SPX_UEC_LOADED')) {
+    return;
+}
+define('SPX_UEC_LOADED', true);
+
 /**
  * Absolute path to the current plugin file.
  */
