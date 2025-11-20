@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Starisian\SparxstarUEC\StarUserEnv;
+use Starisian\SparxstarUEC\StarUserUtils;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 
 final class SparxstarUECAdmin {
@@ -181,8 +181,8 @@ final class SparxstarUECAdmin {
 	/** Raw snapshot dump (for debugging) */
 	public function render_snapshot_viewer_section(): void {
 		try {
-			$session_id = \Starisian\SparxstarUEC\StarUserEnv::get_current_user_session_id();
-			$snapshot = \Starisian\SparxstarUEC\StarUserEnv::get_full_snapshot(
+			$session_id = \Starisian\SparxstarUEC\StarUserUtils::get_current_user_session_id();
+			$snapshot = \Starisian\SparxstarUEC\StarUserUtils::get_full_snapshot(
 				get_current_user_id(),
 				$session_id
 			);

@@ -1,6 +1,7 @@
 <?php
 /**
- * Shared utility helpers for SPARXSTAR environment diagnostics.
+ * Shared utility helpers and public snapshot accessors
+ * for SPARXSTAR environment diagnostics.
  *
  * @package SparxstarUserEnvironmentCheck
  */
@@ -9,6 +10,8 @@ declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC;
 
+use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository;
+use Starisian\SparxstarUEC\includes\SparxstarUECSessionManager;
 use Starisian\SparxstarUEC\includes\SparxstarUECCacheHelper;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 use Throwable;
@@ -44,10 +47,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Collection of static helper methods for retrieving sanitized visitor metadata.
+ * Collection of static helper methods for retrieving sanitized visitor metadata
+ * AND reading environment snapshots as the public API.
  */
 final class StarUserUtils {
-
 
 	/**
 	 * Session namespace key used to avoid collisions with other plugins.
@@ -60,21 +63,39 @@ final class StarUserUtils {
 	private const SESSION_KEY = 'sparxstar_env_snapshot';
 
 	/**
+	 * Runtime cache for the current request's snapshot.
+	 *
+	 * @var array|null
+	 */
+	private static ?array $snapshot_cache = null;
+
+	// -------------------------------------------------------------------------
+	// I. IDENTITY HELPERS (MODERN MODEL)
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Return the stable plugin fingerprint used by JS + DB.
+	 * Priority: header → cookie → IP hash.
 	 */
 	public static function getFingerprint(): string {
-		// Try to read the JS-generated fingerprint from request headers
+		// 1. Header from JS (authoritative)
 		$header = self::get_server_value( 'HTTP_X_SPX_FINGERPRINT' );
 		if ( $header !== '' ) {
 			return sanitize_text_field( $header );
 		}
 
-		// Fallback to legacy (IP-based) fingerprint
+		// 2. Cookie (persistence)
+		if ( isset( $_COOKIE['spx_visitor_id'] ) ) {
+			return sanitize_text_field( wp_unslash( $_COOKIE['spx_visitor_id'] ) );
+		}
+
+		// 3. Fallback to legacy (IP-based) fingerprint
 		return hash( 'sha256', self::getClientIP() ?: 'unknown' );
 	}
 
 	/**
 	 * Return stable device hash used as second identity key.
+	 * Priority: header → UA+IP hash.
 	 */
 	public static function getDeviceHash(): string {
 		$header = self::get_server_value( 'HTTP_X_SPX_DEVICE_HASH' );
@@ -86,151 +107,333 @@ final class StarUserUtils {
 		return hash( 'sha1', self::getUserAgent() . ':' . self::getClientIP() );
 	}
 
+	// -------------------------------------------------------------------------
+	// II. SNAPSHOT FETCHING & CACHING (UNIFIED ENGINE)
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Retrieve the latest stored snapshot for a user/session.
+	 * Retrieve the latest stored snapshot for a user/session (public).
 	 */
 	public static function get_snapshot( ?int $user_id = null, ?string $session_id = null ): ?array {
-		$resolved_user_id = $user_id ?? ( get_current_user_id() ?: null );
-		$fingerprint      = self::getFingerprint();
-		$device_hash      = self::getDeviceHash();
+		return self::fetch_snapshot( $user_id, $session_id );
+	}
 
-		// Build cache key
-		$cache_key = SparxstarUECCacheHelper::make_key( $resolved_user_id, $session_id, $fingerprint . ':' . $device_hash );
-		
-		// Try cache first
+	/**
+	 * Internal engine: fetch the full snapshot from runtime cache, object cache, or database.
+	 */
+	private static function fetch_snapshot( ?int $user_id, ?string $session_id ): ?array {
+		$resolved_user_id = $user_id ?? ( get_current_user_id() ?: null );
+
+		if ( self::$snapshot_cache !== null ) {
+			return self::$snapshot_cache;
+		}
+
+		// Identity resolution v2.0: fingerprint + device_hash
+		$fingerprint = self::getFingerprint();
+		$device_hash = self::getDeviceHash();
+
+		// Build cache key using BOTH fingerprint AND device_hash to prevent cross-device collisions
+		$cache_key = SparxstarUECCacheHelper::make_key(
+			$resolved_user_id,
+			$session_id,
+			$fingerprint . ':' . $device_hash
+		);
+
 		$cached = SparxstarUECCacheHelper::get( $cache_key );
 		if ( $cached !== null ) {
+			self::$snapshot_cache = $cached;
 			return $cached;
 		}
 
-		// Fall back to repository
-		$snapshot = \Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository::get( $fingerprint, $device_hash );
-		if ( $snapshot !== null ) {
-			SparxstarUECCacheHelper::set( $cache_key, $snapshot );
+		// Query database using v2.0 identity model
+		$from_db = SparxstarUECSnapshotRepository::get( $fingerprint, $device_hash );
+		if ( $from_db !== null ) {
+			SparxstarUECCacheHelper::set( $cache_key, $from_db );
+			self::$snapshot_cache = $from_db;
 		}
 
-		return $snapshot;
+		return $from_db;
 	}
 
 	/**
-	 * Get geolocation data for the current visitor.
-	 * Returns array with city, state, postal_code, region, country fields.
-	 *
-	 * @return array Geolocation data or empty array if unavailable.
+	 * Generic "dot path" accessor into the snapshot structure.
 	 */
-	public static function getGeolocation(): array {
-		$snapshot = self::get_snapshot();
-		if ( ! is_array( $snapshot ) || empty( $snapshot ) ) {
-			return array();
+	private static function get_value_from_snapshot(
+		string $path,
+		mixed $default,
+		?int $user_id,
+		?string $session_id
+	): mixed {
+		$snapshot = self::fetch_snapshot( $user_id, $session_id );
+		if ( $snapshot === null ) {
+			return $default;
 		}
 
-		$geo = $snapshot['server_side_data']['geolocation'] ?? array();
-		return is_array( $geo ) ? $geo : array();
+		$current = $snapshot;
+		foreach ( explode( '.', $path ) as $key ) {
+			if ( ! is_array( $current ) || ! isset( $current[ $key ] ) ) {
+				return $default;
+			}
+			$current = $current[ $key ];
+		}
+
+		return $current;
 	}
 
 	/**
-	 * Get a specific geolocation field for the current visitor.
-	 *
-	 * @param string $field Field name: city, state, postal_code, region, country, latitude, longitude, timezone
-	 * @param mixed  $default Default value if field is not available.
-	 * @return mixed Field value or default.
-	 */
-	public static function getGeolocationField( string $field, $default = '' ) {
-		$geo = self::getGeolocation();
-		return $geo[ $field ] ?? $default;
-	}
-
-	/**
-	 * Get the visitor's city.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string City name.
-	 */
-	public static function getCity( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'city', $default );
-	}
-
-	/**
-	 * Get the visitor's state/province.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string State/province name.
-	 */
-	public static function getState( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'state', $default );
-	}
-
-	/**
-	 * Get the visitor's postal/ZIP code.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string Postal code.
-	 */
-	public static function getPostalCode( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'postal_code', $default );
-	}
-
-	/**
-	 * Get the visitor's region.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string Region name.
-	 */
-	public static function getRegion( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'region', $default );
-	}
-
-	/**
-	 * Get the visitor's country.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string Country name.
-	 */
-	public static function getCountry( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'country', $default );
-	}
-
-	/**
-	 * Get the visitor's latitude.
-	 *
-	 * @param float $default Default value if unavailable.
-	 * @return float Latitude.
-	 */
-	public static function getLatitude( float $default = 0.0 ): float {
-		return (float) self::getGeolocationField( 'latitude', $default );
-	}
-
-	/**
-	 * Get the visitor's longitude.
-	 *
-	 * @param float $default Default value if unavailable.
-	 * @return float Longitude.
-	 */
-	public static function getLongitude( float $default = 0.0 ): float {
-		return (float) self::getGeolocationField( 'longitude', $default );
-	}
-
-	/**
-	 * Get the visitor's timezone.
-	 *
-	 * @param string $default Default value if unavailable.
-	 * @return string IANA timezone identifier.
-	 */
-	public static function getTimezone( string $default = '' ): string {
-		return (string) self::getGeolocationField( 'timezone', $default );
-	}
-
-	/**
-	 * Remove a cached snapshot entry.
+	 * Flushes the cache for a given user, forcing the next getter call to fetch fresh data.
 	 */
 	public static function flush_cache( ?int $user_id = null, ?string $session_id = null ): void {
 		$resolved_user_id = $user_id ?? ( get_current_user_id() ?: null );
 		$fingerprint      = self::getFingerprint();
 		$device_hash      = self::getDeviceHash();
 
-		$cache_key = SparxstarUECCacheHelper::make_key( $resolved_user_id, $session_id, $fingerprint . ':' . $device_hash );
+		$cache_key = SparxstarUECCacheHelper::make_key(
+			$resolved_user_id,
+			$session_id,
+			$fingerprint . ':' . $device_hash
+		);
+
 		SparxstarUECCacheHelper::delete( $cache_key );
+		self::$snapshot_cache = null;
 	}
+
+	/**
+	 * Retrieves the entire raw snapshot for debugging or full-data use cases.
+	 */
+	public static function get_full_snapshot( ?int $user_id = null, ?string $session_id = null ): ?array {
+		return self::fetch_snapshot( $user_id, $session_id );
+	}
+
+	// -------------------------------------------------------------------------
+	// III. PUBLIC SNAPSHOT GETTERS (EX-STARUSERENV)
+	// -------------------------------------------------------------------------
+
+	// --- Identification & Tracking ---
+
+	/**
+	 * Get the user's stable, anonymous browser fingerprint ID from the snapshot.
+	 * This is the primary key for tracking anonymous users.
+	 */
+	public static function get_visitor_id( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'identifiers.visitor_id',
+			'',
+			$user_id,
+			$session_id
+		);
+	}
+
+	// --- Performance & UX Optimization ---
+
+	public static function get_network_type( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'client_side_data.network.effectiveType',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function is_data_saver_enabled( ?int $user_id = null, ?string $session_id = null ): bool {
+		return (bool) self::get_value_from_snapshot(
+			'client_side_data.network.saveData',
+			false,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_device( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'client_side_data.device.type',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_gpu( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'client_side_data.fingerprint.gpu',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_os_name( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'client_side_data.os.name',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_browser_name( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'client_side_data.client.name',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	// --- Geolocation & Localization (Snapshot-based) ---
+
+	public static function get_user_ip( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.ip_address',
+			'0.0.0.0',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_country( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.country',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_state( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.region',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_city( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.city',
+			'unknown',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_user_language( ?int $user_id = null, ?string $session_id = null ): string {
+		$lang = (string) self::get_value_from_snapshot(
+			'client_side_data.context.language',
+			'',
+			$user_id,
+			$session_id
+		);
+
+		return substr( $lang, 0, 2 );
+	}
+
+	// --- Legal & Security ---
+
+	public static function get_snapshot_timestamp( ?int $user_id = null, ?string $session_id = null ): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.timestamp_utc',
+			'',
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function is_on_vpn( ?int $user_id = null, ?string $session_id = null ): bool {
+		return (bool) self::get_value_from_snapshot(
+			'server_side_data.geolocation.is_vpn',
+			false,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_current_user_session_id(): string {
+		return SparxstarUECSessionManager::get_session_id();
+	}
+
+	// --- Snapshot-based Geolocation Convenience (camelCase variants) ---
+
+	public static function get_geolocation( ?int $user_id = null, ?string $session_id = null ): array {
+		$geo = self::get_value_from_snapshot(
+			'server_side_data.geolocation',
+			array(),
+			$user_id,
+			$session_id
+		);
+
+		return is_array( $geo ) ? $geo : array();
+	}
+
+	public static function get_city(
+		?int $user_id = null,
+		?string $session_id = null,
+		string $default = ''
+	): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.city',
+			$default,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_state(
+		?int $user_id = null,
+		?string $session_id = null,
+		string $default = ''
+	): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.state',
+			$default,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_postal_code(
+		?int $user_id = null,
+		?string $session_id = null,
+		string $default = ''
+	): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.postal_code',
+			$default,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_region(
+		?int $user_id = null,
+		?string $session_id = null,
+		string $default = ''
+	): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.region',
+			$default,
+			$user_id,
+			$session_id
+		);
+	}
+
+	public static function get_country(
+		?int $user_id = null,
+		?string $session_id = null,
+		string $default = ''
+	): string {
+		return (string) self::get_value_from_snapshot(
+			'server_side_data.geolocation.country',
+			$default,
+			$user_id,
+			$session_id
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// IV. SESSION + SERVER HELPERS (LEGACY + MODERN)
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Ensure a PHP session is initialised before attempting to read or write data.
@@ -337,6 +540,14 @@ final class StarUserUtils {
 	}
 
 	/**
+	 * Internal helper to get the LIVE IP of the CURRENT visitor.
+	 * (alias for snapshot-independent IP lookup).
+	 */
+	public static function get_current_visitor_ip(): string {
+		return self::getClientIP();
+	}
+
+	/**
 	 * Persist an arbitrary value in the session namespace.
 	 */
 	public static function setSessionValue( string $key, mixed $value ): void {
@@ -349,7 +560,6 @@ final class StarUserUtils {
 	 */
 	public static function getSessionValue( string $key, mixed $default = null ): mixed {
 		self::ensure_session();
-
 		return $_SESSION[ self::SESSION_NAMESPACE ][ $key ] ?? $default;
 	}
 
@@ -412,7 +622,6 @@ final class StarUserUtils {
 	 */
 	public static function getReferrerURL(): string {
 		$referer = self::get_server_value( 'HTTP_REFERER' );
-
 		return $referer ? esc_url_raw( $referer ) : '';
 	}
 
@@ -422,12 +631,12 @@ final class StarUserUtils {
 	public static function getIPGeoLocation( string $ip = '' ): array {
 		$ip_to_lookup = $ip !== '' ? $ip : self::getClientIP();
 		$data         = apply_filters( 'sparxstar_env_geolocation_lookup', null, $ip_to_lookup );
-
 		return is_array( $data ) ? $data : array();
 	}
 
 	/**
-	 * Retrieve a specific field from the geolocation payload or the full JSON.
+	 * Retrieve a specific field from the geolocation payload or the full JSON
+	 * from the external provider (snapshot-independent).
 	 */
 	public static function getGeoLocationData( string $field = '', string $ip = '' ): string {
 		$location = self::getIPGeoLocation( $ip );
@@ -603,7 +812,7 @@ final class StarUserUtils {
 	 * Check if the current request is an AJAX request.
 	 */
 	public static function isAjax(): bool {
-		if ( wp_doing_ajax() ) {
+		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
 			return true;
 		}
 

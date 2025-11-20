@@ -10,7 +10,7 @@ namespace Starisian\SparxstarUEC\api;
 use Starisian\SparxstarUEC\core\SparxstarUECDatabase;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\services\SparxstarUECGeoIPService;
-use Starisian\SparxstarUEC\StarUserEnv;
+use Starisian\SparxstarUEC\StarUserUtils;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -57,7 +57,7 @@ final class SparxstarUECRESTController {
 		}
 
 		// 1. Enrich the payload with server-side data.
-		$client_ip                       = StarUserEnv::get_current_visitor_ip();
+		$client_ip                       = StarUserUtils::get_current_visitor_ip();
 		$payload['server_side_data']     = $this->collect_server_side_data( $client_ip );
 		$payload['client_hints_data']    = $this->collect_client_hints();
 		$payload['user_id']              = get_current_user_id() ?: null;
@@ -130,7 +130,7 @@ final class SparxstarUECRESTController {
 	}
 
 	private function check_rate_limit(): bool {
-		$rate_key         = 'sparxstar_env_rate_' . hash( 'md5', StarUserEnv::get_current_visitor_ip() ?: 'unknown' );
+		$rate_key         = 'sparxstar_env_rate_' . hash( 'md5', StarUserUtils::get_current_visitor_ip() ?: 'unknown' );
 		$current_requests = (int) get_transient( $rate_key );
 
 		if ( $current_requests >= self::RATE_LIMIT_MAX_REQUESTS ) {
