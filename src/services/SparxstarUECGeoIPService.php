@@ -146,10 +146,12 @@ final class SparxstarUECGeoIPService {
 				'longitude'   => (float) ( $record->location->longitude ?? 0.0 ),
 				'timezone'    => sanitize_text_field( $record->location->timeZone ?? '' ),
 			);
-		} catch ( AddressNotFoundException $e ) {
-			// IP not found in database - this is normal for private IPs
-			return null;
 		} catch ( \Exception $e ) {
+			// Handle AddressNotFoundException specifically if MaxMind library is loaded
+			if ( class_exists( 'GeoIp2\Exception\AddressNotFoundException' ) && $e instanceof \GeoIp2\Exception\AddressNotFoundException ) {
+				// IP not found in database - this is normal for private IPs
+				return null;
+			}
 			StarLogger::error( 'SparxstarUECGeoIPService', $e, array( 'method' => 'lookup_maxmind', 'ip_address' => $ip_address ) );
 			return null;
 		}

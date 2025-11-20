@@ -20,11 +20,13 @@ use Starisian\SparxstarUEC\admin\SparxstarUECAdmin;
 use Starisian\SparxstarUEC\api\SparxstarUECRESTController;
 use Starisian\SparxstarUEC\core\SparxstarUECAssetManager;
 use Starisian\SparxstarUEC\core\SparxstarUECDatabase;
+use Starisian\SparxstarUEC\core\SparxstarUECKernel;
 use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository;
 use Starisian\SparxstarUEC\includes\SparxstarUECSessionManager;
 
 /**
  * Orchestrates plugin services and exposes shared dependencies.
+ * This is a thin WordPress integration layer - the Kernel handles service construction.
  */
 final class SparxstarUserEnvironmentCheck
 {
@@ -35,30 +37,30 @@ final class SparxstarUserEnvironmentCheck
 	 */
 	private static ?SparxstarUserEnvironmentCheck $instance = null;
 
-        /**
-         * REST API handler used to persist environment snapshots.
-         */
-        private ?SparxstarUECRESTController $api = null;
-        /**
-         * Manages registration and localization of scripts and styles.
-         */
-        private ?SparxstarUECDatabase $database = null;
-        /**
-         * Repository interface that brokers snapshot storage operations.
-         */
-        private ?SparxstarUECSnapshotRepository $repository = null;
-        /**
-         * Front-end asset manager responsible for enqueueing scripts and styles.
-         */
-        private ?SparxstarUECAssetManager $asset_manager = null;
-        /**
-         * Session manager that maps users to snapshot identifiers.
-         */
-        private ?SparxstarUECSessionManager $session_manager = null;
-        /**
-         * Administrative integration for the plugin settings screen.
-         */
-        private ?SparxstarUECAdmin $admin = null;
+	/**
+	 * REST API handler used to persist environment snapshots.
+	 */
+	private ?SparxstarUECRESTController $api = null;
+
+	/**
+	 * Database handler for direct SQL operations.
+	 */
+	private ?SparxstarUECDatabase $database = null;
+
+	/**
+	 * Asset manager for enqueueing scripts and styles.
+	 */
+	private ?SparxstarUECAssetManager $asset_manager = null;
+
+	/**
+	 * Session manager for session handling.
+	 */
+	private ?SparxstarUECSessionManager $session_manager = null;
+
+	/**
+	 * Admin interface handler.
+	 */
+	private ?SparxstarUECAdmin $admin = null;
 
 	/**
 	 * Retrieve the singleton instance and bootstrap the plugin.
@@ -76,36 +78,29 @@ final class SparxstarUserEnvironmentCheck
 	}
 
 	/**
-	 * Wire the plugin components together.
+	 * Wire the plugin components together via the Kernel.
 	 */
 	private function __construct()
 	{
 		try {
-			global $wpdb; // Access the global WordPress database object
+			global $wpdb;
 
-			// 1. Initialize the database handler
-			$this->database = new SparxstarUECDatabase( $wpdb );
+			// Kernel builds all services with dependency injection
+			$kernel = new SparxstarUECKernel( $wpdb );
 
-			// 2. Initialize the REST API controller (SparxstarUECRESTController)
-			// Pass the database handler as a dependency to its constructor.
-			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECRESTController' );
-			$this->api = new SparxstarUECRESTController( $this->database );
-			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECSnapshotRepository' );
-			$this->repository = new SparxstarUECSnapshotRepository();
-			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECAssetManager' );
-			$this->asset_manager = new SparxstarUECAssetManager();
-			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECSessionManager' );
-			$this->session_manager = new SparxstarUECSessionManager();
-			StarLogger::debug( 'SparxstarUserEnvironmentCheck', 'Instantiating SparxstarUECAdmin' );
-			$this->admin = new SparxstarUECAdmin();
-			StarLogger::info( 'SparxstarUserEnvironmentCheck', 'Services instantiated successfully.' );
+			// Extract services from kernel
+			$this->database        = $kernel->get_database();
+			$this->api             = $kernel->get_api();
+			$this->asset_manager   = $kernel->get_assets();
+			$this->session_manager = $kernel->get_session();
+			$this->admin           = $kernel->get_admin();
+
+			StarLogger::info( 'SparxstarUserEnvironmentCheck', 'Kernel initialized services successfully.' );
 			$this->register_hooks();
 		} catch ( Exception $e ) {
 			StarLogger::error( 'SparxstarUserEnvironmentCheck', $e, array( 'method' => '__construct' ) );
 			return;
 		}
-		$trace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS );
-		StarLogger::debug( 'SparxstarUserEnvironmentCheck', '[UEC INIT CALLED] ' . json_encode( array_column( $trace, 'function' ) ) );
 	}
 	/**
 	 * Attach WordPress hooks owned by the bootstrapper.

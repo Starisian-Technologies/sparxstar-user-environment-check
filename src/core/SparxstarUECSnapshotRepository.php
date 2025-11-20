@@ -76,23 +76,11 @@ final class SparxstarUECSnapshotRepository {
 	 * @param string|null $device_hash
 	 */
 	public static function flush( ?string $fingerprint, ?string $device_hash ): void {
-		try {
-			// This method's signature is updated for consistency with the new identity model.
-			// When object caching is implemented (e.g., using WP_Object_Cache), the cache
-			// key should be derived from the fingerprint and device_hash to invalidate the correct entry.
-			// Example:
-			// $cache_key = 'uec_snapshot_' . md5( $fingerprint . $device_hash );
-			// wp_cache_delete( $cache_key, 'sparxstar_uec' );
-		} catch ( \Exception $e ) {
-			StarLogger::error(
-				'SparxstarUECSnapshotRepository',
-				$e,
-				[
-					'method'      => 'flush',
-					'fingerprint' => $fingerprint,
-					'device_hash' => $device_hash,
-				]
-			);
-		}
+		// This method's signature is updated for consistency with the new identity model.
+		// When object caching is implemented (e.g., using WP_Object_Cache), the cache
+		// key should be derived from the fingerprint and device_hash to invalidate the correct entry.
+		// Example:
+		// $cache_key = 'uec_snapshot_' . md5( $fingerprint . $device_hash );
+		// wp_cache_delete( $cache_key, 'sparxstar_uec' );
 	}
 }

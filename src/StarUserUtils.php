@@ -92,12 +92,24 @@ final class StarUserUtils {
 	public static function get_snapshot( ?int $user_id = null, ?string $session_id = null ): ?array {
 		$resolved_user_id = $user_id ?? ( get_current_user_id() ?: null );
 		$fingerprint      = self::getFingerprint();
+		$device_hash      = self::getDeviceHash();
 
-		return SparxstarUECCacheHelper::get_snapshot(
-			$resolved_user_id,
-			$session_id,
-			$fingerprint
-		);
+		// Build cache key
+		$cache_key = SparxstarUECCacheHelper::make_key( $resolved_user_id, $session_id, $fingerprint . ':' . $device_hash );
+		
+		// Try cache first
+		$cached = SparxstarUECCacheHelper::get( $cache_key );
+		if ( $cached !== null ) {
+			return $cached;
+		}
+
+		// Fall back to repository
+		$snapshot = \Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository::get( $fingerprint, $device_hash );
+		if ( $snapshot !== null ) {
+			SparxstarUECCacheHelper::set( $cache_key, $snapshot );
+		}
+
+		return $snapshot;
 	}
 
 	/**
@@ -214,12 +226,10 @@ final class StarUserUtils {
 	public static function flush_cache( ?int $user_id = null, ?string $session_id = null ): void {
 		$resolved_user_id = $user_id ?? ( get_current_user_id() ?: null );
 		$fingerprint      = self::getFingerprint();
+		$device_hash      = self::getDeviceHash();
 
-		SparxstarUECCacheHelper::delete_snapshot(
-			$resolved_user_id,
-			$session_id,
-			$fingerprint
-		);
+		$cache_key = SparxstarUECCacheHelper::make_key( $resolved_user_id, $session_id, $fingerprint . ':' . $device_hash );
+		SparxstarUECCacheHelper::delete( $cache_key );
 	}
 
 	/**
@@ -593,7 +603,7 @@ final class StarUserUtils {
 	 * Check if the current request is an AJAX request.
 	 */
 	public static function isAjax(): bool {
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		if ( wp_doing_ajax() ) {
 			return true;
 		}
 

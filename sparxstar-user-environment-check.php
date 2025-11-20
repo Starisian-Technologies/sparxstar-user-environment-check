@@ -63,13 +63,9 @@ if ( ! defined( 'SPX_ENV_CHECK_DB_TABLE_NAME' ) ) {
 }
 
 /**
- * Database table that stores collected environment snapshots.
+ * Whether to delete all plugin data on uninstall.
  */
-if ( ! defined( 'SPX_ENV_CHECK_DB_TABLE_NAME' ) ) {
-	define( 'SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots' );
-}
-
-if( ! defined( 'SPX_ENV_CHECK_DELETE_ON_UNINSTALL')) {
+if ( ! defined( 'SPX_ENV_CHECK_DELETE_ON_UNINSTALL' ) ) {
 	define( 'SPX_ENV_CHECK_DELETE_ON_UNINSTALL', false );
 }
 
@@ -78,10 +74,16 @@ if( ! defined( 'SPX_ENV_CHECK_DELETE_ON_UNINSTALL')) {
 //  2. COMPOSER AUTOLOADER
 // =========================================================================
 $autoloader = SPX_ENV_CHECK_PLUGIN_PATH . 'vendor/autoload.php';
-if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-    // deactivate plugin and alert user.
-    deactivate_plugins( plugin_basename(__FILE__) );
-    wp_die('SPARXSTAR User Environment Check Error: Plugin deactivated as dependencies are missing. Please run composer install.');
+if ( ! file_exists( $autoloader ) ) {
+	// Deactivate plugin and alert user.
+	if ( function_exists( 'deactivate_plugins' ) ) {
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+	}
+	wp_die(
+		esc_html__( 'SPARXSTAR User Environment Check Error: Plugin deactivated as dependencies are missing. Please run composer install.', 'sparxstar_user_environment_check' ),
+		esc_html__( 'Plugin Activation Error', 'sparxstar_user_environment_check' ),
+		array( 'back_link' => true )
+	);
 }
 require_once $autoloader;
 
@@ -118,7 +120,16 @@ register_uninstall_hook( SPX_ENV_CHECK_PLUGIN_FILE, 'spx_uec_on_uninstall' );
 add_action(
 	'plugins_loaded',
 	function () {
-		// Additional guard to prevent multiple initializations
+		// Skip initialization for background/automated WordPress requests
+		if (
+			( defined( 'DOING_CRON' ) && DOING_CRON ) ||
+			( defined( 'REST_REQUEST' ) && REST_REQUEST ) ||
+			( defined( 'DOING_AJAX' ) && DOING_AJAX )
+		) {
+			return;
+		}
+
+		// Additional guard to prevent multiple initializations in same request
 		if ( did_action( 'sparxstar_uec_initialized' ) ) {
 			return;
 		}

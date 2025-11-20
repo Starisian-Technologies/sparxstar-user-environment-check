@@ -67,27 +67,9 @@ final class SparxstarUECSessionManager {
 	 * Looks up a value for ANY USER/SESSION by querying the historical database record.
 	 */
 	public static function lookup( string $key, ?int $user_id, ?string $session_id, ?string $default = null ): ?string {
-		try {
-			if ( empty( $user_id ) && empty( $session_id ) ) {
-				return $default;
-			}
-
-			$path = self::SESSION_USER_VARS[ $key ] ?? null;
-			if ( ! empty( $path ) ) {
-				// Note: This is legacy code - repository now expects fingerprint/device_hash
-				// For backward compatibility, we pass null values which triggers fallback behavior
-				$snapshot = SparxstarUECSnapshotRepository::get( null, null );
-				if ( ! is_array( $snapshot ) ) {
-					return $default;
-				}
-				return self::get_value_from_array( $snapshot, $path, $default );
-			}
-
-			return $default;
-		} catch ( \Exception $e ) {
-			StarLogger::error( 'SparxstarUECSessionManager', $e, array( 'method' => 'lookup', 'key' => $key, 'user_id' => $user_id, 'session_id' => $session_id ) );
-			return $default;
-		}
+		// SESSION_USER_VARS is currently empty - this is a stub for future functionality
+		// Early return since this feature is not yet implemented
+		return $default;
 	}
 	/**
 	 * Retrieve the active PHP session identifier when available.

@@ -205,31 +205,28 @@ final class StarUserEnv
 			return self::$snapshot_cache;
 		}
 
-		// --- FIX STARTS HERE ---
-		// We must generate a guaranteed, non-null string identifier for the cache key.
-		// We will prioritize the stable visitor_id from the cookie if it exists,
-		// otherwise, we fall back to the live IP hash. This ensures we always have a string.
-
+		// --- V2.0 Identity Resolution ---
+		// Extract fingerprint from cookie (set by JS) or fallback to IP-based hash
 		$visitor_id = isset($_COOKIE['spx_visitor_id']) ? sanitize_text_field($_COOKIE['spx_visitor_id']) : null;
+		$fingerprint = $visitor_id ?? hash('sha256', self::get_current_visitor_ip());
 
-		// This is the identifier used to find the user's data.
-		$lookup_identifier = $visitor_id ?? self::get_current_visitor_ip();
+		// Extract device_hash from request header (set by JS) or fallback to UserAgent+IP hash
+		$device_hash_header = isset($_SERVER['HTTP_X_SPX_DEVICE_HASH']) 
+			? sanitize_text_field(wp_unslash($_SERVER['HTTP_X_SPX_DEVICE_HASH'])) 
+			: null;
+		$device_hash = $device_hash_header ?? hash('sha1', ($_SERVER['HTTP_USER_AGENT'] ?? '') . ':' . self::get_current_visitor_ip());
 
-		// This is the identifier used to build the cache key.
-		$cache_key_identifier = $visitor_id ?? hash('sha256', $lookup_identifier);
-
-		// Now we can safely build the cache key, knowing the identifier is a string.
-		$cache_key = SparxstarUECCacheHelper::make_key($resolved_user_id, $session_id, $cache_key_identifier);
-		// --- FIX ENDS HERE ---
+		// Build cache key using BOTH fingerprint AND device_hash to prevent cross-device collisions
+		$cache_key = SparxstarUECCacheHelper::make_key($resolved_user_id, $session_id, $fingerprint . ':' . $device_hash);
 
 		$cached = SparxstarUECCacheHelper::get($cache_key);
 		if ($cached !== null) {
 			self::$snapshot_cache = $cached;
 			return $cached;
 		}
-		// Use the appropriate identifier for the database lookup.
 
-		$from_db = SparxstarUECSnapshotRepository::get($resolved_user_id, $session_id);
+		// Query database using v2.0 identity model (fingerprint + device_hash)
+		$from_db = SparxstarUECSnapshotRepository::get($fingerprint, $device_hash);
 		if ($from_db !== null) {
 			SparxstarUECCacheHelper::set($cache_key, $from_db);
 			self::$snapshot_cache = $from_db;
@@ -254,9 +251,9 @@ final class StarUserEnv
 		return '0.0.0.0';
 	}
 
-	public static function get_current_user_session_id(): ?string {
-    return SparxstarUECSessionManager::get_session_id();
-}
+	public static function get_current_user_session_id(): string {
+		return SparxstarUECSessionManager::get_session_id();
+	}
 
 	// --- VI. Geolocation Data Access ---
 
