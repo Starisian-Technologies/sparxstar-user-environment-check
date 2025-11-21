@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\core;
@@ -8,131 +9,254 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Manages the enqueuing of all client-side assets for the Sparxstar User Environment Check plugin.
- * This class understands the six-module JavaScript architecture and enforces the correct
- * dependency chain to ensure a deterministic and reliable initialization.
- *
- * @version 2.0.0
+ * Modern asset loader for Sparxstar User Environment Check plugin.
+ * 
+ * Features:
+ * - Dev Mode: Loads 6-module architecture for debugging
+ * - Prod Mode: Loads bundled/minified file for performance
+ * - Admin Mode: Optional panel scripts for settings UI
+ * 
+ * @version 3.0.0
  */
 final class SparxstarUECAssetManager
 {
-    private const VERSION = '2.0.0';
+    private const VERSION = '3.0.0';
     private const TEXT_DOMAIN = 'sparxstar-user-environment-check';
+
+    // --- Bootstrap Handle (shared between dev/prod) ---
+    private const HANDLE_BOOTSTRAP = 'sparxstar-uec-bootstrap';
+
+    // --- Dev Mode Handles ---
+    private const HANDLE_STATE = 'sparxstar-uec-state';
+    private const HANDLE_COLLECTORS = 'sparxstar-uec-collectors';
+    private const HANDLE_PROFILE = 'sparxstar-uec-profile';
+    private const HANDLE_SYNC = 'sparxstar-uec-sync';
+    private const HANDLE_UI = 'sparxstar-uec-ui';
 
     // --- Vendor Handles ---
     private const HANDLE_VENDOR_DEVICE_DETECTOR = 'sparxstar-vendor-device-detector';
     private const HANDLE_VENDOR_FINGERPRINTJS = 'sparxstar-vendor-fingerprintjs';
 
-    // --- Module Handles (The 6-File Architecture) ---
-    private const HANDLE_STATE = 'sparxstar-env-state';
-    private const HANDLE_COLLECTORS = 'sparxstar-env-collectors';
-    private const HANDLE_PROFILE = 'sparxstar-env-profile';
-    private const HANDLE_SYNC = 'sparxstar-env-sync';
-    private const HANDLE_UI = 'sparxstar-env-ui';
-    private const HANDLE_INTEGRATOR = 'sparxstar-env-integrator'; // The master orchestrator
-
-    // --- Style Handle ---
+    // --- Style Handles ---
     private const STYLE_HANDLE = 'sparxstar-user-environment-check-styles';
+    private const ADMIN_STYLE_HANDLE = 'sparxstar-uec-admin';
 
     public static function init(): void
     {
-        add_action('wp_enqueue_scripts', [self::class, 'enqueue_assets']);
+        add_action('wp_enqueue_scripts', [self::class, 'enqueue_frontend']);
+        add_action('admin_enqueue_scripts', [self::class, 'enqueue_admin']);
     }
 
-    public static function enqueue_assets(): void
+    /**
+     * Load frontend scripts in dev or prod mode based on environment.
+     */
+    public static function enqueue_frontend(): void
     {
-        $base_uri = plugins_url('assets', dirname(__FILE__, 2));
-        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/';
+        $base_uri  = plugins_url('assets/js', dirname(__FILE__, 2));
+        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/js/';
 
-        // 1. Register all vendor scripts first.
-        // These are dependencies for our main modules.
-        wp_register_script(
+        // Determine if we're in development mode
+        $is_dev = (defined('WP_DEBUG') && WP_DEBUG)
+            || (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'development');
+
+        if ($is_dev) {
+            self::enqueue_dev_mode($base_uri);
+        } else {
+            self::enqueue_prod_mode($base_uri, $base_path);
+        }
+
+        // Localize configuration data for the bootstrap script
+        wp_localize_script(self::HANDLE_BOOTSTRAP, 'sparxstarUserEnvData', self::get_localization_data());
+
+        // Enqueue frontend stylesheet
+        self::enqueue_frontend_styles();
+    }
+
+    /**
+     * Development mode – load all 6 modules individually with vendor dependencies.
+     * This mode is better for debugging and testing.
+     */
+    private static function enqueue_dev_mode(string $base_uri): void
+    {
+        // 1. Load vendor libraries
+        wp_enqueue_script(
             self::HANDLE_VENDOR_DEVICE_DETECTOR,
-            "{$base_uri}/js/vendor/device-detector.min.js",
+            "{$base_uri}/vendor/device-detector.min.js",
             [],
-            '3.0.3', // Pin to a specific version for stability
+            '3.0.3',
             true
         );
-        wp_register_script(
+        wp_enqueue_script(
             self::HANDLE_VENDOR_FINGERPRINTJS,
-            "{$base_uri}/js/vendor/fingerprintjs.min.js",
+            "{$base_uri}/vendor/fingerprintjs.min.js",
             [],
-            '4.2.1', // Pin to a specific version
+            '4.2.1',
             true
         );
 
-        // 2. Register all six of our JavaScript modules with their explicit dependencies.
-        // This creates the dependency tree that WordPress will resolve.
-
-        // `state` has no dependencies. It's the foundation.
-        wp_register_script(self::HANDLE_STATE, "{$base_uri}/js/sparxstar-state.js", [], self::VERSION, true);
-
-        // `collectors` depends on state and the vendor libraries.
-        wp_register_script(self::HANDLE_COLLECTORS, "{$base_uri}/js/sparxstar-collectors.js", [self::HANDLE_STATE, self::HANDLE_VENDOR_DEVICE_DETECTOR, self::HANDLE_VENDOR_FINGERPRINTJS], self::VERSION, true);
-
-        // `profile` depends on state.
-        wp_register_script(self::HANDLE_PROFILE, "{$base_uri}/js/sparxstar-profile.js", [self::HANDLE_STATE], self::VERSION, true);
-
-        // `sync` depends on state.
-        wp_register_script(self::HANDLE_SYNC, "{$base_uri}/js/sparxstar-sync.js", [self::HANDLE_STATE], self::VERSION, true);
-
-        // `ui` depends on state.
-        wp_register_script(self::HANDLE_UI, "{$base_uri}/js/sparxstar-ui.js", [self::HANDLE_STATE], self::VERSION, true);
-
-        // `integrator` is the final module. It depends on all other five modules.
-        wp_register_script(self::HANDLE_INTEGRATOR, "{$base_uri}/js/sparxstar-integrator.js", [
+        // 2. Load core modules in dependency order
+        wp_enqueue_script(
             self::HANDLE_STATE,
-            self::HANDLE_COLLECTORS,
-            self::HANDLE_PROFILE,
-            self::HANDLE_SYNC,
-            self::HANDLE_UI,
-        ], self::VERSION, true);
-
-        // 3. Enqueue the final script in the chain.
-        // WordPress will automatically see its dependencies and load all registered scripts
-        // in the correct order. This is the key to a clean, deterministic load.
-        wp_enqueue_script(self::HANDLE_INTEGRATOR);
-
-        // 4. Localize data and attach it to the integrator.
-        // This ensures the data is available just before the main orchestration script runs.
-        wp_localize_script(self::HANDLE_INTEGRATOR, 'sparxstarUserEnvData', self::get_localization_data());
-
-        // 5. Enqueue the stylesheet.
-        $style_file = file_exists("{$base_path}css/" . self::STYLE_HANDLE . '.min.css')
-            ? self::STYLE_HANDLE . '.min.css'
-            : self::STYLE_HANDLE . '.css';
-            
-        wp_enqueue_style(
-            self::STYLE_HANDLE,
-            "{$base_uri}/css/{$style_file}",
+            "{$base_uri}/sparxstar-state.js",
             [],
-            filemtime("{$base_path}css/{$style_file}")
+            self::VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            self::HANDLE_COLLECTORS,
+            "{$base_uri}/sparxstar-collector.js",
+            [
+                self::HANDLE_STATE,
+                self::HANDLE_VENDOR_DEVICE_DETECTOR,
+                self::HANDLE_VENDOR_FINGERPRINTJS
+            ],
+            self::VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            self::HANDLE_PROFILE,
+            "{$base_uri}/sparxstar-profile.js",
+            [self::HANDLE_STATE],
+            self::VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            self::HANDLE_SYNC,
+            "{$base_uri}/sparxstar-sync.js",
+            [self::HANDLE_STATE],
+            self::VERSION,
+            true
+        );
+
+        wp_enqueue_script(
+            self::HANDLE_UI,
+            "{$base_uri}/sparxstar-ui.js",
+            [self::HANDLE_STATE],
+            self::VERSION,
+            true
+        );
+
+        // 3. Bootstrap integrator depends on all modules
+        wp_enqueue_script(
+            self::HANDLE_BOOTSTRAP,
+            "{$base_uri}/sparxstar-integrator.js",
+            [
+                self::HANDLE_STATE,
+                self::HANDLE_COLLECTORS,
+                self::HANDLE_PROFILE,
+                self::HANDLE_SYNC,
+                self::HANDLE_UI
+            ],
+            self::VERSION,
+            true
         );
     }
 
     /**
-     * Gathers all necessary server-side data to be passed to the client-side scripts.
+     * Production mode – load one compiled and minified bundle.
+     * This mode is optimized for performance.
+     */
+    private static function enqueue_prod_mode(string $base_uri, string $base_path): void
+    {
+        $bundle = 'sparxstar-user-environment-check-app.bundle.min.js';
+        $bundle_path = "{$base_path}{$bundle}";
+
+        wp_enqueue_script(
+            self::HANDLE_BOOTSTRAP,
+            "{$base_uri}/{$bundle}",
+            [],
+            file_exists($bundle_path) ? filemtime($bundle_path) : self::VERSION,
+            true
+        );
+    }
+
+    /**
+     * Enqueue frontend stylesheet (dev or minified).
+     */
+    private static function enqueue_frontend_styles(): void
+    {
+        $base_uri  = plugins_url('assets/css', dirname(__FILE__, 2));
+        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/css/';
+
+        $style_file = file_exists("{$base_path}sparxstar-user-environment-check.min.css")
+            ? 'sparxstar-user-environment-check.min.css'
+            : 'sparxstar-user-environment-check.css';
+
+        wp_enqueue_style(
+            self::STYLE_HANDLE,
+            "{$base_uri}/{$style_file}",
+            [],
+            file_exists("{$base_path}{$style_file}")
+                ? filemtime("{$base_path}{$style_file}")
+                : self::VERSION
+        );
+    }
+
+    /**
+     * Admin screen loader.
+     * - Lightweight, NO heavy collectors
+     * - Provides UI consistency in UEC settings page
+     */
+    public static function enqueue_admin(): void
+    {
+        $screen = get_current_screen();
+
+        // Only load on our plugin's admin pages
+        if (!$screen || strpos($screen->id, 'sparxstar') === false) {
+            return;
+        }
+
+        $base_uri = plugins_url('assets', dirname(__FILE__, 2));
+        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/';
+
+        // Admin stylesheet
+        $admin_css = file_exists("{$base_path}css/sparxstar-user-environment-check-admin.css")
+            ? 'css/sparxstar-user-environment-check-admin.css'
+            : 'css/sparxstar-user-environment-check.css';
+
+        wp_enqueue_style(
+            self::ADMIN_STYLE_HANDLE,
+            "{$base_uri}/{$admin_css}",
+            [],
+            file_exists("{$base_path}{$admin_css}")
+                ? filemtime("{$base_path}{$admin_css}")
+                : self::VERSION
+        );
+
+        // Admin script (if exists)
+        if (file_exists("{$base_path}js/sparxstar-admin.js")) {
+            wp_enqueue_script(
+                self::ADMIN_STYLE_HANDLE,
+                "{$base_uri}/js/sparxstar-admin.js",
+                ['jquery'],
+                filemtime("{$base_path}js/sparxstar-admin.js"),
+                true
+            );
+        }
+    }
+
+    /**
+     * Gathers all necessary server-side data to be passed to client-side scripts.
      *
      * @return array The data to be localized.
      */
     private static function get_localization_data(): array
     {
-        // In a real application, you would replace these with dynamic data.
-        $user_ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-
         return [
-            'nonce' => wp_create_nonce('wp_rest'),
-            'ip_address' => esc_html($user_ip),
-            'rest_urls' => [
-                'technical' => esc_url_raw(rest_url('sparxstar/v1/env/technical')),
-                'identifiers' => esc_url_raw(rest_url('sparxstar/v1/env/identifiers')),
+            'rest' => [
+                'technical'   => esc_url_raw(rest_url('star-sparxstar-user-environment-check/v1/log')),
+                'identifiers' => esc_url_raw(rest_url('star-sparxstar-user-environment-check/v1/identity')),
             ],
+            'nonce' => wp_create_nonce('wp_rest'),
+            'debug' => defined('WP_DEBUG') && WP_DEBUG,
             'i18n' => [
                 'notice' => __('Important Notice', self::TEXT_DOMAIN),
                 'update_message' => __('For the best experience, please update your browser.', self::TEXT_DOMAIN),
                 'update_link' => __('Learn how', self::TEXT_DOMAIN),
             ],
-            'debug' => defined('WP_DEBUG') && WP_DEBUG,
         ];
     }
 }

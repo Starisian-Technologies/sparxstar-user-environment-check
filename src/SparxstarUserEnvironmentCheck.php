@@ -108,6 +108,9 @@ final class SparxstarUserEnvironmentCheck
 			$this->session_manager = $kernel->get_session();
 			$this->admin           = $kernel->get_admin();
 
+			// Initialize asset manager hooks (must be called to enqueue scripts/styles)
+			\Starisian\SparxstarUEC\core\SparxstarUECAssetManager::init();
+
 			StarLogger::info('SparxstarUserEnvironmentCheck', 'Kernel initialized services successfully.');
 			$this->register_hooks();
 		} catch (Exception $e) {
