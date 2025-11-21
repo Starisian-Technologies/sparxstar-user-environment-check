@@ -132,6 +132,9 @@ final class SparxstarUECAdmin
 	/** Settings page output */
 	public function render_settings_page(): void
 	{
+		// Allow snapshot regeneration if none exists
+		\Starisian\SparxstarUEC\StarUserUtils::allow_snapshot_if_none_exist();
+
 		ob_start();
 ?>
 		<div class="wrap">

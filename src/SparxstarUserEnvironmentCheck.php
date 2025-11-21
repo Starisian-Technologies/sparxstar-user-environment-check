@@ -124,6 +124,11 @@ final class SparxstarUserEnvironmentCheck
 			add_action('init', array($this, 'load_textdomain'));
 			add_action('send_headers', array($this, 'add_client_hints_header'));
 
+			// Allow snapshot regeneration if none exists (after frontend is loaded)
+			add_action('wp', function () {
+				\Starisian\SparxstarUEC\StarUserUtils::allow_snapshot_if_none_exist();
+			});
+
 			if ($this->api instanceof SparxstarUECRESTController) {
 				add_action('rest_api_init', array($this->api, 'register_routes'));
 				StarLogger::info('SparxstarUserEnvironmentCheck', 'REST routes registered.');
