@@ -1,9 +1,9 @@
 /**
  * @file sparxstar-integrator.js
- * @version 2.0.0
+ * @version 3.0.0
  * @description Hardened master orchestrator for the Sparxstar User Environment Check plugin.
  * Runs the technical pipeline (always), the statistics-gated identifiers pipeline,
- * rate-limits sync, and dispatches the final environment-ready event.
+ * and dispatches the final environment-ready event.
  */
 (function (window, document) {
     'use strict';
@@ -31,42 +31,6 @@
         } catch (_e) {
             return false;
         }
-    }
-
-    // ---------- LocalStorage helpers for rate limiting ----------
-
-    function lsGet(key) {
-        try {
-            return window.localStorage.getItem(key);
-        } catch (_e) {
-            return null;
-        }
-    }
-
-    function lsSet(key, value) {
-        try {
-            window.localStorage.setItem(key, value);
-        } catch (_e) {
-            // ignore
-        }
-    }
-
-    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-    function shouldSend(key) {
-        const last = lsGet(key);
-        if (!last) {
-            return true;
-        }
-        const diff = Date.now() - parseInt(last, 10);
-        if (isNaN(diff)) {
-            return true;
-        }
-        return diff >= ONE_DAY_MS;
-    }
-
-    function markSent(key) {
-        lsSet(key, String(Date.now()));
     }
 
     // ---------- Core integrator ----------
@@ -154,18 +118,13 @@
         State.technical.profile = Object.freeze(profile);
         log('Technical profile derived and frozen.', State.technical.profile);
 
-        // Rate-limited technical snapshot (safe for Cloudflare / ops).
+        // Always send technical snapshot
         if (Sync && typeof Sync.sendTechnicalSnapshot === 'function') {
-            if (shouldSend('spx_env_last_tech')) {
-                log('Sending technical snapshot.');
-                try {
-                    await Sync.sendTechnicalSnapshot(State.technical);
-                    markSent('spx_env_last_tech');
-                } catch (e) {
-                    log('sendTechnicalSnapshot failed', e && e.message ? e.message : e);
-                }
-            } else {
-                log('Technical snapshot skipped due to rate limit.');
+            log('Sending technical snapshot.');
+            try {
+                await Sync.sendTechnicalSnapshot(State.technical);
+            } catch (e) {
+                log('sendTechnicalSnapshot failed', e && e.message ? e.message : e);
             }
         }
 
@@ -194,16 +153,11 @@
             log('Identifiers state frozen.', State.identifiers);
 
             if (Sync && typeof Sync.sendIdentifyingSnapshot === 'function') {
-                if (shouldSend('spx_env_last_ident')) {
-                    log('Sending identifiers snapshot (statistics consent).');
-                    try {
-                        await Sync.sendIdentifyingSnapshot(State.identifiers);
-                        markSent('spx_env_last_ident');
-                    } catch (e) {
-                        log('sendIdentifyingSnapshot failed', e && e.message ? e.message : e);
-                    }
-                } else {
-                    log('Identifiers snapshot skipped due to rate limit.');
+                log('Sending identifiers snapshot (statistics consent).');
+                try {
+                    await Sync.sendIdentifyingSnapshot(State.identifiers);
+                } catch (e) {
+                    log('sendIdentifyingSnapshot failed', e && e.message ? e.message : e);
                 }
             }
         };
