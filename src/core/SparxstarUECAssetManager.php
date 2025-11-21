@@ -12,30 +12,20 @@ if (!defined('ABSPATH')) {
  * Modern asset loader for Sparxstar User Environment Check plugin.
  * 
  * Features:
- * - Dev Mode: Loads 6-module architecture for debugging
- * - Prod Mode: Loads bundled/minified file for performance
+ * - Always loads bundled/minified production assets
+ * - Vendor scripts (FingerprintJS, DeviceDetector) are bundled via Rollup
+ * - Run `pnpm run build` after updating vendor dependencies
  * - Admin Mode: Optional panel scripts for settings UI
  * 
- * @version 3.0.0
+ * @version 4.0.0
  */
 final class SparxstarUECAssetManager
 {
-    private const VERSION = '3.0.0';
+    private const VERSION = '4.0.0';
     private const TEXT_DOMAIN = 'sparxstar-user-environment-check';
 
-    // --- Bootstrap Handle (shared between dev/prod) ---
+    // --- Bootstrap Handle ---
     private const HANDLE_BOOTSTRAP = 'sparxstar-uec-bootstrap';
-
-    // --- Dev Mode Handles ---
-    private const HANDLE_STATE = 'sparxstar-uec-state';
-    private const HANDLE_COLLECTORS = 'sparxstar-uec-collectors';
-    private const HANDLE_PROFILE = 'sparxstar-uec-profile';
-    private const HANDLE_SYNC = 'sparxstar-uec-sync';
-    private const HANDLE_UI = 'sparxstar-uec-ui';
-
-    // --- Vendor Handles ---
-    private const HANDLE_VENDOR_DEVICE_DETECTOR = 'sparxstar-vendor-device-detector';
-    private const HANDLE_VENDOR_FINGERPRINTJS = 'sparxstar-vendor-fingerprintjs';
 
     // --- Style Handles ---
     private const STYLE_HANDLE = 'sparxstar-user-environment-check-styles';
@@ -48,124 +38,13 @@ final class SparxstarUECAssetManager
     }
 
     /**
-     * Load frontend scripts in dev or prod mode based on environment.
+     * Load frontend scripts - always uses production bundle.
+     * Vendor dependencies are bundled via Rollup build process.
      */
     public static function enqueue_frontend(): void
     {
-        // Determine if we're in development mode
-        $is_dev = (defined('WP_DEBUG') && WP_DEBUG)
-            || (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'development');
-
-        // Dev mode uses src/js, prod mode uses assets/js
-        $js_dir = $is_dev ? 'src/js' : 'assets/js';
-        $base_uri  = plugins_url($js_dir, dirname(__FILE__, 2));
-        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . $js_dir . '/';
-
-        if ($is_dev) {
-            self::enqueue_dev_mode($base_uri);
-        } else {
-            self::enqueue_prod_mode($base_uri, $base_path);
-        }
-
-        // Localize configuration data for the bootstrap script
-        wp_localize_script(self::HANDLE_BOOTSTRAP, 'sparxstarUserEnvData', self::get_localization_data());
-
-        // Enqueue frontend stylesheet
-        self::enqueue_frontend_styles();
-    }
-
-    /**
-     * Development mode – load all 6 modules individually with vendor dependencies.
-     * This mode is better for debugging and testing.
-     */
-    private static function enqueue_dev_mode(string $base_uri): void
-    {
-        // 1. Load vendor libraries directly from node_modules
-        $vendor_base = plugins_url('node_modules', dirname(__FILE__, 2));
-
-        wp_enqueue_script(
-            self::HANDLE_VENDOR_FINGERPRINTJS,
-            "{$vendor_base}/.pnpm/@fingerprintjs+fingerprintjs@5.0.1/node_modules/@fingerprintjs/fingerprintjs/dist/fp.min.js",
-            [],
-            '5.0.1',
-            true
-        );
-
-        wp_enqueue_script(
-            self::HANDLE_VENDOR_DEVICE_DETECTOR,
-            "{$vendor_base}/.pnpm/device-detector-js@3.0.3/node_modules/device-detector-js/dist/index.js",
-            [],
-            '3.0.3',
-            true
-        );
-
-        // 2. Load core modules in dependency order
-        wp_enqueue_script(
-            self::HANDLE_STATE,
-            "{$base_uri}/sparxstar-state.js",
-            [],
-            self::VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            self::HANDLE_COLLECTORS,
-            "{$base_uri}/sparxstar-collector.js",
-            [
-                self::HANDLE_STATE,
-                self::HANDLE_VENDOR_DEVICE_DETECTOR,
-                self::HANDLE_VENDOR_FINGERPRINTJS
-            ],
-            self::VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            self::HANDLE_PROFILE,
-            "{$base_uri}/sparxstar-profile.js",
-            [self::HANDLE_STATE],
-            self::VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            self::HANDLE_SYNC,
-            "{$base_uri}/sparxstar-sync.js",
-            [self::HANDLE_STATE],
-            self::VERSION,
-            true
-        );
-
-        wp_enqueue_script(
-            self::HANDLE_UI,
-            "{$base_uri}/sparxstar-ui.js",
-            [self::HANDLE_STATE],
-            self::VERSION,
-            true
-        );
-
-        // 3. Bootstrap integrator depends on all modules
-        wp_enqueue_script(
-            self::HANDLE_BOOTSTRAP,
-            "{$base_uri}/sparxstar-integrator.js",
-            [
-                self::HANDLE_STATE,
-                self::HANDLE_COLLECTORS,
-                self::HANDLE_PROFILE,
-                self::HANDLE_SYNC,
-                self::HANDLE_UI
-            ],
-            self::VERSION,
-            true
-        );
-    }
-
-    /**
-     * Production mode – load one compiled and minified bundle.
-     * This mode is optimized for performance.
-     */
-    private static function enqueue_prod_mode(string $base_uri, string $base_path): void
-    {
+        $base_uri  = plugins_url('assets/js', dirname(__FILE__, 2));
+        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/js/';
         $bundle = 'sparxstar-user-environment-check-app.bundle.min.js';
         $bundle_path = "{$base_path}{$bundle}";
 
@@ -176,30 +55,25 @@ final class SparxstarUECAssetManager
             file_exists($bundle_path) ? filemtime($bundle_path) : self::VERSION,
             true
         );
+
+        // Localize configuration data for the bootstrap script
+        wp_localize_script(self::HANDLE_BOOTSTRAP, 'sparxstarUserEnvData', self::get_localization_data());
+
+        // Enqueue frontend stylesheet
+        self::enqueue_frontend_styles();
     }
 
     /**
-     * Enqueue frontend stylesheet (dev or minified).
+     * Enqueue frontend stylesheet - always uses production minified CSS.
      */
     private static function enqueue_frontend_styles(): void
     {
-        // Determine if we're in development mode
-        $is_dev = (defined('WP_DEBUG') && WP_DEBUG)
-            || (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'development');
+        $base_uri  = plugins_url('assets/css', dirname(__FILE__, 2));
+        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . 'assets/css/';
 
-        // Dev mode uses src/css, prod mode uses assets/css
-        $css_dir = $is_dev ? 'src/css' : 'assets/css';
-        $base_uri  = plugins_url($css_dir, dirname(__FILE__, 2));
-        $base_path = plugin_dir_path(dirname(__FILE__, 2)) . $css_dir . '/';
-
-        // In dev mode, use unminified file; in prod mode, prefer minified
-        if ($is_dev) {
-            $style_file = 'sparxstar-user-environment-check.css';
-        } else {
-            $style_file = file_exists("{$base_path}sparxstar-user-environment-check.min.css")
-                ? 'sparxstar-user-environment-check.min.css'
-                : 'sparxstar-user-environment-check.css';
-        }
+        $style_file = file_exists("{$base_path}sparxstar-user-environment-check.min.css")
+            ? 'sparxstar-user-environment-check.min.css'
+            : 'sparxstar-user-environment-check.css';
 
         wp_enqueue_style(
             self::STYLE_HANDLE,
