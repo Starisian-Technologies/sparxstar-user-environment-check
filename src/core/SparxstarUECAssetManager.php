@@ -80,18 +80,20 @@ final class SparxstarUECAssetManager
      */
     private static function enqueue_dev_mode(string $base_uri): void
     {
-        // 1. Load vendor libraries (local files from src/js/vendor)
+        // 1. Load vendor libraries directly from node_modules
+        $vendor_base = plugins_url('node_modules', dirname(__FILE__, 2));
+
         wp_enqueue_script(
             self::HANDLE_VENDOR_FINGERPRINTJS,
-            "{$base_uri}/vendor/fingerprintjs.min.js",
+            "{$vendor_base}/.pnpm/@fingerprintjs+fingerprintjs@5.0.1/node_modules/@fingerprintjs/fingerprintjs/dist/fp.min.js",
             [],
-            '4.2.1',
+            '5.0.1',
             true
         );
 
         wp_enqueue_script(
             self::HANDLE_VENDOR_DEVICE_DETECTOR,
-            "{$base_uri}/vendor/device-detector.min.js",
+            "{$vendor_base}/.pnpm/device-detector-js@3.0.3/node_modules/device-detector-js/dist/index.js",
             [],
             '3.0.3',
             true
