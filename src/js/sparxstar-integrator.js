@@ -1,9 +1,9 @@
 /**
  * @file sparxstar-integrator.js
- * @version 3.1.0
+ * @version 3.2.0
  * @description Hardened master orchestrator.
- * UPDATED: Aligned Sync calls with sparxstar-sync.js v2.2 signature
- * (fingerprint, deviceHash, sessionId, data) to ensure correct JSON formatting.
+ * UPDATED: Merged Technical + Identity data into a single request to prevent
+ * partial data saves and 400 errors.
  */
 (function (window, document) {
     'use strict';
@@ -121,24 +121,8 @@
         State.technical.profile = Object.freeze(profile);
         log('Technical profile derived and frozen.', State.technical.profile);
 
-        // Always send technical snapshot
-        if (Sync && typeof Sync.sendTechnicalSnapshot === 'function') {
-            log('Sending technical snapshot.');
-            try {
-                // FIX: Pass 4 arguments to match Sync v2.2 signature
-                // (fingerprint, deviceHash, sessionId, data)
-                // Note: Fingerprint is null here (it comes later), but Auth Cookie 
-                // ensures Admin View will still find this record.
-                await Sync.sendTechnicalSnapshot(
-                    null, 
-                    null, 
-                    currentSessionId, 
-                    State.technical
-                );
-            } catch (e) {
-                log('sendTechnicalSnapshot failed', e);
-            }
-        }
+        // NOTE: We do NOT send the technical snapshot here anymore.
+        // We wait for the identifiers pipeline to merge everything into one request.
 
         // 3. IDENTIFIERS PIPELINE (Consent Gated)
 
@@ -164,14 +148,20 @@
             log('Identifiers state frozen.', State.identifiers);
 
             if (Sync && typeof Sync.sendIdentifyingSnapshot === 'function') {
-                log('Sending identifiers snapshot (statistics consent).');
+                log('Sending unified snapshot (Technical + Identifiers).');
                 try {
-                    // FIX: Pass 4 arguments to match Sync v2.2 signature
+                    // MERGE: Combine Identifiers + Technical Data into one payload
+                    // This ensures the server gets everything at once.
+                    const fullPayload = {
+                        ...State.identifiers,
+                        technical: State.technical 
+                    };
+
                     await Sync.sendIdentifyingSnapshot(
                         State.identifiers.visitorId, // Fingerprint
                         null,                        // Device Hash (Calculated Server-Side)
                         currentSessionId,            // Session ID
-                        State.identifiers            // Data
+                        fullPayload                  // The Merged Data
                     );
                 } catch (e) {
                     log('sendIdentifyingSnapshot failed', e);
