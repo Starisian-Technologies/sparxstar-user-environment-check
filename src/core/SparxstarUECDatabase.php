@@ -22,7 +22,7 @@ final readonly class SparxstarUECDatabase
     private const SNAPSHOT_RETENTION_DAYS = 90;
 
     // DB Version 2.0 introduces fingerprint and device_hash for stable identity.
-    private const DB_VERSION = '2.0';
+    private const DB_VERSION = '2.1';
 
     private \wpdb $wpdb;
 
@@ -60,16 +60,16 @@ final readonly class SparxstarUECDatabase
             $charset_collate = $this->get_charset_collate();
 
             $sql = "CREATE TABLE {$table_name} (
-                id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-                user_id BIGINT(20) UNSIGNED NULL DEFAULT NULL,
-                fingerprint VARCHAR(128) NOT NULL,
-                device_hash VARCHAR(64) NOT NULL,
-                session_id VARCHAR(128) NULL DEFAULT NULL,
-                snapshot_data JSON NOT NULL,
-                created_at DATETIME NOT NULL,
-                updated_at DATETIME NOT NULL,
+                id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+                fingerprint varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+                device_hash varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+                session_id varchar(128) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+                user_id bigint(20) unsigned DEFAULT NULL,
+                snapshot_data json NOT NULL,
+                created_at datetime NOT NULL,
+                updated_at datetime NOT NULL,
                 PRIMARY KEY (id),
-                UNIQUE KEY fingerprint_device (fingerprint, device_hash),
+                UNIQUE KEY fingerprint_device (fingerprint,device_hash),
                 KEY user_id (user_id),
                 KEY created_at (created_at)
             ) {$charset_collate};";
