@@ -59,6 +59,7 @@ final class SparxstarUserEnvironmentCheck
             StarLogger::log(
                 'SparxstarUserEnvironmentCheck',
                 $throwable,
+                'error',
                 [
                     'method'  => 'spx_uec_get_instance',
                     'context' => 'singleton_initialization',
@@ -86,7 +87,7 @@ final class SparxstarUserEnvironmentCheck
             StarLogger::info('SparxstarUserEnvironmentCheck', 'Kernel initialized services successfully.');
             $this->register_hooks();
         } catch (Throwable $throwable) {
-            StarLogger::log('SparxstarUserEnvironmentCheck', $throwable, ['method' => '__construct']);
+            StarLogger::log('SparxstarUserEnvironmentCheck', $throwable, 'error', ['method' => '__construct']);
             return;
         }
     }
@@ -117,6 +118,7 @@ final class SparxstarUserEnvironmentCheck
             StarLogger::log(
                 'SparxstarUserEnvironmentCheck',
                 $throwable,
+                'error',
                 [
                     'method'  => 'register_hooks',
                     'context' => 'hook_registration',
@@ -148,6 +150,7 @@ final class SparxstarUserEnvironmentCheck
             StarLogger::log(
                 'SparxstarUserEnvironmentCheck',
                 $throwable,
+                'error',
                 [
                     'method'  => 'load_textdomain',
                     'context' => 'translation_loading',
@@ -188,6 +191,7 @@ final class SparxstarUserEnvironmentCheck
             StarLogger::log(
                 'SparxstarUserEnvironmentCheck',
                 $throwable,
+                'error',
                 [
                     'method'  => 'add_client_hints_header',
                     'context' => 'header_injection',

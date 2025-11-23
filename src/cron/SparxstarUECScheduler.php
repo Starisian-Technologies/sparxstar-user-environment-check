@@ -4,7 +4,10 @@
  * STARISIAN TECHNOLOGIES CONFIDENTIAL
  * © 2023–2025 Starisian Technologies. All Rights Reserved.
  *
- * Unified scheduler that prioritizes Action Scheduler and falls back to WP-Cron.
+ * Unified scheduler.
+ * Version 3.1: 
+ * - Fixes Static Analysis errors regarding Action Scheduler.
+ * - Prevents "Phantom Schedule" bugs by mapping to standard WP-Cron keys.
  *
  * @package Starisian\SparxstarUEC\cron
  */
@@ -21,31 +24,54 @@ if (! defined('ABSPATH')) {
 
 final class SparxstarUECScheduler
 {
-    private const CRON_SCHEDULE_KEY = 'sparxstar_uec_custom_interval';
-
     /**
      * Schedule a recurring event safely.
+     *
+     * @param string $hook              The action hook to execute.
+     * @param int    $interval_in_seconds How often to run (e.g., 3600, 86400).
+     * @param array  $args              Arguments to pass to the hook.
      */
     public static function schedule_recurring(string $hook, int $interval_in_seconds, array $args = []): void
     {
         try {
-            // 1. Action Scheduler (preferred)
+            // 1. Action Scheduler (Preferred)
+            // We use call_user_func to prevent Static Analysis/Linter errors
+            // when Action Scheduler is not installed in the dev environment.
             if (function_exists('as_schedule_recurring_action')) {
-                if (! \as_next_scheduled_action($hook, $args)) {
-                    \as_schedule_recurring_action(time(), $interval_in_seconds, $hook, $args);
+                // Check if already scheduled
+                $is_scheduled = call_user_func(\as_next_scheduled_action(...), $hook, $args);
+
+                if (! $is_scheduled) {
+                    call_user_func(\as_schedule_recurring_action(...), time(), $interval_in_seconds, $hook, $args);
                 }
 
                 return;
             }
 
             // 2. Fallback to WP-Cron
-            self::register_custom_interval($interval_in_seconds);
+            // We map the seconds to a standard WP Key (e.g., 'hourly', 'daily').
+            $schedule_key = self::get_wp_schedule_key($interval_in_seconds);
+
+            if (! $schedule_key) {
+                // If the interval doesn't match a standard WP schedule, default to 'daily'
+                // to ensure the event runs safely without needing dynamic registration.
+                StarLogger::warning(
+                    'SparxstarUECScheduler',
+                    sprintf("Could not map %ds to a standard WP-Cron key. Defaulting to 'daily'.", $interval_in_seconds),
+                    ['hook' => $hook]
+                );
+                $schedule_key = 'daily';
+            }
 
             if (! \wp_next_scheduled($hook, $args)) {
-                \wp_schedule_event(time(), self::CRON_SCHEDULE_KEY, $hook, $args);
+                \wp_schedule_event(time(), $schedule_key, $hook, $args);
             }
+
         } catch (\Throwable $throwable) {
-            StarLogger::error('SparxstarUECScheduler', $throwable, [ 'method' => 'schedule_recurring', 'hook' => $hook ]);
+            StarLogger::error('SparxstarUECScheduler', $throwable, [
+                'method' => 'schedule_recurring',
+                'hook'   => $hook
+            ]);
         }
     }
 
@@ -55,16 +81,16 @@ final class SparxstarUECScheduler
     public static function clear(string $hook, array $args = []): void
     {
         try {
+            // Clear Action Scheduler (safely)
             if (function_exists('as_unschedule_all_actions')) {
-                \as_unschedule_all_actions($hook, $args);
+                call_user_func(\as_unschedule_all_actions(...), $hook, $args);
             }
 
-            if (function_exists('wp_clear_scheduled_hook')) {
+            // Clear WP-Cron
+            $timestamp = \wp_next_scheduled($hook, $args);
+            while ($timestamp) {
+                \wp_unschedule_event($timestamp, $hook, $args);
                 $timestamp = \wp_next_scheduled($hook, $args);
-                while ($timestamp) {
-                    \wp_unschedule_event($timestamp, $hook, $args);
-                    $timestamp = \wp_next_scheduled($hook, $args);
-                }
             }
         } catch (\Throwable $throwable) {
             StarLogger::error('SparxstarUECScheduler', $throwable, [ 'method' => 'clear', 'hook' => $hook ]);
@@ -72,31 +98,32 @@ final class SparxstarUECScheduler
     }
 
     /**
-     * Register a custom WP-Cron interval globally so it’s available before scheduling.
+     * Helper: Maps raw seconds to standard WordPress schedule keys.
+     * This avoids the need to dynamically register custom intervals.
      */
-    private static function register_custom_interval(int $interval_in_seconds): void
+    private static function get_wp_schedule_key(int $seconds): ?string
     {
-        try {
-            add_filter(
-                'cron_schedules',
-                static function (array $schedules) use ($interval_in_seconds): array {
-                    if (! isset($schedules[ self::CRON_SCHEDULE_KEY ])) {
-                        $schedules[ self::CRON_SCHEDULE_KEY ] = [
-                            'interval' => max(60, $interval_in_seconds), // never less than a minute
-                            'display'  => sprintf('Every %d seconds (Sparxstar UEC)', $interval_in_seconds),
-                        ];
-                    }
+        // 1. Check standard WP defaults
+        $defaults = [
+            'hourly'     => 3600,
+            'twicedaily' => 43200,
+            'daily'      => 86400,
+            'weekly'     => 604800,
+        ];
 
-                    return $schedules;
-                },
-                10,
-                1
-            );
-
-            // Force WordPress to refresh its cached cron schedules immediately.
-            wp_get_schedules();
-        } catch (\Throwable $throwable) {
-            StarLogger::error('SparxstarUECScheduler', $throwable, [ 'method' => 'register_custom_interval', 'interval' => $interval_in_seconds ]);
+        // Exact match check
+        if ($key = array_search($seconds, $defaults, true)) {
+            return $key;
         }
+
+        // 2. Check any custom schedules added by other plugins/themes
+        $schedules = \wp_get_schedules();
+        foreach ($schedules as $key => $data) {
+            if (isset($data['interval']) && (int)$data['interval'] === $seconds) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 }

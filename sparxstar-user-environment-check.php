@@ -60,7 +60,7 @@ if (! defined('SPX_ENV_CHECK_TEXT_DOMAIN')) {
  * Database table name for storing environment snapshots.
  */
 if (! defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
-	define('SPX_ENV_CHECK_DB_TABLE_NAME', 'Sparxstar_User_Environment');
+	define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_uec_snapshots');
 }
 
 // --- Logger Configuration ---

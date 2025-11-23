@@ -60,8 +60,13 @@ final class SparxstarUECGeoIPService
             }
 
             return $location_data;
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECGeoIPService', $exception, [ 'method' => 'lookup', 'ip_address' => $ip_address ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECGeoIPService', 'error', $throwable->getMessage(), [
+                'method' => 'lookup',
+                'ip_address' => $ip_address,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }
@@ -106,8 +111,13 @@ final class SparxstarUECGeoIPService
                 'longitude'   => isset($data['loc']) ? (float) explode(',', $data['loc'])[1] : 0.0,
                 'timezone'    => sanitize_text_field($data['timezone'] ?? ''),
             ];
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECGeoIPService', $exception, [ 'method' => 'lookup_ipinfo', 'ip_address' => $ip_address ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECGeoIPService', 'error', $throwable->getMessage(), [
+                'method' => 'lookup_ipinfo',
+                'ip_address' => $ip_address,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }
@@ -132,7 +142,7 @@ final class SparxstarUECGeoIPService
                 StarLogger::warning(
                     'SparxstarUECGeoIPService',
                     'MaxMind GeoIP2 library not found. Run: composer require geoip2/geoip2',
-                    [ 'method' => 'lookup_maxmind' ]
+                    ['method' => 'lookup_maxmind']
                 );
                 return null;
             }
@@ -151,14 +161,19 @@ final class SparxstarUECGeoIPService
                 'longitude'   => $record->location->longitude ?? 0.0,
                 'timezone'    => sanitize_text_field($record->location->timeZone ?? ''),
             ];
-        } catch (\Exception $exception) {
+        } catch (\Throwable $throwable) {
             // Handle AddressNotFoundException specifically if MaxMind library is loaded
-            if (class_exists(\GeoIp2\Exception\AddressNotFoundException::class) && $exception instanceof \GeoIp2\Exception\AddressNotFoundException) {
+            if (class_exists(\GeoIp2\Exception\AddressNotFoundException::class) && $throwable instanceof \GeoIp2\Exception\AddressNotFoundException) {
                 // IP not found in database - this is normal for private IPs
                 return null;
             }
 
-            StarLogger::error('SparxstarUECGeoIPService', $exception, [ 'method' => 'lookup_maxmind', 'ip_address' => $ip_address ]);
+            StarLogger::log('SparxstarUECGeoIPService', 'error', $throwable->getMessage(), [
+                'method' => 'lookup_maxmind',
+                'ip_address' => $ip_address,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }

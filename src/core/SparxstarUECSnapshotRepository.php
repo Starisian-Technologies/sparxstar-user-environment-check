@@ -4,6 +4,7 @@
  * Repository for retrieving snapshots from the database.
  * Version 2.1: Added Admin-specific retrieval methods.
  */
+
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\core;
@@ -42,17 +43,14 @@ final class SparxstarUECSnapshotRepository
             }
 
             return self::hydrate($snapshot_row);
-
-        } catch (\Exception $exception) {
-            StarLogger::error(
-                'SparxstarUECSnapshotRepository',
-                $exception,
-                [
-                    'method'      => 'get',
-                    'fingerprint' => $fingerprint,
-                    'device_hash' => $device_hash,
-                ]
-            );
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSnapshotRepository', 'error', $throwable->getMessage(), [
+                'method' => 'get',
+                'fingerprint' => $fingerprint,
+                'device_hash' => $device_hash,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }
@@ -77,8 +75,8 @@ final class SparxstarUECSnapshotRepository
             // Ensure your Database class has a method to fetch by user_id
             // or write raw SQL here if the method doesn't exist yet.
             // Assuming standard table structure:
-            $table_name = $wpdb->prefix . 'sparxstar_uec_snapshots'; // Check your actual table name
-            
+            $table_name = $wpdb->prefix . SPX_ENV_CHECK_DB_TABLE_NAME; // Check your actual table name
+
             $query = $wpdb->prepare(
                 sprintf('SELECT * FROM %s WHERE user_id = %%d ORDER BY created_at DESC LIMIT 1', $table_name),
                 $user_id
@@ -91,13 +89,13 @@ final class SparxstarUECSnapshotRepository
             }
 
             return self::hydrate($snapshot_row);
-
-        } catch (\Exception $exception) {
-            StarLogger::error(
-                'SparxstarUECSnapshotRepository',
-                $exception,
-                ['method' => 'get_by_user_id', 'user_id' => $user_id]
-            );
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSnapshotRepository', 'error', $throwable->getMessage(), [
+                'method' => 'get_by_user_id',
+                'user_id' => $user_id,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }
@@ -134,8 +132,8 @@ final class SparxstarUECSnapshotRepository
     public static function flush(?string $fingerprint = null, ?string $device_hash = null): void
     {
         if ($fingerprint && $device_hash && function_exists('wp_cache_delete')) {
-             $cache_key = 'uec_snapshot_' . md5($fingerprint . $device_hash);
-             wp_cache_delete($cache_key, 'sparxstar_uec');
+            $cache_key = 'uec_snapshot_' . md5($fingerprint . $device_hash);
+            wp_cache_delete($cache_key, 'sparxstar_uec');
         }
     }
 }

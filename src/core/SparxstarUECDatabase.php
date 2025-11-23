@@ -5,6 +5,7 @@
  * Version 2.1: Backwards-compatible normalization of legacy snapshot payloads
  * into fingerprint + device_hash + session_id + snapshot_data.
  */
+
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\core;
@@ -22,7 +23,7 @@ final readonly class SparxstarUECDatabase
     private const SNAPSHOT_RETENTION_DAYS = 90;
 
     // DB Version 2.0 introduces fingerprint and device_hash for stable identity.
-    private const DB_VERSION = '2.1';
+    private const DB_VERSION = '2.2.0';
 
     private \wpdb $wpdb;
 
@@ -44,8 +45,12 @@ final readonly class SparxstarUECDatabase
                 $this->create_or_update_table();
                 update_option('sparxstar_uec_db_version', self::DB_VERSION);
             }
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'maybe_update_table_schema' ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'maybe_update_table_schema',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -76,9 +81,13 @@ final readonly class SparxstarUECDatabase
 
             require_once ABSPATH . 'wp-admin/includes/upgrade.php';
             \dbDelta($sql);
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'create_or_update_table' ]);
-            throw $exception;
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'create_or_update_table',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
+            throw $throwable;
         }
     }
 
@@ -116,7 +125,7 @@ final readonly class SparxstarUECDatabase
                 return new \WP_Error(
                     'db_table_missing',
                     'Database table is missing for snapshots.',
-                    [ 'status' => 500 ]
+                    ['status' => 500]
                 );
             }
 
@@ -133,7 +142,7 @@ final readonly class SparxstarUECDatabase
                 return new \WP_Error(
                     'snapshot_identity_missing',
                     'Snapshot missing fingerprint or device_hash after normalization.',
-                    [ 'status' => 400 ]
+                    ['status' => 400]
                 );
             }
 
@@ -155,8 +164,8 @@ final readonly class SparxstarUECDatabase
             ];
 
             if ($existing_id > 0) {
-                $this->wpdb->update($table_name, $db_data, [ 'id' => $existing_id ]);
-                return [ 'status' => 'updated', 'id' => $existing_id ];
+                $this->wpdb->update($table_name, $db_data, ['id' => $existing_id]);
+                return ['status' => 'updated', 'id' => $existing_id];
             }
 
             $db_data['created_at'] = $data['updated_at'];
@@ -167,23 +176,26 @@ final readonly class SparxstarUECDatabase
                 StarLogger::error(
                     'SparxstarUECDatabase',
                     'Database insert error: ' . $this->wpdb->last_error,
-                    [ 'method' => 'store_snapshot' ]
+                    ['method' => 'store_snapshot']
                 );
                 return new \WP_Error(
                     'db_insert_error',
                     'Could not write snapshot to the database.',
-                    [ 'status' => 500 ]
+                    ['status' => 500]
                 );
             }
 
-            return [ 'status' => 'inserted', 'id' => (int) $this->wpdb->insert_id ];
-
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'store_snapshot' ]);
+            return ['status' => 'inserted', 'id' => (int) $this->wpdb->insert_id];
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'store_snapshot',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return new \WP_Error(
                 'db_exception',
-                'Exception occurred while storing snapshot: ' . $exception->getMessage(),
-                [ 'status' => 500 ]
+                'Exception occurred while storing snapshot: ' . $throwable->getMessage(),
+                ['status' => 500]
             );
         }
     }
@@ -297,9 +309,12 @@ final readonly class SparxstarUECDatabase
             }
 
             return $snapshot;
-
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'get_latest_snapshot' ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'get_latest_snapshot',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return null;
         }
     }
@@ -310,9 +325,13 @@ final readonly class SparxstarUECDatabase
             $table_name = $this->get_table_name();
             $sql        = sprintf('DROP TABLE IF EXISTS %s;', $table_name);
             $this->wpdb->query($sql);
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'delete_table' ]);
-            throw $exception;
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'delete_table',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
+            throw $throwable;
         }
     }
 
@@ -340,8 +359,12 @@ final readonly class SparxstarUECDatabase
                     $retention_days
                 )
             );
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'cleanup_old_snapshots' ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'cleanup_old_snapshots',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -359,8 +382,13 @@ final readonly class SparxstarUECDatabase
     {
         try {
             return (bool) $this->wpdb->get_var($this->wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECDatabase', $exception, [ 'method' => 'table_exists', 'table_name' => $table_name ]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', 'error', $throwable->getMessage(), [
+                'method' => 'table_exists',
+                'table_name' => $table_name,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return false;
         }
     }

@@ -15,7 +15,7 @@ if (! defined('ABSPATH')) {
 
 use Starisian\SparxstarUEC\helpers\StarLogger;
 // Import the Repository so we can use the new User ID lookup
-use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository; 
+use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository;
 
 final class SparxstarUECAdmin
 {
@@ -44,8 +44,12 @@ final class SparxstarUECAdmin
                 self::PAGE_SLUG,
                 $this->render_settings_page(...)
             );
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECAdmin', $exception, ['method' => 'add_admin_menu']);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECAdmin', 'error', $throwable->getMessage(), [
+                'method' => 'add_admin_menu',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -125,8 +129,12 @@ final class SparxstarUECAdmin
                 $this->render_snapshot_viewer_section(...),
                 self::PAGE_SLUG
             );
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECAdmin', $exception, ['method' => 'register_settings']);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECAdmin', 'error', $throwable->getMessage(), [
+                'method' => 'register_settings',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -137,7 +145,7 @@ final class SparxstarUECAdmin
         \Starisian\SparxstarUEC\StarUserUtils::allow_snapshot_if_none_exist();
 
         ob_start();
-        ?>
+?>
         <div class="wrap">
             <h1><?php esc_html_e('SPARXSTAR User Environment Check Settings', 'sparxstar-user-environment-check'); ?></h1>
             <form action="options.php" method="post">
@@ -148,7 +156,7 @@ final class SparxstarUECAdmin
                 ?>
             </form>
         </div>
-        <?php
+    <?php
         echo ob_get_clean();
     }
 
@@ -156,14 +164,14 @@ final class SparxstarUECAdmin
     public function render_provider_field(): void
     {
         $provider = get_option(self::OPTION_KEY_PROVIDER, 'none');
-        ?>
+    ?>
         <select name="<?php echo esc_attr(self::OPTION_KEY_PROVIDER); ?>">
             <option value="none" <?php selected($provider, 'none'); ?>><?php esc_html_e('None (Disabled)', 'sparxstar-user-environment-check'); ?></option>
             <option value="ipinfo" <?php selected($provider, 'ipinfo'); ?>><?php esc_html_e('ipinfo.io (API)', 'sparxstar-user-environment-check'); ?></option>
             <option value="maxmind" <?php selected($provider, 'maxmind'); ?>><?php esc_html_e('MaxMind GeoIP2 (Local Database)', 'sparxstar-user-environment-check'); ?></option>
         </select>
         <p class="description"><?php esc_html_e('Select your preferred GeoIP lookup provider.', 'sparxstar-user-environment-check'); ?></p>
-        <?php
+<?php
     }
 
     /** ipinfo.io API key input */

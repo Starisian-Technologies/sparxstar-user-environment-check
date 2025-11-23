@@ -32,8 +32,12 @@ final class SparxstarUECSessionManager
             foreach ($data as $key => $value) {
                 $_SESSION[self::SESSION_NAMESPACE][$key] = $value;
             }
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'set_all']);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'set_all',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -43,8 +47,13 @@ final class SparxstarUECSessionManager
         try {
             self::ensure_session();
             return $_SESSION[self::SESSION_NAMESPACE][$key] ?? $default;
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'get', 'key' => $key]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'get',
+                'key' => $key,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return $default;
         }
     }
@@ -65,8 +74,12 @@ final class SparxstarUECSessionManager
             if (! isset($_SESSION[self::SESSION_NAMESPACE])) {
                 $_SESSION[self::SESSION_NAMESPACE] = [];
             }
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'ensure_session']);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'ensure_session',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -88,8 +101,12 @@ final class SparxstarUECSessionManager
         try {
             self::ensure_session(); // Make sure the session is active before checking
             return session_status() === PHP_SESSION_ACTIVE ? (string) session_id() : '';
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'get_session_id']);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'get_session_id',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return '';
         }
     }
@@ -103,12 +120,13 @@ final class SparxstarUECSessionManager
         try {
             self::ensure_session();
             unset($_SESSION[self::SESSION_NAMESPACE]['spx_snapshot_created']);
-            StarLogger::debug(
-                'SparxstarUECSessionManager',
-                'Snapshot creation flag cleared - next frontend visit will generate snapshot.'
-            );
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'clear_snapshot_flag']);
+            StarLogger::log('SparxstarUECSessionManager', 'debug', 'Snapshot creation flag cleared - next frontend visit will generate snapshot.');
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'clear_snapshot_flag',
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
         }
     }
 
@@ -130,8 +148,13 @@ final class SparxstarUECSessionManager
             }
 
             return $default;
-        } catch (\Exception $exception) {
-            StarLogger::error('SparxstarUECSessionManager', $exception, ['method' => 'get_value_from_array', 'path' => $path]);
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECSessionManager', 'error', $throwable->getMessage(), [
+                'method' => 'get_value_from_array',
+                'path' => $path,
+                'exception' => $throwable::class,
+                'trace' => $throwable->getTraceAsString()
+            ]);
             return $default;
         }
     }
