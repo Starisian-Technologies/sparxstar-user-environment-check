@@ -3,11 +3,13 @@ name: Proof HTML, Lint JS & CSS
 on:
   push:
     branches:
+      - universe
       - main
       - master
       - develop
   pull_request:
     branches:
+      - universe
       - main
       - master
       - develop
