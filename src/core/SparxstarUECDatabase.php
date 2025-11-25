@@ -251,10 +251,12 @@ final readonly class SparxstarUECDatabase
             if (! $this->table_exists($table_name)) {
                 return;
             }
+
             $retention_days = (int) apply_filters('sparxstar_env_retention_days', self::SNAPSHOT_RETENTION_DAYS);
             if ($retention_days <= 0) {
                 return;
             }
+
             $this->wpdb->query(
                 $this->wpdb->prepare(
                     sprintf('DELETE FROM %s WHERE created_at < DATE_SUB(NOW(), INTERVAL %%d DAY)', $table_name),

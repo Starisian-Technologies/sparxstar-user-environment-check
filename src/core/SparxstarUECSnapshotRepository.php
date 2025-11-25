@@ -58,8 +58,8 @@ final class SparxstarUECSnapshotRepository
 
             return self::hydrate($row);
 
-        } catch (\Throwable $e) {
-            StarLogger::error('SnapshotRepo:get', $e);
+        } catch (\Throwable $throwable) {
+            StarLogger::error('SnapshotRepo:get', $throwable);
             return null;
         }
     }
@@ -93,8 +93,8 @@ final class SparxstarUECSnapshotRepository
 
             return self::hydrate($row);
 
-        } catch (\Throwable $e) {
-            StarLogger::error('SnapshotRepo:get_by_user_id', $e);
+        } catch (\Throwable $throwable) {
+            StarLogger::error('SnapshotRepo:get_by_user_id', $throwable);
             return null;
         }
     }
@@ -108,7 +108,7 @@ final class SparxstarUECSnapshotRepository
 
         // Stored JSON
         if (!empty($row['snapshot_data'])) {
-            $decoded = json_decode($row['snapshot_data'], true);
+            $decoded = json_decode((string) $row['snapshot_data'], true);
             if (is_array($decoded)) {
                 $payload = $decoded;
             }

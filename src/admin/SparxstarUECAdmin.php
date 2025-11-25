@@ -228,7 +228,7 @@ final class SparxstarUECAdmin {
 			$repo     = new SparxstarUECSnapshotRepository();
 			$snapshot = $repo->get_by_user_id( $user_id );
 
-			if ( empty( $snapshot ) ) {
+			if ( $snapshot === null || $snapshot === [] ) {
 				echo '<div class="notice notice-info inline">';
 				echo '<p><strong>' . esc_html__( 'No snapshot found for your User ID.', 'sparxstar-user-environment-check' ) . '</strong></p>';
 				echo '<p>' . esc_html__( "Please visit the website's front-end once to generate a snapshot.", 'sparxstar-user-environment-check' ) . '</p>';

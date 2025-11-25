@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) {
 final class SparxstarUECAssetManager
 {
     private const VERSION     = '4.0.1';
+
     private const TEXT_DOMAIN = 'sparxstar-user-environment-check';
 
     // --- Bootstrap Handle ---
@@ -22,6 +23,7 @@ final class SparxstarUECAssetManager
 
     // --- Style Handles ---
     private const STYLE_HANDLE       = 'sparxstar-user-environment-check-styles';
+
     private const ADMIN_STYLE_HANDLE = 'sparxstar-uec-admin';
 
     public static function init(): void
