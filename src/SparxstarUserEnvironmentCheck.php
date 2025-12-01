@@ -19,6 +19,7 @@ use LogicException;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\core\SparxstarUECKernel;
 use Starisian\SparxstarUEC\api\SparxstarUECRESTController;
+use Starisian\SparxstarUEC\StarUserEnv;
 
 /**
  * Orchestrates plugin services and exposes shared dependencies.
@@ -98,7 +99,7 @@ final class SparxstarUserEnvironmentCheck
 
             // Allow snapshot regeneration if none exists (after frontend is loaded)
             add_action('wp', function (): void {
-                \Starisian\SparxstarUEC\StarUserUtils::allow_snapshot_if_none_exist();
+                \Starisian\SparxstarUEC\StarUserEnv::allow_snapshot_if_none_exist();
             });
 
             if ($this->api instanceof SparxstarUECRESTController) {
