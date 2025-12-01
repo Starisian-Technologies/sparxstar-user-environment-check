@@ -1,167 +1,279 @@
-![untitled-10-1536x864](https://github.com/user-attachments/assets/e1a42278-ba41-4c6f-8233-859de5267d1d)
 
-# SPARXSTAR User Environment Check
+# **SparxStar User Environment Check (UEC)**
 
-A foundational, network-wide WordPress utility that captures detailed, client-side browser and device diagnostics. It uses a database-first architecture, a high-performance caching layer, and a clean developer API to make rich user environment data available across your entire platform.
+![SPARXSTAR-User-Environment-Check-1536x864](https://github.com/user-attachments/assets/e1a42278-ba41-4c6f-8233-859de5267d1d)
 
-[![Copilot](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/copilot-swe-agent/copilot/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/copilot-swe-agent/copilot) [![CodeQL](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/github-code-scanning/codeql) [![Dependabot Updates](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/dependabot/dependabot-updates)
 
-[![Proof HTML, Lint JS & CSS](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/proof-html-js-css.yml) [![Security Checks](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/security.yml) [![Tests](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/test.yml)
+The **SparxStar User Environment Check (UEC)** plugin collects and analyzes client-side environment data to enhance onboarding, diagnostics, and tier-based experience management across the SparxStar multisite ecosystem. It provides a reliable snapshot of the user’s runtime environment and stores structured metadata server-side, enabling workflow decisions without relying on manual reporting or user comprehension.
 
-[![Release Code Quality Final Review](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/release.yml/badge.svg)](https://github.com/Starisian-Technologies/sparxstar-user-environment-check/actions/workflows/release.yml)
+UEC operates silently during sessions and supports both authenticated and anonymous contexts.
 
 ---
 
-## Overview
+## **Status**
 
-This plugin is designed to be an "always-on" service, ideally installed as a Must-Use (MU) plugin. On each user's first visit of the day, it collects a detailed "snapshot" of their technical environment using powerful client-side libraries. This data is stored efficiently in a custom database table and made available to other plugins and themes through a hyper-efficient, cached utility class.
+**Development Status:** Stable / Maintenance Mode  
+ **Branch Policy:** No new features. Only bug fixes, security updates, and performance improvements will be accepted.  
+ **Future Work:** Any enhancements or architectural changes must be developed in a **fork**.
 
-It solves the problem of unreliable, server-side user-agent guessing by trusting accurate, client-side detection.
+This repository represents the **finalized and production-hardened** implementation.
 
-## Key Features
+---
 
--   **Accurate Client-Side Detection:** Utilizes `device-detector-js` for precise device, OS, and browser identification, and the Network Information API for real-time bandwidth insights.
--   **Database-First Architecture:** All snapshots are stored in a custom, optimized database table (`wp_sparxstar_env_snapshots`), not flat files.
--   **Efficient Storage:** A smart hashing system prevents duplicate snapshots from being stored, saving significant database space.
--   **Secure REST API Endpoint:** A dedicated endpoint handles the secure ingestion of diagnostic data, complete with nonce validation and rate-limiting.
--   **High-Performance Caching Layer:** A production-ready utility class (`StarUserEnv`) serves snapshot data from a cache, hitting the database at most once per user session.
--   **Scalable by Design:** The caching layer defaults to PHP sessions but can be switched to a persistent object cache (Redis, Memcached) with a single line of code, making it ready for high-traffic, multi-server environments.
--   **Automated Cleanup:** Uses Action Scheduler to reliably run a daily cron job that prunes old data, keeping your database lean.
--   **Clean Developer API:** Provides simple, globally-accessible static methods (e.g., `StarUserEnv::get_browser_name()`) for any other plugin or theme to use.
--   **Browser Compatibility Banner:** Includes an optional, user-dismissible banner to notify users of outdated browsers.
+## **Core Features**
 
-## Installation
+* **Environment Profiling**  
+   Detects browser, OS, device class, network conditions, memory availability, battery state, and related indicators.
 
-### Recommended: As a Must-Use (MU) Plugin
+* **Privacy-Aware Data Collection**  
+   Uses WP Consent API categories and anonymized metrics. No personally identifiable information is captured.
 
-This method ensures the plugin is always active and cannot be accidentally deactivated.
+* **Server-Side Logging Layer**  
+   Writes structured environment snapshots to the WordPress backend over authenticated REST endpoints.
 
-1.  Place the entire `sparxstar-user-environment-check` plugin folder into your `/wp-content/mu-plugins/` directory.
-2.  That's it! The plugin is now active across your entire WordPress installation. The database table will be created automatically on the next page load.
+* **Tier Classification**  
+   Provides configurable logic to gate UI flows, offline modes, and device-dependent features.
 
-### Alternative: As a Standard Plugin
+* **Extensible Architecture**  
+   Other SparxStar modules consume cached data rather than issuing repeated probes.
 
-This method is ideal for testing on a single site or if you prefer to manage it from the standard Plugins screen.
+---
 
-1.  Place the entire `sparxstar-user-environment-check` plugin folder into your `/wp-content/plugins/` directory.
-2.  Navigate to your WordPress Admin dashboard.
-3.  Go to the "Plugins" page.
-4.  Find "SPARXSTAR User Environment Check" and click **Activate**.
-5.  _(For Multisite)_ Go to `Network Admin > Plugins` and click **Network Activate**.
+## **Architecture Overview**
 
-## Usage (Developer API)
+### **Frontend**
 
-To access user environment data from another plugin or your theme's `functions.php`, use the static methods provided by the `\Starisian\SparxstarUEC\StarUserEnv` class. The data is served from a cache, so these calls are extremely fast.
+* Device and capability detection
 
-### PHP Examples
+* Offline-first safe execution
 
-```php
-// Always check if the class exists to avoid errors if the plugin is disabled.
-if ( class_exists('\Starisian\SparxstarUEC\StarUserEnv') ) {
+* Consent-aware sampling and throttling
 
-    // Get the browser name (e.g., "Chrome", "Firefox")
-    $browser_name = \Starisian\SparxstarUEC\StarUserEnv::get_browser_name();
+* JSON payload transport to REST endpoints
 
-    // Get the full OS details
-    $os_info = \Starisian\SparxstarUEC\StarUserEnv::get_os();
-    // $os_info is an array like ['name' => 'Windows', 'version' => '10', 'platform' => 'x64']
+### **Backend**
 
-    // Get the device type (e.g., "desktop", "smartphone", "tablet")
-    $device_type = \Starisian\SparxstarUEC\StarUserEnv::get_device_type();
+* Namespaced PHP codebase (PSR-4)
 
-    // Get the network bandwidth (e.g., "4g", "3g", "slow-2g")
-    // This is perfect for deciding whether to load high-res assets.
-    $network_bandwidth = \Starisian\SparxstarUEC\StarUserEnv::get_network_effective_type();
+* Autoloaded service classes for:
 
-    if ( '4g' !== $network_bandwidth ) {
-        // User has a slower connection, maybe load a smaller image.
-    }
+  * REST endpoint registration
 
-    // Get the user's public IP address
-    $ip_address = \Starisian\SparxstarUEC\StarUserEnv::get_ip_address();
+  * Request validation
 
-    // Get geolocation data (requires another plugin to hook into the geolocation filter)
-    $location = \Starisian\SparxstarUEC\StarUserEnv::get_location();
-    $country = $location['country'] ?? 'Unknown';
+  * Metadata persistence and cleanup
 
-}
+### **Data Model**
 
-```
+Captures **non-personal, capability-based** data:
 
-## Client-Side JavaScript API
+* Device memory tier
 
-After the DOMContentLoaded event, a global SPARXSTAR object is available with a central state and simple utility functions.
+* Network `effectiveType`
 
-```javascript
-// Get the device type directly from the pre-populated state object.  const deviceType = SPARXSTAR.State.device.type;
-// Or use the simple utility function.
-const networkBandwidth = SPARXSTAR.Utils.getNetworkBandwidth();
-// "4g"
-console.log(
-    `User is on a ${deviceType} with a ${networkBandwidth} connection.`
-);
-```
+* Browser engine
 
-## Advanced Configuration
+* Platform fingerprint (non-unique)
 
-You can tune the caching behavior by adding filters to your wp-config.php file or a custom functionality plugin.
+* Potential performance constraints
 
-### Switching to a Persistent Object Cache (Redis/Memcached)
+This informs automated decisions in other plugins without user intervention.
 
-For high-traffic, multi-server sites, switching to the WordPress Object Cache is highly recommended.
+---
 
-```php
+## **Use Cases**
 
-// In wp-config.php or a custom MU-plugin
-add_filter( 'sparxstar_env_cache_handler', function( $handler ) {
-    // Check if a persistent object cache is actually in use.
-    if ( wp_using_ext_object_cache() ) {
-          return 'object_cache';
-    }
+* **Artist Onboarding**  
+   Determines whether a user’s device can handle audio recording, multi-step forms, or media uploads.
 
-    // Fall back to the default ('session') if no persistent cache is active.
-    return $handler;
-} );   `
+* **Service Eligibility**  
+   Routes clients to flows appropriate for their network and device constraints.
 
-```
+* **Support Diagnostics**  
+   Removes guesswork by exposing actual client environment.
 
-### Tuning Cache Durations (TTLs)
+* **Platform Intelligence**  
+   Adapts to West African connectivity realities while scaling globally.
 
-```php
-// In wp-config.php or a custom MU-plugin
-// Tune the snapshot cache TTL to 5 minutes for more frequent updates.
-add_filter( 'sparxstar_env_cache_ttl', function( $ttl_in_seconds ) {      return 5 * MINUTE_IN_SECONDS;  } );
+---
 
-// Tune the geolocation cache TTL to 24 hours, as it rarely changes.
-add_filter( 'sparxstar_env_geolocation_ttl', function( $ttl_in_seconds ) {      return 24 * HOUR_IN_SECONDS;  } );   `
+## **Installation**
 
-```
+1. Place the plugin in `/wp-content/plugins/`
 
-## Plugin Architecture
+2. Requires **WordPress 6.0+** and **PHP 8.2+**
 
-The plugin is built on a clean, decoupled architecture where each class has a single responsibility.
+3. Activate via **Network Admin → Plugins**
 
--   sparxstar-user-environment-check.php: **The Loader** - The main plugin file WordPress sees. It defines constants, registers hooks, and initializes the orchestrator.
--   src/SparxstarUserEnvironmentCheck.php: **The Orchestrator** - The central "brain" that loads and initializes all other components.
--   src/api/SparxstarUECAPI.php: **The Writer** - Handles the REST API endpoint, database interactions, and the data cleanup cron job.
--   src/StarUserEnv.php: **The Reader** - Provides the public, cached API (get_browser_name(), etc.) for other plugins to use.
--   src/AssetManager.php: **The Asset Loader** - Manages the enqueuing of all CSS and JavaScript files with correct dependencies.
+4. No configuration required — initializes automatically
 
-## Filters Reference
+---
 
--   sparxstar_env_cache_handler (string): Change the caching backend. Accepts 'session' (default) or 'object_cache'.
--   sparxstar_env_cache_ttl (int): Sets the cache duration in seconds for the main snapshot. Default is 900 (15 minutes).
--   sparxstar_env_geolocation_ttl (int): Sets the cache duration in seconds for geolocation data. Default is 21600 (6 hours).
--   sparxstar_env_geolocation_lookup (array|null, string $ip): Allows another plugin to provide geolocation data for a given IP address.
--   sparxstar_env_retention_days (int): Sets the number of days to keep snapshots in the database. Default is 30.
+## **Compatibility**
 
-## FAQ
+* Fully **WordPress Multisite** compatible
 
-**Q: What happens if I don't have a WP Consent API plugin installed?**  
-A: The plugin is designed to be "privacy-first." If the `wp_has_consent()` function does not exist, the plugin will **not** enqueue its scripts or log any data. To enable logging without a consent plugin (e.g., for an internal tool where all users have implicitly consented), you can use the `sparxstar_userenv_consent_category` filter to bypass the check. _This is not recommended for public sites._
+* Optimized for **PHP-FPM**
 
-**Q: Why a Must-Use (MU) plugin?**  
-A: As an environment and diagnostics tool, it should run consistently across an entire network without the risk of being deactivated on a site-by-site basis. The MU-plugin approach ensures it is always active.
+* Safe behind **Cloudflare**
 
-**Q: How much of a performance impact does this have?**  
-A: Minimal. The client-side script is small and uses modern, efficient APIs like `Promise.allSettled`. The server-side logging is rate-limited to one request per user per day and writes to a simple file, avoiding database queries.
+* Tested with **SparxStar**, **AiWA**, and related modules
+
+---
+
+## **Philosophy**
+
+Most platforms assume every user has a fast device and modern network. SparxStar does not.  
+ UEC measures the **real** environment and adapts the experience accordingly, converting unknown conditions into predictable signals for automated decision-making.
+
+---
+
+## **Usage (Developer API)**
+
+To access user environment data from another plugin or theme, use the static methods in:
+
+`\Starisian\SparxstarUEC\StarUserEnv`
+
+These values are served from a cache and are extremely fast.
+
+### **PHP Examples**
+
+`if ( class_exists('\Starisian\SparxstarUEC\StarUserEnv') ) {`
+
+    `$browser_name = \Starisian\SparxstarUEC\StarUserEnv::get_browser_name();`  
+    `$os_info = \Starisian\SparxstarUEC\StarUserEnv::get_os();`  
+    `$device_type = \Starisian\SparxstarUEC\StarUserEnv::get_device_type();`  
+    `$network_bandwidth = \Starisian\SparxstarUEC\StarUserEnv::get_network_effective_type();`
+
+    `if ( '4g' !== $network_bandwidth ) {`  
+        `// Consider loading lighter assets`  
+    `}`
+
+    `$ip_address = \Starisian\SparxstarUEC\StarUserEnv::get_ip_address();`
+
+    `// Will return NULL unless geolocation is configured`  
+    `$location = \Starisian\SparxstarUEC\StarUserEnv::get_location();`  
+    `$country = $location['country'] ?? 'Unknown';`  
+`}`
+
+---
+
+## **Geolocation Support (Optional)**
+
+UEC **does not** provide geolocation by itself.
+
+To enable geolocation, you must use:
+
+* A **MaxMind GeoIP2** license key  
+   *(recommended — commercial and GDPR-friendly)*  
+   **or**
+
+* Another IP-to-location service that hooks the `sparxstar_env_geolocation_lookup` filter
+
+Example:
+
+`add_filter( 'sparxstar_env_geolocation_lookup', function( $location, $ip ) {`  
+    `return my_geo_service_lookup($ip); // Must return ['country' => 'US', ...] or null`  
+`}, 10, 2 );`
+
+If no provider implements this filter, `get_location()` returns `null`.
+
+---
+
+## **Client-Side JavaScript API**
+
+After `DOMContentLoaded`, a global `SPARXSTAR` object is available:
+
+`const deviceType = SPARXSTAR.State.device.type;`  
+`const networkBandwidth = SPARXSTAR.Utils.getNetworkBandwidth();`
+
+`console.log(`  
+    `` `User is on a ${deviceType} with a ${networkBandwidth} connection.` ``  
+`);`
+
+---
+
+## **Advanced Configuration**
+
+### **Persistent Object Cache**
+
+`add_filter( 'sparxstar_env_cache_handler', function( $handler ) {`  
+    `return wp_using_ext_object_cache() ? 'object_cache' : $handler;`  
+`});`
+
+### **TTL Tuning**
+
+`add_filter( 'sparxstar_env_cache_ttl', fn() => 5 * MINUTE_IN_SECONDS );`  
+`add_filter( 'sparxstar_env_geolocation_ttl', fn() => 24 * HOUR_IN_SECONDS );`
+
+---
+
+## **Plugin Architecture**
+
+* `sparxstar-user-environment-check.php`  
+   **Loader** — Defines constants and initializes orchestrator
+
+* `src/SparxstarUserEnvironmentCheck.php`  
+   **Orchestrator** — Central bootstrap
+
+* `src/api/SparxstarUECAPI.php`  
+   **Writer** — REST API \+ snapshot cleanup
+
+* `src/StarUserEnv.php`  
+   **Reader** — Public cached API
+
+* `src/AssetManager.php`  
+   **Asset Loader** — JS/CSS orchestration
+
+---
+
+## **Filters Reference**
+
+* `sparxstar_env_cache_handler`
+
+* `sparxstar_env_cache_ttl`
+
+* `sparxstar_env_geolocation_ttl`
+
+* `sparxstar_env_geolocation_lookup`
+
+* `sparxstar_env_retention_days`
+
+---
+
+## **FAQ**
+
+**What if I don't use WP Consent?**  
+ Scripts will not run unless consent is detected, unless bypassed intentionally.
+
+**Performance impact?**  
+ Minimal. Logging is rate-limited, async, and cached.
+
+---
+
+## **Roadmap**
+
+None.  
+
+This repository only accepts:
+
+* Security fixes
+* Critical bug patches
+* PHP compatibility updates
+
+All enhancements require a **fork**.
+
+---
+
+## **License**
+
+Proprietary. All rights reserved.  
+Commercial usage requires written consent from **Starisian Technologies / MaximillianGroup**.
+
+---
+
+## **Credits**
+
+Developed by **Max Barrett** and **Starisian Technologies**.  
+ Built to power scalable digital marketing tools and creative ecosystems across West Africa and beyond.
+
