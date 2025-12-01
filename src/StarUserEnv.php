@@ -124,44 +124,54 @@ final class StarUserEnv
         return self::fetch_snapshot($user_id, $session_id);
     }
 
-    /**
-     * Internal engine: fetch the full snapshot from runtime cache, object cache, or database.
-     */
-    private static function fetch_snapshot(?int $user_id, ?string $session_id): ?array
-    {
-        $resolved_user_id = $user_id ?? (get_current_user_id() ?: null);
-
-        if (self::$snapshot_cache !== null) {
-            return self::$snapshot_cache;
-        }
-
-        // Identity resolution v2.0: fingerprint + device_hash
-        $fingerprint = self::getFingerprint();
-        $device_hash = self::getDeviceHash();
-
-        // Build cache key using BOTH fingerprint AND device_hash to prevent cross-device collisions
-        $cache_key = SparxstarUECCacheHelper::make_key(
-            $resolved_user_id,
-            $session_id,
-            $fingerprint . ':' . $device_hash
-        );
-
-        $cached = SparxstarUECCacheHelper::get($cache_key);
-        if ($cached !== null) {
-            self::$snapshot_cache = $cached;
-            return $cached;
-        }
-
-        // Query database using v2.0 identity model
-        $from_db = SparxstarUECSnapshotRepository::get($fingerprint, $device_hash);
-        if ($from_db !== null) {
-            SparxstarUECCacheHelper::set($cache_key, $from_db);
-            self::$snapshot_cache = $from_db;
-        }
-
-        return $from_db;
-    }
-
+   /**
+	 * Internal engine: fetch the full snapshot from session, runtime cache, 
+	 * object cache, or database.
+	 */
+	private static function fetch_snapshot(?int $user_id, ?string $session_id): ?array
+	{
+	    // --- 1. CHECK RUNTIME CACHE (Fastest) ---
+	    if (self::$snapshot_cache !== null) {
+	        return self::$snapshot_cache;
+	    }
+	
+	    // --- 2. CHECK SESSION (Primary fix for REST API) ---
+	    // If we're in an AJAX/REST context, the session will have the data if 
+	    // the user loaded the page immediately prior.
+	    $session_stored = self::getEnvironmentSnapshot(); 
+	    if (!empty($session_stored['snapshot'])) {
+	        self::$snapshot_cache = $session_stored['snapshot'];
+	        return self::$snapshot_cache;
+	    }
+	
+	    // --- 3. CHECK DB/CACHE (Original UEC Logic) ---
+	    $fingerprint = self::getFingerprint();
+	    $device_hash = self::getDeviceHash();
+	    $resolved_user_id = $user_id ?? (get_current_user_id() ?: null);
+	    
+	    // Build cache key using BOTH fingerprint AND device_hash
+	    $cache_key = SparxstarUECCacheHelper::make_key(
+	        $resolved_user_id,
+	        $session_id,
+	        $fingerprint . ':' . $device_hash
+	    );
+	
+	    $cached = SparxstarUECCacheHelper::get($cache_key);
+	    if ($cached !== null) {
+	        self::$snapshot_cache = $cached;
+	        return $cached;
+	    }
+	
+	    // Query database using v2.0 identity model
+	    $from_db = SparxstarUECSnapshotRepository::get($fingerprint, $device_hash);
+	    if ($from_db !== null) {
+	        SparxstarUECCacheHelper::set($cache_key, $from_db);
+	        self::$snapshot_cache = $from_db;
+	    }
+	
+	    return $from_db;
+	}
+	
     /**
      * Generic "dot path" accessor into the snapshot structure.
      */
