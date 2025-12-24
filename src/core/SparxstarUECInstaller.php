@@ -125,4 +125,49 @@ class SparxstarUECInstaller
         add_option('sparxstar_uec_ipinfo_api_key', '');
         add_option('sparxstar_uec_maxmind_db_path', '');
     }
+
+    /**
+     * Run uninstallation cleanup respecting multisite context.
+     */
+    public static function spx_uec_uninstall(): void
+    {
+        global $wpdb;
+
+        if (is_multisite()) {
+            if (! is_super_admin()) {
+                return;
+            }
+
+            $sites = get_sites(['number' => 0]);
+            foreach ($sites as $site) {
+                $blog_id = (int) $site->blog_id;
+                switch_to_blog($blog_id);
+                self::uninstall_site($wpdb);
+                restore_current_blog();
+            }
+            return;
+        }
+
+        self::uninstall_site($wpdb);
+    }
+
+    /**
+     * Remove plugin data for the current blog context.
+     *
+     * @param \wpdb $wpdb Database adapter scoped to the active blog.
+     */
+    private static function uninstall_site(\wpdb $wpdb): void
+    {
+        // Database Loop Integrity Rule: this helper must never loop over sites.
+        $database = new SparxstarUECDatabase($wpdb);
+        $database->delete_table();
+
+        delete_option('sparxstar_uec_db_version');
+        delete_option('sparxstar_uec_geoip_provider');
+        delete_option('sparxstar_uec_ipinfo_api_key');
+        delete_option('sparxstar_uec_maxmind_db_path');
+
+        wp_clear_scheduled_hook('sparxstar_env_cleanup_snapshots');
+        wp_cache_flush();
+    }
 }
