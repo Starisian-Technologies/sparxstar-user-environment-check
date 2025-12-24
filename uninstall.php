@@ -23,6 +23,9 @@ if (file_exists($autoloader)) {
     require_once $autoloader;
 }
 
+if (! class_exists(SparxstarUECDatabase::class)) {
+    return;
+}
 /**
  * Remove plugin data for the current blog context.
  *
