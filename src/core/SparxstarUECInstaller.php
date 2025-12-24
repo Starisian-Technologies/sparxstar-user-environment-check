@@ -79,7 +79,7 @@ class SparxstarUECInstaller
      */
     public static function spx_uec_initialize_new_site(\WP_Site|int $new_site): void
     {
-        if (! is_multisite() || ! is_super_admin()) {
+        if (! is_multisite()) {
             return;
         }
 
