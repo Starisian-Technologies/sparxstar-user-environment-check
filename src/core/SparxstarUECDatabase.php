@@ -15,27 +15,48 @@ if (! defined('ABSPATH')) {
 
 use Starisian\SparxstarUEC\helpers\StarLogger;
 
+/**
+ * Database gateway dedicated to the snapshots table for the current site.
+ */
 final readonly class SparxstarUECDatabase
 {
+    /**
+     * Unqualified table name suffix used for the snapshots table.
+     */
     private const TABLE_NAME = SPX_ENV_CHECK_DB_TABLE_NAME;
 
+    /**
+     * Default number of days to retain snapshots before cleanup.
+     */
     private const SNAPSHOT_RETENTION_DAYS = 90;
 
-    // Bumped to 3.0.0 to force a final schema check/update on next load.
+    /**
+     * Schema version marker used to trigger dbDelta migrations.
+     * Bumped to 3.0.0 to force a final schema check/update on next load.
+     */
     private const DB_VERSION = '3.0.0';
 
+    /**
+     * Database adapter scoped to the current blog context.
+     *
+     * @var \wpdb
+     */
     private \wpdb $wpdb;
 
+    /**
+     * Build the database helper without mutating schema state.
+     *
+     * @param \wpdb $wpdb WordPress database adapter instance.
+     */
     public function __construct(\wpdb $wpdb)
     {
         $this->wpdb = $wpdb;
-        $this->maybe_update_table_schema();
     }
 
     /**
      * Check and update the table schema if the DB_VERSION has changed.
      */
-    private function maybe_update_table_schema(): void
+    public function ensure_schema(): void
     {
         try {
             $installed_db_version = get_option('sparxstar_uec_db_version', '0.0');
@@ -74,7 +95,12 @@ final readonly class SparxstarUECDatabase
                 KEY created_at (created_at)
             ) {$charset_collate};";
 
-            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+            if (! function_exists('\dbDelta')) {
+                $upgrade_file = ABSPATH . 'wp-admin/includes/upgrade.php';
+                if (file_exists($upgrade_file)) {
+                    require_once $upgrade_file;
+                }
+            }
             \dbDelta($sql);
         } catch (\Throwable $throwable) {
             StarLogger::log('SparxstarUECDatabase', $throwable);
@@ -152,6 +178,12 @@ final readonly class SparxstarUECDatabase
         }
     }
 
+    /**
+     * Normalise legacy payloads so they can be stored in the current schema.
+     *
+     * @param array<string, mixed> $raw Raw snapshot payload.
+     * @return array<string, mixed> Normalised snapshot array.
+     */
     private function normalize_legacy_snapshot(array $raw): array
     {
         $user_id = null;
@@ -200,6 +232,13 @@ final readonly class SparxstarUECDatabase
         ];
     }
 
+    /**
+     * Retrieve the newest snapshot for the supplied identity values.
+     *
+     * @param string $fingerprint Unique fingerprint from the client.
+     * @param string $device_hash Hash derived from device details.
+     * @return array<string, mixed>|null Snapshot row data or null when missing.
+     */
     public function get_latest_snapshot(string $fingerprint, string $device_hash): ?array
     {
         try {
@@ -232,6 +271,9 @@ final readonly class SparxstarUECDatabase
         }
     }
 
+    /**
+     * Drop the snapshots table for the current site context.
+     */
     public function delete_table(): void
     {
         try {
@@ -244,6 +286,9 @@ final readonly class SparxstarUECDatabase
         }
     }
 
+    /**
+     * Remove snapshots older than the configured retention window.
+     */
     public function cleanup_old_snapshots(): void
     {
         try {
@@ -268,16 +313,27 @@ final readonly class SparxstarUECDatabase
         }
     }
 
+    /**
+     * Compose the site-scoped table name using the current blog prefix.
+     */
     public function get_table_name(): string
     {
-        return $this->wpdb->base_prefix . self::TABLE_NAME;
+        return $this->wpdb->prefix . self::TABLE_NAME;
     }
 
+    /**
+     * Retrieve the charset/collation string configured for the site database.
+     */
     public function get_charset_collate(): string
     {
         return $this->wpdb->get_charset_collate();
     }
 
+    /**
+     * Determine whether the snapshots table already exists for the current site.
+     *
+     * @param string $table_name Fully-qualified table name including prefix.
+     */
     private function table_exists(string $table_name): bool
     {
         try {

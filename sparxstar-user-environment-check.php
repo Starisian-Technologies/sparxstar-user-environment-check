@@ -78,9 +78,6 @@ if (! defined('SPX_ENV_CHECK_DELETE_ON_UNINSTALL')) {
 	define('SPX_ENV_CHECK_DELETE_ON_UNINSTALL', false);
 }
 
-
-
-
 // =========================================================================
 //  2. COMPOSER AUTOLOADER
 // =========================================================================
@@ -132,6 +129,9 @@ register_activation_hook(SPX_ENV_CHECK_PLUGIN_FILE, ['Starisian\SparxstarUEC\cor
 register_deactivation_hook(SPX_ENV_CHECK_PLUGIN_FILE, ['Starisian\SparxstarUEC\core\SparxstarUECInstaller', 'spx_uec_deactivate']);
 register_uninstall_hook(SPX_ENV_CHECK_PLUGIN_FILE, 'spx_uec_on_uninstall');
 
+// Multisite: ensure new sites are initialised automatically.
+add_action('wp_initialize_site', ['Starisian\SparxstarUEC\core\SparxstarUECInstaller', 'spx_uec_initialize_new_site'], 10, 1);
+add_action('wpmu_new_blog', ['Starisian\SparxstarUEC\core\SparxstarUECInstaller', 'spx_uec_initialize_new_site'], 10, 1);
 
 /**
  * Bootstrap the orchestrator once all plugins are loaded.
