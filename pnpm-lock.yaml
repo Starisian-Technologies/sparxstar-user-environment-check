@@ -10,66 +10,68 @@ overrides:
   glob: '>=11.1.0'
   tmp: '>=0.2.4'
 
-dependencies:
-  '@fingerprintjs/fingerprintjs':
-    specifier: ^5.0.1
-    version: 5.0.1
-  device-detector-js:
-    specifier: ^3.0.3
-    version: 3.0.3
+importers:
 
-devDependencies:
-  '@rollup/plugin-commonjs':
-    specifier: ^29.0.0
-    version: 29.0.0(rollup@4.53.3)
-  '@rollup/plugin-json':
-    specifier: ^6.1.0
-    version: 6.1.0(rollup@4.53.3)
-  '@rollup/plugin-node-resolve':
-    specifier: ^16.0.3
-    version: 16.0.3(rollup@4.53.3)
-  '@rollup/plugin-terser':
-    specifier: ^0.4.4
-    version: 0.4.4(rollup@4.53.3)
-  cssnano:
-    specifier: ^7.1.2
-    version: 7.1.2(postcss@8.5.6)
-  eslint:
-    specifier: ^9.39.1
-    version: 9.39.1
-  eslint-config-prettier:
-    specifier: ^10.1.8
-    version: 10.1.8(eslint@9.39.1)
-  eslint-plugin-import:
-    specifier: ^2.32.0
-    version: 2.32.0(eslint@9.39.1)
-  eslint-plugin-prettier:
-    specifier: ^5.5.4
-    version: 5.5.4(eslint-config-prettier@10.1.8)(eslint@9.39.1)(prettier@3.7.3)
-  jsdoc:
-    specifier: ^4.0.5
-    version: 4.0.5
-  jsdoc-to-markdown:
-    specifier: ^9.1.3
-    version: 9.1.3
-  postcss:
-    specifier: ^8.5.6
-    version: 8.5.6
-  postcss-cli:
-    specifier: ^11.0.1
-    version: 11.0.1(postcss@8.5.6)
-  prettier:
-    specifier: ^3.7.3
-    version: 3.7.3
-  rollup:
-    specifier: ^4.53.3
-    version: 4.53.3
-  stylelint:
-    specifier: ^16.26.1
-    version: 16.26.1
-  stylelint-config-standard:
-    specifier: ^39.0.1
-    version: 39.0.1(stylelint@16.26.1)
+  .:
+    dependencies:
+      '@fingerprintjs/fingerprintjs':
+        specifier: ^5.0.1
+        version: 5.0.1
+      device-detector-js:
+        specifier: ^3.0.3
+        version: 3.0.3
+    devDependencies:
+      '@rollup/plugin-commonjs':
+        specifier: ^29.0.0
+        version: 29.0.0(rollup@4.53.3)
+      '@rollup/plugin-json':
+        specifier: ^6.1.0
+        version: 6.1.0(rollup@4.53.3)
+      '@rollup/plugin-node-resolve':
+        specifier: ^16.0.3
+        version: 16.0.3(rollup@4.53.3)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.53.3)
+      cssnano:
+        specifier: ^7.1.2
+        version: 7.1.2(postcss@8.5.6)
+      eslint:
+        specifier: ^9.39.2
+        version: 9.39.2
+      eslint-config-prettier:
+        specifier: ^10.1.8
+        version: 10.1.8(eslint@9.39.2)
+      eslint-plugin-import:
+        specifier: ^2.32.0
+        version: 2.32.0(eslint@9.39.2)
+      eslint-plugin-prettier:
+        specifier: ^5.5.4
+        version: 5.5.4(eslint-config-prettier@10.1.8)(eslint@9.39.2)(prettier@3.7.3)
+      jsdoc:
+        specifier: ^4.0.5
+        version: 4.0.5
+      jsdoc-to-markdown:
+        specifier: ^9.1.3
+        version: 9.1.3
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
+      postcss-cli:
+        specifier: ^11.0.1
+        version: 11.0.1(postcss@8.5.6)
+      prettier:
+        specifier: ^3.7.3
+        version: 3.7.3
+      rollup:
+        specifier: ^4.53.3
+        version: 4.53.3
+      stylelint:
+        specifier: ^16.26.1
+        version: 16.26.1
+      stylelint-config-standard:
+        specifier: ^39.0.1
+        version: 39.0.1(stylelint@16.26.1)
 
 packages:
 
@@ -112,16 +114,16 @@ packages:
     resolution: {integrity: sha512-7e8SScMocHxcAb8YhtkbMhGG+EKLRIficb1F5sjvhSYsWTZGxvg4KIDp8kgxnV2PUJ3ddPe6J9QESjKvBWRDkg==}
     dependencies:
       '@cacheable/utils': 2.3.2
-      '@keyv/bigmap': 1.3.0(keyv@5.5.4)
+      '@keyv/bigmap': 1.3.0(keyv@5.5.5)
       hookified: 1.13.0
-      keyv: 5.5.4
+      keyv: 5.5.5
     dev: true
 
   /@cacheable/utils@2.3.2:
     resolution: {integrity: sha512-8kGE2P+HjfY8FglaOiW+y8qxcaQAfAhVML+i66XJR3YX5FtyDqn6Txctr3K2FrbxLKixRRYYBWMbuGciOhYNDg==}
     dependencies:
       hashery: 1.3.0
-      keyv: 5.5.4
+      keyv: 5.5.5
     dev: true
 
   /@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4):
@@ -167,13 +169,13 @@ packages:
     resolution: {integrity: sha512-id+7YRUgoUX6CgV0DtuhirQWodeeA7Lf4i2x71JS/vtA5pRb/hIGWlw+G6MeXvsM+MXrz0VAydTGElX1rAfgPg==}
     dev: true
 
-  /@eslint-community/eslint-utils@4.9.0(eslint@9.39.1):
+  /@eslint-community/eslint-utils@4.9.0(eslint@9.39.2):
     resolution: {integrity: sha512-ayVFHdtZ+hsq1t2Dy24wCmGXGe4q9Gu3smhLYALJrr473ZH27MsnSL+LKUlimp4BWJqMDMLmPpx/Q9R3OAlL4g==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
-      eslint: 9.39.1
+      eslint: 9.39.2
       eslint-visitor-keys: 3.4.3
     dev: true
 
@@ -224,8 +226,8 @@ packages:
       - supports-color
     dev: true
 
-  /@eslint/js@9.39.1:
-    resolution: {integrity: sha512-S26Stp4zCy88tH94QbBv3XCuzRQiZ9yXofEILmglYTh/Ug/a9/umqvgFtYBAo3Lp0nsI/5/qH1CCrbdK3AP1Tw==}
+  /@eslint/js@9.39.2:
+    resolution: {integrity: sha512-q1mjIoW1VX4IvSocvM/vbTiveKC4k9eLrajNEuSsmjymSDEbpGddtpfOoN7YGAqBK3NG+uqo8ia4PDTt8buCYA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     dev: true
 
@@ -306,7 +308,7 @@ packages:
       lodash: 4.17.21
     dev: true
 
-  /@keyv/bigmap@1.3.0(keyv@5.5.4):
+  /@keyv/bigmap@1.3.0(keyv@5.5.5):
     resolution: {integrity: sha512-KT01GjzV6AQD5+IYrcpoYLkCu1Jod3nau1Z7EsEuViO3TZGRacSbO9MfHmbJ1WaOXFtWLxPVj169cn2WNKPkIg==}
     engines: {node: '>= 18'}
     peerDependencies:
@@ -314,7 +316,7 @@ packages:
     dependencies:
       hashery: 1.3.0
       hookified: 1.13.0
-      keyv: 5.5.4
+      keyv: 5.5.5
     dev: true
 
   /@keyv/serialize@1.1.1:
@@ -862,7 +864,7 @@ packages:
       '@cacheable/memory': 2.0.6
       '@cacheable/utils': 2.3.2
       hookified: 1.13.0
-      keyv: 5.5.4
+      keyv: 5.5.5
       qified: 0.5.2
     dev: true
 
@@ -1467,13 +1469,13 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /eslint-config-prettier@10.1.8(eslint@9.39.1):
+  /eslint-config-prettier@10.1.8(eslint@9.39.2):
     resolution: {integrity: sha512-82GZUjRS0p/jganf6q1rEO25VSoHH0hKPCTrgillPjdI/3bgBhAE1QzHrHTizjpRvy6pGAvKjDJtk2pF9NDq8w==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
     dependencies:
-      eslint: 9.39.1
+      eslint: 9.39.2
     dev: true
 
   /eslint-import-resolver-node@0.3.9:
@@ -1486,7 +1488,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-module-utils@2.12.1(eslint-import-resolver-node@0.3.9)(eslint@9.39.1):
+  /eslint-module-utils@2.12.1(eslint-import-resolver-node@0.3.9)(eslint@9.39.2):
     resolution: {integrity: sha512-L8jSWTze7K2mTg0vos/RuLRS5soomksDPoJLXIslC7c8Wmut3bx7CPpJijDcBZtxQ5lrbUdM+s0OlNbz0DCDNw==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -1508,13 +1510,13 @@ packages:
         optional: true
     dependencies:
       debug: 3.2.7
-      eslint: 9.39.1
+      eslint: 9.39.2
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /eslint-plugin-import@2.32.0(eslint@9.39.1):
+  /eslint-plugin-import@2.32.0(eslint@9.39.2):
     resolution: {integrity: sha512-whOE1HFo/qJDyX4SnXzP4N6zOWn79WhnCUY/iDR0mPfQZO8wcYE4JClzI2oZrhBnnMUCBCHZhO6VQyoBU95mZA==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -1531,9 +1533,9 @@ packages:
       array.prototype.flatmap: 1.3.3
       debug: 3.2.7
       doctrine: 2.1.0
-      eslint: 9.39.1
+      eslint: 9.39.2
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint@9.39.1)
+      eslint-module-utils: 2.12.1(eslint-import-resolver-node@0.3.9)(eslint@9.39.2)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -1550,7 +1552,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8)(eslint@9.39.1)(prettier@3.7.3):
+  /eslint-plugin-prettier@5.5.4(eslint-config-prettier@10.1.8)(eslint@9.39.2)(prettier@3.7.3):
     resolution: {integrity: sha512-swNtI95SToIz05YINMA6Ox5R057IMAmWZ26GqPxusAp1TZzj+IdY9tXNWWD3vkF/wEqydCONcwjTFpxybBqZsg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -1564,8 +1566,8 @@ packages:
       eslint-config-prettier:
         optional: true
     dependencies:
-      eslint: 9.39.1
-      eslint-config-prettier: 10.1.8(eslint@9.39.1)
+      eslint: 9.39.2
+      eslint-config-prettier: 10.1.8(eslint@9.39.2)
       prettier: 3.7.3
       prettier-linter-helpers: 1.0.0
       synckit: 0.11.11
@@ -1589,8 +1591,8 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     dev: true
 
-  /eslint@9.39.1:
-    resolution: {integrity: sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==}
+  /eslint@9.39.2:
+    resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
     peerDependencies:
@@ -1599,13 +1601,13 @@ packages:
       jiti:
         optional: true
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.0(eslint@9.39.1)
+      '@eslint-community/eslint-utils': 4.9.0(eslint@9.39.2)
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.21.1
       '@eslint/config-helpers': 0.4.2
       '@eslint/core': 0.17.0
       '@eslint/eslintrc': 3.3.3
-      '@eslint/js': 9.39.1
+      '@eslint/js': 9.39.2
       '@eslint/plugin-kit': 0.4.1
       '@humanfs/node': 0.16.7
       '@humanwhocodes/module-importer': 1.0.1
@@ -2412,8 +2414,8 @@ packages:
       json-buffer: 3.0.1
     dev: true
 
-  /keyv@5.5.4:
-    resolution: {integrity: sha512-eohl3hKTiVyD1ilYdw9T0OiB4hnjef89e3dMYKz+mVKDzj+5IteTseASUsOB+EU9Tf6VNTCjDePcP6wkDGmLKQ==}
+  /keyv@5.5.5:
+    resolution: {integrity: sha512-FA5LmZVF1VziNc0bIdCSA1IoSVnDCqE8HJIZZv2/W8YmoAM50+tnUgJR/gQZwEeIMleuIOnRnHA/UaZRNeV4iQ==}
     dependencies:
       '@keyv/serialize': 1.1.1
     dev: true
