@@ -666,7 +666,8 @@ if (!function_exists('wp_next_scheduled')) {
     function wp_next_scheduled(string $hook, array $args = []): ?int
     {
         $blog_id = $GLOBALS['current_blog_id'] ?? 1;
-        $hash    = md5($blog_id . '|' . $hook . '|' . sparxstar_uec_test_normalize_args($args));
+        ksort($args);
+        $hash    = md5($blog_id . '|' . $hook . json_encode($args, JSON_THROW_ON_ERROR));
         return $GLOBALS['scheduled_hooks'][$hash]['timestamp'] ?? null;
     }
 }
@@ -684,7 +685,8 @@ if (!function_exists('wp_schedule_event')) {
     function wp_schedule_event(int $timestamp, string $recurrence, string $hook, array $args = []): bool
     {
         $blog_id = $GLOBALS['current_blog_id'] ?? 1;
-        $hash    = md5($blog_id . '|' . $hook . '|' . sparxstar_uec_test_normalize_args($args));
+        ksort($args);
+        $hash    = md5($blog_id . '|' . $hook . json_encode($args, JSON_THROW_ON_ERROR));
         $GLOBALS['scheduled_hooks'][$hash] = [
             'blog_id' => $blog_id,
             'timestamp' => $timestamp,
@@ -708,7 +710,8 @@ if (!function_exists('wp_unschedule_event')) {
     function wp_unschedule_event(int $timestamp, string $hook, array $args = []): bool
     {
         $blog_id = $GLOBALS['current_blog_id'] ?? 1;
-        $hash    = md5($blog_id . '|' . $hook . '|' . sparxstar_uec_test_normalize_args($args));
+        ksort($args);
+        $hash    = md5($blog_id . '|' . $hook . json_encode($args, JSON_THROW_ON_ERROR));
         unset($GLOBALS['scheduled_hooks'][$hash]);
         unset($timestamp);
         return true;
@@ -761,7 +764,8 @@ if (!function_exists('as_schedule_recurring_action')) {
     function as_schedule_recurring_action(int $timestamp, int $interval, string $hook, array $args = []): bool
     {
         $blog_id = $GLOBALS['current_blog_id'] ?? 1;
-        $hash    = md5($blog_id . '|' . $hook . '|' . sparxstar_uec_test_normalize_args($args));
+        ksort($args);
+        $hash    = md5($blog_id . '|' . $hook . json_encode($args, JSON_THROW_ON_ERROR));
         $GLOBALS['scheduled_hooks'][$hash] = [
             'blog_id' => $blog_id,
             'timestamp' => $timestamp,
