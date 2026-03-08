@@ -16,7 +16,7 @@
   ],
   "minimum-stability": "stable",
   "require": {
-    "geoip2/geoip2": "^2.13"
+    "geoip2/geoip2": "^3.2"
   },
   "require-dev": {
     "php-stubs/wordpress-stubs": "^6.8",
@@ -94,8 +94,5 @@
         "type:wordpress-plugin"
       ]
     }
-  },
-  "require": {
-    "geoip2/geoip2": "^3.2"
   }
 }

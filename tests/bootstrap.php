@@ -31,7 +31,7 @@ require_once $file;
  */
 function _manually_load_plugin(): void
 {
-	require dirname(dirname(__FILE__)) . '/starmus-audio-recorder.php';
+	require dirname(dirname(__FILE__)) . '/sparxstar-user-environment-check.php';
 }
 
 tests_add_filter('muplugins_loaded', '_manually_load_plugin');

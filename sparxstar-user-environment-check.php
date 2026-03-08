@@ -142,7 +142,6 @@ add_action(
 			// Skip initialization for background/automated WordPress requests
 			if (
 				(defined('DOING_CRON') && DOING_CRON) ||
-				(defined('REST_REQUEST') && REST_REQUEST) ||
 				(defined('DOING_AJAX') && DOING_AJAX)
 			) {
 				return;
@@ -162,10 +161,11 @@ add_action(
 				\Starisian\SparxstarUEC\helpers\StarLogger::log(
 					'Bootstrap',
 					$e,
-					array(
+					'error',
+					[
 						'context' => 'plugins_loaded',
 						'message' => 'Critical error during plugin initialization',
-					)
+					]
 				);
 			}
 

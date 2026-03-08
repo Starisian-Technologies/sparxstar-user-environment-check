@@ -102,7 +102,7 @@ final class SparxstarUECSessionManager
         try {
             self::ensure_session();
             unset($_SESSION[self::SESSION_NAMESPACE]['spx_snapshot_created']);
-            StarLogger::log('SparxstarUECSessionManager', 'debug', 'Snapshot creation flag cleared - next frontend visit will generate snapshot.');
+            StarLogger::debug('SparxstarUECSessionManager', 'Snapshot creation flag cleared - next frontend visit will generate snapshot.');
         } catch (\Throwable $throwable) {
             StarLogger::log('SparxstarUECSessionManager', $throwable);
         }

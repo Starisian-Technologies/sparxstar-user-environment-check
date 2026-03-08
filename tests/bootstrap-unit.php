@@ -62,7 +62,7 @@ if (!defined('SPX_ENV_CHECK_TEXT_DOMAIN')) {
 }
 
 if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
-    define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_env_snapshots');
+    define('SPX_ENV_CHECK_DB_TABLE_NAME', 'sparxstar_uec_snapshots');
 }
 
 /**
@@ -876,5 +876,85 @@ if (!function_exists('wp_generate_uuid4')) {
             random_int(0, 0xffff),
             random_int(0, 0xffff)
         );
+    }
+}
+
+if (!function_exists('register_rest_route')) {
+    /**
+     * Stub for register_rest_route that records registered routes for assertions.
+     *
+     * @param string $namespace REST namespace.
+     * @param string $route     Route pattern.
+     * @param array  $args      Route arguments.
+     * @param bool   $override  Whether to override an existing route.
+     * @return bool Always true.
+     */
+    function register_rest_route(string $namespace, string $route, array $args = [], bool $override = false): bool
+    {
+        unset($override);
+        $GLOBALS['spx_registered_routes'][] = [
+            'namespace' => $namespace,
+            'route'     => $route,
+            'args'      => $args,
+        ];
+        return true;
+    }
+}
+
+if (!function_exists('do_action')) {
+    /**
+     * Stub for WordPress' do_action that records fired hook names.
+     *
+     * @param string $hook_name Name of the action hook being fired.
+     * @param mixed  ...$args   Optional arguments passed to the hook.
+     * @return void
+     */
+    function do_action(string $hook_name, mixed ...$args): void
+    {
+        $GLOBALS['fired_actions'][$hook_name][] = $args;
+    }
+}
+
+if (!function_exists('did_action')) {
+    /**
+     * Stub for WordPress' did_action that checks whether a hook has fired.
+     *
+     * @param string $hook_name Name of the action hook to check.
+     * @return int Number of times the action has fired (0 if never).
+     */
+    function did_action(string $hook_name): int
+    {
+        return isset($GLOBALS['fired_actions'][$hook_name])
+            ? count($GLOBALS['fired_actions'][$hook_name])
+            : 0;
+    }
+}
+
+if (!function_exists('wp_die')) {
+    /**
+     * Stub for WordPress' wp_die that records the call without halting execution.
+     * Allows tests that load the plugin bootstrap to continue past error handling.
+     *
+     * @param string|array $message Error message or arguments.
+     * @param string       $title   Optional page title.
+     * @param string|array $args    Optional arguments.
+     * @return void
+     */
+    function wp_die(string|array $message = '', string $title = '', string|array $args = []): void
+    {
+        $GLOBALS['wp_die_calls'][] = ['message' => $message, 'title' => $title, 'args' => $args];
+    }
+}
+
+if (!function_exists('deactivate_plugins')) {
+    /**
+     * Stub for WordPress' deactivate_plugins that records the call.
+     *
+     * @param string|array $plugins Plugin file or array of plugin files.
+     * @return void
+     */
+    function deactivate_plugins(string|array $plugins): void
+    {
+        $GLOBALS['deactivated_plugins'][] = $plugins;
     }
 }

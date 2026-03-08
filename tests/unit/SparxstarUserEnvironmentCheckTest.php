@@ -22,8 +22,8 @@ final class SparxstarUserEnvironmentCheckTest extends TestCase
      */
     public function testGetInstanceReturnsSingleton(): void
     {
-        $first = SparxstarUserEnvironmentCheck::get_instance();
-        $second = SparxstarUserEnvironmentCheck::get_instance();
+        $first = SparxstarUserEnvironmentCheck::spx_uec_get_instance();
+        $second = SparxstarUserEnvironmentCheck::spx_uec_get_instance();
 
         $this->assertSame($first, $second, 'The bootstrapper must behave as a singleton.');
     }

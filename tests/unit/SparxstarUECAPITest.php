@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for the REST API orchestrator.
+ * Unit tests for the REST API controller.
  *
  * @package SparxstarUserEnvironmentCheck\Tests\Unit
  */
@@ -10,49 +10,57 @@ declare(strict_types=1);
 namespace Starisian\SparxstarUEC\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Starisian\SparxstarUEC\api\SparxstarUECAPI;
+use Starisian\SparxstarUEC\api\SparxstarUECRESTController;
+use Starisian\SparxstarUEC\core\SparxstarUECDatabase;
 
 /**
- * Validates how the REST API handler wires WordPress hooks.
+ * Validates that the REST controller registers the expected routes.
  */
 final class SparxstarUECAPITest extends TestCase
 {
     /**
-     * Reset route and hook registries before each test.
+     * Reset the route registry before each test.
      */
     protected function setUp(): void
     {
         parent::setUp();
-        $GLOBALS['spx_registered_actions'] = array();
-        $GLOBALS['spx_registered_routes'] = array();
+        $GLOBALS['spx_registered_routes'] = [];
     }
 
     /**
-     * Verify that register_hooks() wires into rest_api_init.
+     * Verify that register_routes() registers the primary log endpoint.
      */
-    public function test_register_hooks_adds_rest_api_init_action(): void
+    public function test_register_routes_registers_log_endpoint(): void
     {
-        $api = SparxstarUECAPI::get_instance();
+        $controller = new SparxstarUECRESTController(new SparxstarUECDatabase($GLOBALS['wpdb']));
+        $controller->register_routes();
 
-        $api->register_hooks();
-
-        $this->assertArrayHasKey('rest_api_init', $GLOBALS['spx_registered_actions']);
-        $actions = $GLOBALS['spx_registered_actions']['rest_api_init'];
-        $this->assertNotEmpty($actions, 'Expected at least one rest_api_init hook to be registered.');
+        $this->assertNotEmpty($GLOBALS['spx_registered_routes'], 'Expected at least one route to be registered.');
+        $namespaces = array_column($GLOBALS['spx_registered_routes'], 'namespace');
+        $this->assertContains('star-uec/v1', $namespaces);
     }
 
     /**
-     * Ensure the REST endpoint is registered under the expected namespace.
+     * Verify that the /log route path is registered.
      */
-    public function test_register_rest_route_persists_expected_path(): void
+    public function test_register_routes_includes_log_path(): void
     {
-        $api = SparxstarUECAPI::get_instance();
+        $controller = new SparxstarUECRESTController(new SparxstarUECDatabase($GLOBALS['wpdb']));
+        $controller->register_routes();
 
-        $api->register_rest_route();
+        $routes = array_column($GLOBALS['spx_registered_routes'], 'route');
+        $this->assertContains('/log', $routes);
+    }
 
-        $this->assertNotEmpty($GLOBALS['spx_registered_routes']);
-        $route = end($GLOBALS['spx_registered_routes']);
-        $this->assertSame('star-uec/v1', $route['namespace']);
-        $this->assertSame('/log', $route['route']);
+    /**
+     * Verify that the /recorder-log route path is also registered.
+     */
+    public function test_register_routes_includes_recorder_log_path(): void
+    {
+        $controller = new SparxstarUECRESTController(new SparxstarUECDatabase($GLOBALS['wpdb']));
+        $controller->register_routes();
+
+        $routes = array_column($GLOBALS['spx_registered_routes'], 'route');
+        $this->assertContains('/recorder-log', $routes);
     }
 }
