@@ -911,6 +911,8 @@ if (!function_exists('do_action')) {
      */
     function do_action(string $hook_name, mixed ...$args): void
     {
+        $GLOBALS['fired_actions'] ??= [];
+        $GLOBALS['fired_actions'][$hook_name] ??= [];
         $GLOBALS['fired_actions'][$hook_name][] = $args;
     }
 }
