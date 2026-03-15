@@ -32,7 +32,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        # uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -52,7 +53,8 @@ jobs:
         run: pnpm exec stylelint "src/css/**/*.css"
 
       - name: Proof HTML files
-        uses: anishathalye/proof-html@v2
+        uses: anishathalye/proof-html@a76b66427e600c6992e8937a741afffd2264a613
+        # uses: anishathalye/proof-html@v2
         with:
           directory: "./src/templates"
 
@@ -77,7 +79,8 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        # uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -106,7 +109,8 @@ jobs:
           fi
 
       - name: Commit and push fixes (PR only)
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9
+        # uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: auto-fix JS/CSS lint issues"
           branch: ${{ github.head_ref }}
