@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf08a817960fe6a93cbfdf96faab3c85",
+    "content-hash": "05f9fed1e7b996dbb141e7f6b5f7f032",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -294,20 +294,20 @@
         },
         {
             "name": "automattic/eslint-config-target-es",
-            "version": "v4.0.1",
+            "version": "v5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/eslint-config-target-es.git",
-                "reference": "37610b53015db33a68160aa5abf3df845552086d"
+                "reference": "c02a5780a6b56d6f0f96a9d81dce03b48dc10187"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/eslint-config-target-es/zipball/37610b53015db33a68160aa5abf3df845552086d",
-                "reference": "37610b53015db33a68160aa5abf3df845552086d",
+                "url": "https://api.github.com/repos/Automattic/eslint-config-target-es/zipball/c02a5780a6b56d6f0f96a9d81dce03b48dc10187",
+                "reference": "c02a5780a6b56d6f0f96a9d81dce03b48dc10187",
                 "shasum": ""
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.7"
+                "automattic/jetpack-changelogger": "^6.0.12"
             },
             "type": "library",
             "extra": {
@@ -323,9 +323,9 @@
                 "GPL-2.0-or-later"
             ],
             "support": {
-                "source": "https://github.com/Automattic/eslint-config-target-es/tree/v4.0.1"
+                "source": "https://github.com/Automattic/eslint-config-target-es/tree/v5.0.0"
             },
-            "time": "2025-10-13T20:12:42+00:00"
+            "time": "2026-01-12T02:49:23+00:00"
         },
         {
             "name": "automattic/vipwpcs",
