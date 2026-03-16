@@ -255,20 +255,20 @@
     "packages-dev": [
         {
             "name": "automattic/eslint-changed",
-            "version": "v2.1.5",
+            "version": "v2.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/eslint-changed.git",
-                "reference": "c9962ffed6426933ef01fb48dd06a466b5de3c2d"
+                "reference": "110db23460171a8388e426b1b38e78e97a172e4c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/eslint-changed/zipball/c9962ffed6426933ef01fb48dd06a466b5de3c2d",
-                "reference": "c9962ffed6426933ef01fb48dd06a466b5de3c2d",
+                "url": "https://api.github.com/repos/Automattic/eslint-changed/zipball/110db23460171a8388e426b1b38e78e97a172e4c",
+                "reference": "110db23460171a8388e426b1b38e78e97a172e4c",
                 "shasum": ""
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.11"
+                "automattic/jetpack-changelogger": "^6.0.14"
             },
             "type": "library",
             "extra": {
@@ -288,9 +288,9 @@
             ],
             "description": "description",
             "support": {
-                "source": "https://github.com/Automattic/eslint-changed/tree/v2.1.5"
+                "source": "https://github.com/Automattic/eslint-changed/tree/v2.1.6"
             },
-            "time": "2025-12-04T16:37:37+00:00"
+            "time": "2026-02-24T19:06:52+00:00"
         },
         {
             "name": "automattic/eslint-config-target-es",
