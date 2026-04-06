@@ -1964,11 +1964,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.44",
+            "version": "2.1.46",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4a88c083c668b2c364a425c9b3171b2d9ea5d218",
-                "reference": "4a88c083c668b2c364a425c9b3171b2d9ea5d218",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
+                "reference": "a193923fc2d6325ef4e741cf3af8c3e8f54dbf25",
                 "shasum": ""
             },
             "require": {
@@ -2013,7 +2013,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-25T17:34:21+00:00"
+            "time": "2026-04-01T09:25:14+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -3204,21 +3204,21 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.3.9",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "917842143fd9f5331a2adefc214b8d7143bd32c4"
+                "reference": "a51dfddbf6a29ed9fbf6e8410fc90c1608df1b5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/917842143fd9f5331a2adefc214b8d7143bd32c4",
-                "reference": "917842143fd9f5331a2adefc214b8d7143bd32c4",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/a51dfddbf6a29ed9fbf6e8410fc90c1608df1b5d",
+                "reference": "a51dfddbf6a29ed9fbf6e8410fc90c1608df1b5d",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4|^8.0",
-                "phpstan/phpstan": "^2.1.40"
+                "phpstan/phpstan": "^2.1.41"
             },
             "conflict": {
                 "rector/rector-doctrine": "*",
@@ -3252,7 +3252,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.3.9"
+                "source": "https://github.com/rectorphp/rector/tree/2.4.0"
             },
             "funding": [
                 {
@@ -3260,7 +3260,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-16T09:43:55+00:00"
+            "time": "2026-04-04T07:37:45+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -4833,16 +4833,16 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v7.4.6",
+            "version": "v7.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "8655bf1076b7a3a346cb11413ffdabff50c7ffcf"
+                "reference": "e0be088d22278583a82da281886e8c3592fbf149"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/8655bf1076b7a3a346cb11413ffdabff50c7ffcf",
-                "reference": "8655bf1076b7a3a346cb11413ffdabff50c7ffcf",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/e0be088d22278583a82da281886e8c3592fbf149",
+                "reference": "e0be088d22278583a82da281886e8c3592fbf149",
                 "shasum": ""
             },
             "require": {
@@ -4877,7 +4877,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v7.4.6"
+                "source": "https://github.com/symfony/finder/tree/v7.4.8"
             },
             "funding": [
                 {
@@ -4897,7 +4897,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-29T09:40:50+00:00"
+            "time": "2026-03-24T13:12:05+00:00"
         },
         {
             "name": "symfony/options-resolver",
@@ -5551,16 +5551,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v7.4.5",
+            "version": "v7.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "608476f4604102976d687c483ac63a79ba18cc97"
+                "reference": "60f19cd3badc8de688421e21e4305eba50f8089a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/608476f4604102976d687c483ac63a79ba18cc97",
-                "reference": "608476f4604102976d687c483ac63a79ba18cc97",
+                "url": "https://api.github.com/repos/symfony/process/zipball/60f19cd3badc8de688421e21e4305eba50f8089a",
+                "reference": "60f19cd3badc8de688421e21e4305eba50f8089a",
                 "shasum": ""
             },
             "require": {
@@ -5592,7 +5592,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v7.4.5"
+                "source": "https://github.com/symfony/process/tree/v7.4.8"
             },
             "funding": [
                 {
@@ -5612,7 +5612,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-01-26T15:07:59+00:00"
+            "time": "2026-03-24T13:12:05+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -5769,16 +5769,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v7.4.6",
+            "version": "v7.4.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "9f209231affa85aa930a5e46e6eb03381424b30b"
+                "reference": "114ac57257d75df748eda23dd003878080b8e688"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/9f209231affa85aa930a5e46e6eb03381424b30b",
-                "reference": "9f209231affa85aa930a5e46e6eb03381424b30b",
+                "url": "https://api.github.com/repos/symfony/string/zipball/114ac57257d75df748eda23dd003878080b8e688",
+                "reference": "114ac57257d75df748eda23dd003878080b8e688",
                 "shasum": ""
             },
             "require": {
@@ -5836,7 +5836,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v7.4.6"
+                "source": "https://github.com/symfony/string/tree/v7.4.8"
             },
             "funding": [
                 {
@@ -5856,7 +5856,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-09T09:33:46+00:00"
+            "time": "2026-03-24T13:12:05+00:00"
         },
         {
             "name": "szepeviktor/phpstan-wordpress",
