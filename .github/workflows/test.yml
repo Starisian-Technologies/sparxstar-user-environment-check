@@ -88,6 +88,6 @@ jobs:
 
       - name: Run security audits
         run: |
-          pnpm audit --prod --audit-level=high || echo "⚠️ pnpm audit found vulnerabilities"
-          composer audit || echo "⚠️ Composer audit found vulnerabilities"
+          pnpm audit --prod --audit-level=high
+          composer audit
         continue-on-error: true

@@ -54,9 +54,11 @@ jobs:
           composer run phpfix || true
 
       - name: Run static analysis
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
         run: |
           echo "📊 Checking for remaining linting issues..."
-          ESLINT_USE_FLAT_CONFIG=false pnpm run lint:js || echo "⚠️ JS manual fixes needed"
+          pnpm run lint:js || echo "⚠️ JS manual fixes needed"
           pnpm run lint:css || echo "⚠️ CSS manual fixes needed"
           composer run analyze || echo "⚠️ PHPStan manual fixes needed"
           echo "✅ Static analysis complete"
