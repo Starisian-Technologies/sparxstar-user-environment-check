@@ -46,6 +46,9 @@ jobs:
 
       - name: Lint JavaScript (Check only)
         # We run WITHOUT --fix here. The goal is to report errors, not hide them.
+        # ESLINT_USE_FLAT_CONFIG=false is required because the repo uses .eslintrc.json (ESLint v8 format).
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
         run: pnpm exec eslint "src/js/**/*.js"
 
       - name: Lint CSS (Check only)
@@ -92,6 +95,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Fix JavaScript and CSS issues
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
         run: |
           pnpm exec eslint "src/js/**/*.js" --fix || true
           pnpm exec stylelint "src/css/**/*.css" --fix || true

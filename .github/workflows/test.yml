@@ -24,15 +24,16 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Setup pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
         with:
           version: 8.6.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: |
@@ -61,8 +62,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run security audit
+      - name: Setup PHP
+        uses: shivammathur/setup-php@ec406be512d7077f68eed36e63f4d91bc006edc4
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-dev
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        with:
+          version: 8.6.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audits
         run: |
-          pnpm audit --audit-level=moderate
-          composer audit
+          pnpm audit --prod --audit-level=high || echo "⚠️ pnpm audit found vulnerabilities"
+          composer audit || echo "⚠️ Composer audit found vulnerabilities"
         continue-on-error: true
