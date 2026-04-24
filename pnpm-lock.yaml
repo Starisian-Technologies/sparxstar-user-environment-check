@@ -20,8 +20,8 @@ importers:
   .:
     dependencies:
       '@fingerprintjs/fingerprintjs':
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: ^5.2.0
+        version: 5.2.0
       device-detector-js:
         specifier: ^3.0.3
         version: 3.0.3
@@ -252,8 +252,8 @@ packages:
       levn: 0.4.1
     dev: true
 
-  /@fingerprintjs/fingerprintjs@5.1.0:
-    resolution: {integrity: sha512-8h/CscV3xQ4KSLyXbSK8YFpZ5AaezzHfkl82mn8NJIEWNi1zLfbZSIu7MGGtx4pqa10oejhEk4u0MNutuE63Fw==}
+  /@fingerprintjs/fingerprintjs@5.2.0:
+    resolution: {integrity: sha512-j+2nInkwCQNTJcNhOjvkGM/nLRTuGJTC6xai4quqvUpjob2ssrGwBZjS7k55nOmKvge7qvJT2nS3i/IRvQSTQA==}
     dev: false
 
   /@humanfs/core@0.19.1:
