@@ -122,7 +122,7 @@ final class StarUserEnv
     /**
      * Retrieve the latest stored snapshot for a user/session (public).
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      * @return array<string, mixed>|null Snapshot payload when available.
      */
@@ -134,7 +134,7 @@ final class StarUserEnv
     /**
      * Internal engine fetching snapshot from runtime cache/session/cache/DB.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      * @return array<string, mixed>|null Snapshot payload when available.
      */
@@ -185,9 +185,9 @@ final class StarUserEnv
     /**
      * Generic dot-path accessor into snapshot structure.
      *
-     * @param string $path Dot-path into snapshot array.
-     * @param mixed $default Default value when missing.
-     * @param int|null $user_id Optional user scope.
+     * @param string      $path Dot-path into snapshot array.
+     * @param mixed       $default Default value when missing.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      * @return mixed Resolved value or default.
      */
@@ -217,7 +217,7 @@ final class StarUserEnv
     /**
      * Flushes the cache for a given user, forcing the next getter call to fetch fresh data.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function flush_cache(?int $user_id = null, ?string $session_id = null): void
@@ -239,7 +239,7 @@ final class StarUserEnv
     /**
      * Retrieves the entire raw snapshot for debugging or full-data use cases.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      * @return array<string, mixed>|null Snapshot payload when available.
      */
@@ -258,7 +258,7 @@ final class StarUserEnv
      * Get the user's stable, anonymous browser fingerprint ID from the snapshot.
      * This is the primary key for tracking anonymous users.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_visitor_id(?int $user_id = null, ?string $session_id = null): string
@@ -276,7 +276,7 @@ final class StarUserEnv
     /**
      * Retrieve effective network type from the latest snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_network_type(?int $user_id = null, ?string $session_id = null): string
@@ -292,7 +292,7 @@ final class StarUserEnv
     /**
      * Determine whether data-saver mode is enabled in snapshot data.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function is_data_saver_enabled(?int $user_id = null, ?string $session_id = null): bool
@@ -308,7 +308,7 @@ final class StarUserEnv
     /**
      * Get normalized device type from snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_device(?int $user_id = null, ?string $session_id = null): string
@@ -324,7 +324,7 @@ final class StarUserEnv
     /**
      * Get GPU identifier from snapshot fingerprinting data.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_gpu(?int $user_id = null, ?string $session_id = null): string
@@ -340,7 +340,7 @@ final class StarUserEnv
     /**
      * Get operating system label from snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_os_name(?int $user_id = null, ?string $session_id = null): string
@@ -356,7 +356,7 @@ final class StarUserEnv
     /**
      * Get browser name from snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_browser_name(?int $user_id = null, ?string $session_id = null): string
@@ -374,7 +374,7 @@ final class StarUserEnv
     /**
      * Get server-observed user IP from snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_ip(?int $user_id = null, ?string $session_id = null): string
@@ -390,7 +390,7 @@ final class StarUserEnv
     /**
      * Get user country from snapshot geolocation block.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_country(?int $user_id = null, ?string $session_id = null): string
@@ -406,7 +406,7 @@ final class StarUserEnv
     /**
      * Get user region/state from snapshot geolocation block.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_state(?int $user_id = null, ?string $session_id = null): string
@@ -422,7 +422,7 @@ final class StarUserEnv
     /**
      * Get user city from snapshot geolocation block.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_city(?int $user_id = null, ?string $session_id = null): string
@@ -438,7 +438,7 @@ final class StarUserEnv
     /**
      * Get two-letter language code from snapshot context language.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_user_language(?int $user_id = null, ?string $session_id = null): string
@@ -458,7 +458,7 @@ final class StarUserEnv
     /**
      * Get UTC timestamp of the stored snapshot.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function get_snapshot_timestamp(?int $user_id = null, ?string $session_id = null): string
@@ -474,7 +474,7 @@ final class StarUserEnv
     /**
      * Determine if geolocation data flagged VPN/proxy usage.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      */
     public static function is_on_vpn(?int $user_id = null, ?string $session_id = null): bool
@@ -500,7 +500,7 @@ final class StarUserEnv
     /**
      * Get full geolocation payload from snapshot server block.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
      * @return array<string, mixed> Geolocation map.
      */
@@ -519,9 +519,9 @@ final class StarUserEnv
     /**
      * Geolocation convenience accessor for city.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
-     * @param string $default Default when value is missing.
+     * @param string      $default Default when value is missing.
      */
     public static function get_city(
         ?int $user_id = null,
@@ -539,9 +539,9 @@ final class StarUserEnv
     /**
      * Geolocation convenience accessor for state.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
-     * @param string $default Default when value is missing.
+     * @param string      $default Default when value is missing.
      */
     public static function get_state(
         ?int $user_id = null,
@@ -559,9 +559,9 @@ final class StarUserEnv
     /**
      * Geolocation convenience accessor for postal code.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
-     * @param string $default Default when value is missing.
+     * @param string      $default Default when value is missing.
      */
     public static function get_postal_code(
         ?int $user_id = null,
@@ -579,9 +579,9 @@ final class StarUserEnv
     /**
      * Geolocation convenience accessor for region.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
-     * @param string $default Default when value is missing.
+     * @param string      $default Default when value is missing.
      */
     public static function get_region(
         ?int $user_id = null,
@@ -599,9 +599,9 @@ final class StarUserEnv
     /**
      * Geolocation convenience accessor for country.
      *
-     * @param int|null $user_id Optional user scope.
+     * @param int|null    $user_id Optional user scope.
      * @param string|null $session_id Optional session scope.
-     * @param string $default Default when value is missing.
+     * @param string      $default Default when value is missing.
      */
     public static function get_country(
         ?int $user_id = null,
@@ -746,7 +746,7 @@ final class StarUserEnv
      * Persist an arbitrary value in the session namespace.
      *
      * @param string $key Session key.
-     * @param mixed $value Value to persist.
+     * @param mixed  $value Value to persist.
      */
     public static function setSessionValue(string $key, mixed $value): void
     {
@@ -758,7 +758,7 @@ final class StarUserEnv
      * Retrieve a value from the session namespace.
      *
      * @param string $key Session key.
-     * @param mixed $default Default return when missing.
+     * @param mixed  $default Default return when missing.
      * @return mixed Resolved session value.
      */
     public static function getSessionValue(string $key, mixed $default = null): mixed

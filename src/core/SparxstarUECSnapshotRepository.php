@@ -20,6 +20,9 @@ if (!defined('ABSPATH')) {
 
 use Starisian\SparxstarUEC\helpers\StarLogger;
 
+/**
+ * Snapshot read repository for identity-keyed and admin user lookups.
+ */
 final class SparxstarUECSnapshotRepository
 {
     /**
