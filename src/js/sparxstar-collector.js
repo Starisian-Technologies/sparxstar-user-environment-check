@@ -1,8 +1,11 @@
 /**
- * @file sparxstar-collector.js
- * @version 2.0.0
- * @description Memoized, resilient asynchronous collectors for environment data.
- * Separates a technical (always-on) pipeline from a statistics-gated identifiers pipeline.
+ * SPARXSTAR User Environment Check
+ *
+ * Client collectors for technical telemetry and consent-gated identifiers.
+ *
+ * @module sparxstar-collector
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window, document) {
     'use strict';

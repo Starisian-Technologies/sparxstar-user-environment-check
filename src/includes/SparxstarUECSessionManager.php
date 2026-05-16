@@ -1,5 +1,13 @@
 <?php
-
+/**
+ * SPARXSTAR User Environment Check
+ *
+ * Session helper responsible for plugin-scoped session read/write operations.
+ *
+ * @package Starisian\SparxstarUEC\includes
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
+ */
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\includes;
@@ -10,16 +18,26 @@ if (! defined('ABSPATH')) {
 
 use Starisian\SparxstarUEC\helpers\StarLogger;
 
+/**
+ * Manages namespaced session state for diagnostics workflows.
+ */
 final class SparxstarUECSessionManager
 {
     private const SESSION_NAMESPACE = 'sparxstar_uec_data';
 
+    /**
+     * Constructor kept for DI symmetry across services.
+     */
     public function __construct()
     {
         // empty
     }
 
-    /** Set multiple values in the session at once. */
+    /**
+     * Set multiple values in the plugin session namespace.
+     *
+     * @param array<string, mixed> $data Values to persist.
+     */
     public static function set_all(array $data): void
     {
         try {
@@ -36,7 +54,13 @@ final class SparxstarUECSessionManager
         }
     }
 
-    /** Get a single value from the session. */
+    /**
+     * Read a single string value from the session namespace.
+     *
+     * @param string $key Session key to read.
+     * @param string|null $default Default value when key is missing.
+     * @return string|null Resolved session value.
+     */
     public static function get(string $key, ?string $default = null): ?string
     {
         try {
@@ -48,6 +72,9 @@ final class SparxstarUECSessionManager
         }
     }
 
+    /**
+     * Ensure a PHP session is active and namespaced storage is initialized.
+     */
     private static function ensure_session(): void
     {
         try {
@@ -71,6 +98,12 @@ final class SparxstarUECSessionManager
 
     /**
      * Looks up a value for ANY USER/SESSION by querying the historical database record.
+     *
+     * @param string $key Dot-path key to resolve.
+     * @param int|null $user_id User context, when available.
+     * @param string|null $session_id Session context, when available.
+     * @param string|null $default Default return value.
+     * @return string|null Resolved value or default.
      */
     public static function lookup(string $key, ?int $user_id, ?string $session_id, ?string $default = null): ?string
     {
@@ -108,6 +141,14 @@ final class SparxstarUECSessionManager
         }
     }
 
+    /**
+     * Resolve a dot-path from a nested array.
+     *
+     * @param array<string, mixed> $array Nested source array.
+     * @param string $path Dot-path expression.
+     * @param string|null $default Value returned when lookup fails.
+     * @return string|null Scalar value cast to string, otherwise default.
+     */
     public static function get_value_from_array(array $array, string $path, ?string $default = null): ?string
     {
         try {

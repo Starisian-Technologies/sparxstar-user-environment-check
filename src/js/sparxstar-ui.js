@@ -1,8 +1,11 @@
 /**
- * @file sparxstar-ui.js
- * @version 2.0.0
- * @description Event-driven UI: offline banner and upgrade banner. Listens for
- * namespaced events so it stays decoupled from business logic.
+ * SPARXSTAR User Environment Check
+ *
+ * UI module for network and compatibility banners driven by diagnostic events.
+ *
+ * @module sparxstar-ui
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window, document) {
     'use strict';

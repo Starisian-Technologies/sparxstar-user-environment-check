@@ -1,64 +1,48 @@
-# Security Policy 
-
-This document defines the security reporting and disclosure policy for the Starisian Technologies, which may contain culturally sensitive, ethically governed, and AI-training related data and code.
+# Security Policy
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, **do not file a public issue**. Instead, please report it confidentially to our security team:
+Do **not** disclose vulnerabilities publicly.
 
-- 📧 Email: [security@starisian.com](mailto:security@starisian.com)
-- 📧 Legal escalation: [legal@astarisian.com](mailto:legal@sstarisian.com)
+Report privately to:
+
+- security@starisian.com
 
 Please include:
 
-- A detailed description of the issue
-- Steps to reproduce (if applicable)
-- Any relevant logs or screenshots
-- Your name and contact information (optional but appreciated)
+- affected component/file
+- impact and exploit scenario
+- reproduction steps
+- suggested remediation (if available)
 
-## Disclosure Policy
+## Security Model Summary
 
-We follow **coordinated disclosure**. If you report a vulnerability in good faith:
+### Trust Boundaries
 
-- You will not be subject to legal action for your disclosure
-- We will acknowledge your report within **5 business days**
-- We aim to patch critical issues within **15 business days**
-- You may be publicly credited with consent after resolution
+- **Untrusted:** browser payloads, request headers, query/body input
+- **Trusted with verification:** authenticated WordPress context and nonce-protected REST requests
+- **Internal-only:** database schema internals, cache/session keys, logging internals
 
-## Scope
+### Validation Expectations
 
-The following are in scope:
+- sanitize all external input
+- validate types and required identity fields
+- escape output in admin/UI contexts
+- use prepared statements for all SQL
 
-- All repositories under [Starisian Technologies](https://github.com/starisian-technologies)
-- Scripts or workflows used in GitHub Actions
-- Sensitive AI training data pipelines or governance mechanisms
+### Sensitive Flows
 
-The following are out of scope:
+- REST payload ingestion (`/star-uec/v1/log`)
+- IP and geolocation enrichment
+- session and cache key derivation
+- snapshot storage and retrieval APIs
 
-- Social engineering attacks
-- Denial of Service (DoS) without actual exploit
-- Vulnerabilities in third-party dependencies unless demonstrably exploitable in this repo
+## Disclosure Handling Targets
 
-## Special Considerations for Culturally Sensitive Data
+- acknowledgement within 5 business days
+- remediation timeline based on severity and exploitability
 
-Many assets in this repository are bound by **dual-consent and community governance protocols**. Unauthorized access, exfiltration, or tampering may trigger legal action under:
+## Out of Scope
 
-- **California law**
-- Customary rights frameworks recognized by indigenous and oral tradition authorities
-
-Any breach involving these materials may be deemed a **cultural and legal violation**.
-
-## Enforcement & Legal
-
-Violations of this policy or bad-faith actions may result in:
-
-- **Account suspension**
-- **Revocation of access**
-- **Notification to platform security teams**
-- **Pursuit of civil or criminal liability under applicable laws**
-
-All legal disputes are subject to the jurisdiction of **San Diego County, California**.
-
----
-
-Thank you for protecting the cultural, digital, and ethical integrity of this project.
+- social engineering without code exploit
+- dependency-only findings without practical exploit path in this repository

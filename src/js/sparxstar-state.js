@@ -1,9 +1,11 @@
 /**
- * @file sparxstar-state.js
- * @version 2.0.0
- * @description Defines the canonical SPARXSTAR global state object. This is the single
- * source of truth for all environment data. The integrator will freeze key branches
- * after initialization to enforce immutability.
+ * SPARXSTAR User Environment Check
+ *
+ * Canonical global state model for all runtime environment telemetry.
+ *
+ * @module sparxstar-state
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window) {
     'use strict';

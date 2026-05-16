@@ -1,279 +1,103 @@
+# SPARXSTAR User Environment Check
 
-# **SPARXSTAR User Environment Check (UEC)**
+**Repository:** `Starisian-Technologies/sparxstar-user-environment-check`  
+**Package:** `starisian/sparxstar-user-environment-check`  
+**License:** Proprietary (see `LICENSE` and `LICENSE.md`)
 
-![SPARXSTAR-User-Environment-Check-1536x864](https://github.com/user-attachments/assets/e1a42278-ba41-4c6f-8233-859de5267d1d)
+SPARXSTAR User Environment Check (UEC) is a WordPress plugin that captures high-fidelity client environment diagnostics (device/network/browser/runtime capabilities), sends them to a secured REST endpoint, sanitizes and normalizes payloads, and stores snapshots in a site-scoped custom table.
 
+## Repository Role
 
-The **SPARXSTAR User Environment Check (UEC)** plugin collects and analyzes client-side environment data to enhance onboarding, diagnostics, and tier-based experience management experience. It provides a reliable snapshot of the user’s runtime environment and stores structured metadata server-side, enabling workflow decisions without relying on manual reporting or user comprehension.
+This repository contains the production plugin implementation for:
 
-UEC operates silently during sessions and supports both authenticated and anonymous contexts.
+- client-side environment collection and profiling
+- WordPress REST ingestion and persistence
+- multisite-safe schema lifecycle and cleanup
+- admin diagnostics and GeoIP configuration
+- stable public consumer API (`StarUserEnv`)
 
----
+## Key Capabilities
 
-## **Status**
+- Client-first diagnostics (client is source of truth)
+- Consent-aware identifier collection path
+- Snapshot persistence with cache and session integration
+- Optional GeoIP enrichment (ipinfo or MaxMind)
+- Multisite-aware activation/deactivation and uninstall
 
-**Development Status:** Stable / Maintenance Mode  
- **Branch Policy:** No new features. Only bug fixes, security updates, and performance improvements will be accepted.  
- **Future Work:** Any enhancements or architectural changes must be developed in a **fork**.
+## Requirements
 
-This repository represents the **finalized and production-hardened** implementation.
+- PHP 8.2+
+- WordPress 6.8+ (multisite supported)
+- Composer
+- Node.js 20+ and pnpm 8.6.0+
 
----
+## Installation / Setup
 
-## **Core Features**
+```bash
+composer install
+corepack enable
+corepack prepare pnpm@8.6.0 --activate
+npm install
+```
 
-* **Environment Profiling**  
-   Detects browser, OS, device class, network conditions, memory availability, battery state, and related indicators.
+> Note: This repository currently contains pre-existing lint/static-analysis issues unrelated to this documentation hardening pass.
 
-* **Privacy-Aware Data Collection**  
-   Uses WP Consent API categories and anonymized metrics. No personally identifiable information is captured.
+## Validation Commands
 
-* **Server-Side Logging Layer**  
-   Writes structured environment snapshots to the WordPress backend over authenticated REST endpoints.
+### PHP
 
-* **Tier Classification**  
-   Provides configurable logic to gate UI flows, offline modes, and device-dependent features.
+```bash
+composer run lint
+composer run analyze
+composer run test:unit
+composer test
+```
 
-* **Extensible Architecture**  
-   Other SparxStar modules consume cached data rather than issuing repeated probes.
+### Frontend
 
----
+```bash
+pnpm run lint
+pnpm run build
+```
 
-## **Architecture Overview**
+## Usage
 
-### **Frontend**
+### Public PHP API
 
-* Device and capability detection
-
-* Offline-first safe execution
-
-* Consent-aware sampling and throttling
-
-* JSON payload transport to REST endpoints
-
-### **Backend**
-
-* Namespaced PHP codebase (PSR-4)
-
-* Autoloaded service classes for:
-
-  * REST endpoint registration
-
-  * Request validation
-
-  * Metadata persistence and cleanup
-
-### **Data Model**
-
-Captures **non-personal, capability-based** data:
-
-* Device memory tier
-
-* Network `effectiveType`
-
-* Browser engine
-
-* Platform fingerprint (non-unique)
-
-* Potential performance constraints
-
-This informs automated decisions in other plugins without user intervention.
-
----
-
-## **Use Cases**
-
-* **Artist Onboarding**  
-   Determines whether a user’s device can handle audio recording, multi-step forms, or media uploads.
-
-* **Service Eligibility**  
-   Routes clients to flows appropriate for their network and device constraints.
-
-* **Support Diagnostics**  
-   Removes guesswork by exposing actual client environment.
-
-* **Platform Intelligence**  
-   Adapts to West African connectivity realities while scaling globally.
-
----
-
-## **Installation**
-
-1. Place the plugin in `/wp-content/plugins/`
-
-2. Requires **WordPress 6.0+** and **PHP 8.2+**
-
-3. Activate via **Network Admin → Plugins**
-
-4. No configuration required — initializes automatically
-
----
-
-## **Compatibility**
-
-* Fully **WordPress Multisite** compatible
-
-* Optimized for **PHP-FPM**
-
-* Safe behind **Cloudflare**
-
-* Tested with **SparxStar**, **AiWA**, and related modules
-
----
-
-## **Philosophy**
-
-Most platforms assume every user has a fast device and modern network. SparxStar does not.  
- UEC measures the **real** environment and adapts the experience accordingly, converting unknown conditions into predictable signals for automated decision-making.
-
----
-
-## **Usage (Developer API)**
-
-To access user environment data from another plugin or theme, use the static methods in:
+Use only the facade class:
 
 `\Starisian\SparxstarUEC\StarUserEnv`
 
-These values are served from a cache and are extremely fast.
+Examples:
 
-### **PHP Examples**
+- `StarUserEnv::get_snapshot()`
+- `StarUserEnv::get_network_type()`
+- `StarUserEnv::get_user_device()`
+- `StarUserEnv::get_geolocation()`
 
-`if ( class_exists('\Starisian\SparxstarUEC\StarUserEnv') ) {`
+### REST Endpoint
 
-    `$browser_name = \Starisian\SparxstarUEC\StarUserEnv::get_browser_name();`  
-    `$os_info = \Starisian\SparxstarUEC\StarUserEnv::get_os();`  
-    `$device_type = \Starisian\SparxstarUEC\StarUserEnv::get_device_type();`  
-    `$network_bandwidth = \Starisian\SparxstarUEC\StarUserEnv::get_network_effective_type();`
+`POST /wp-json/star-uec/v1/log`
 
-    `if ( '4g' !== $network_bandwidth ) {`  
-        `// Consider loading lighter assets`  
-    `}`
+- requires `X-WP-Nonce` (`wp_rest`) for snapshot ingestion
+- accepts JSON payload from client collector pipeline
 
-    `$ip_address = \Starisian\SparxstarUEC\StarUserEnv::get_ip_address();`
+Recorder telemetry endpoint:
 
-    `// Will return NULL unless geolocation is configured`  
-    `$location = \Starisian\SparxstarUEC\StarUserEnv::get_location();`  
-    `$country = $location['country'] ?? 'Unknown';`  
-`}`
+`POST /wp-json/star-uec/v1/recorder-log`
 
----
+## Development Workflow
 
-## **Geolocation Support (Optional)**
+1. Create feature branch.
+2. Keep changes scoped and incremental.
+3. Run lint/analyze/test/build commands.
+4. Update docs for API/behavior changes.
+5. Open PR with security and testing notes.
 
-UEC **does not** provide geolocation by itself.
+See also:
 
-To enable geolocation, you must use:
-
-* A **MaxMind GeoIP2** license key  
-   *(recommended — commercial and GDPR-friendly)*  
-   **or**
-
-* Another IP-to-location service that hooks the `sparxstar_env_geolocation_lookup` filter
-
-Example:
-
-`add_filter( 'sparxstar_env_geolocation_lookup', function( $location, $ip ) {`  
-    `return my_geo_service_lookup($ip); // Must return ['country' => 'US', ...] or null`  
-`}, 10, 2 );`
-
-If no provider implements this filter, `get_location()` returns `null`.
-
----
-
-## **Client-Side JavaScript API**
-
-After `DOMContentLoaded`, a global `SPARXSTAR` object is available:
-
-`const deviceType = SPARXSTAR.State.device.type;`  
-`const networkBandwidth = SPARXSTAR.Utils.getNetworkBandwidth();`
-
-`console.log(`  
-    `` `User is on a ${deviceType} with a ${networkBandwidth} connection.` ``  
-`);`
-
----
-
-## **Advanced Configuration**
-
-### **Persistent Object Cache**
-
-`add_filter( 'sparxstar_env_cache_handler', function( $handler ) {`  
-    `return wp_using_ext_object_cache() ? 'object_cache' : $handler;`  
-`});`
-
-### **TTL Tuning**
-
-`add_filter( 'sparxstar_env_cache_ttl', fn() => 5 * MINUTE_IN_SECONDS );`  
-`add_filter( 'sparxstar_env_geolocation_ttl', fn() => 24 * HOUR_IN_SECONDS );`
-
----
-
-## **Plugin Architecture**
-
-* `sparxstar-user-environment-check.php`  
-   **Loader** — Defines constants and initializes orchestrator
-
-* `src/SparxstarUserEnvironmentCheck.php`  
-   **Orchestrator** — Central bootstrap
-
-* `src/api/SparxstarUECAPI.php`  
-   **Writer** — REST API \+ snapshot cleanup
-
-* `src/StarUserEnv.php`  
-   **Reader** — Public cached API
-
-* `src/AssetManager.php`  
-   **Asset Loader** — JS/CSS orchestration
-
----
-
-## **Filters Reference**
-
-* `sparxstar_env_cache_handler`
-
-* `sparxstar_env_cache_ttl`
-
-* `sparxstar_env_geolocation_ttl`
-
-* `sparxstar_env_geolocation_lookup`
-
-* `sparxstar_env_retention_days`
-
----
-
-## **FAQ**
-
-**What if I don't use WP Consent?**  
- Scripts will not run unless consent is detected, unless bypassed intentionally.
-
-**Performance impact?**  
- Minimal. Logging is rate-limited, async, and cached.
-
----
-
-## **Roadmap**
-
-None.  
-
-This repository only accepts:
-
-* Security fixes
-* Critical bug patches
-* PHP compatibility updates
-
-All enhancements require a **fork**.
-
----
-
-## **License**
-
-Proprietary. All rights reserved.  
-Commercial usage requires written consent from **Starisian Technologies / MaximillianGroup**.
-
----
-
-## **Credits**
-
-Developed by **Max Barrett** and **Starisian Technologies**.  
- Built to power scalable digital marketing tools and creative ecosystems across West Africa and beyond.
-
+- `CONTRIBUTING.md`
+- `DEVELOPMENT.md`
+- `ARCHITECTURE.md`
+- `SECURITY.md`
+- `CHANGELOG.md`

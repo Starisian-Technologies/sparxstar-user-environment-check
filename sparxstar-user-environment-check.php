@@ -6,6 +6,8 @@
  * Version: 0.9.1
  * Author: Starisian
  * Text Domain: sparxstar-user-environment-check
+ * Copyright: 2023-2026 Starisian Technologies
+ * License: Proprietary - All Rights Reserved
  */
 
 declare(strict_types=1);

@@ -1,11 +1,13 @@
 <?php
-
 /**
- * Repository for retrieving UEC snapshots.
- * Version 3.0: Full production build. Supports:
- * - Frontend lookups by fingerprint + device_hash
- * - Admin lookups by User ID
- * - Unified JSON payload column (snapshot_data)
+ * SPARXSTAR User Environment Check
+ *
+ * Repository for reading persisted environment snapshots using identity-safe
+ * query paths for frontend and admin contexts.
+ *
+ * @package Starisian\SparxstarUEC\core
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);
@@ -30,7 +32,14 @@ final class SparxstarUECSnapshotRepository
     }
 
     /**
-     * FRONTEND LOOKUP (fingerprint + device hash)
+     * Fetch the latest snapshot by fingerprint and device hash.
+     *
+     * This is the canonical anonymous identity lookup path and must use both
+     * values together to avoid cross-device collisions.
+     *
+     * @param string|null $fingerprint Stable anonymous fingerprint.
+     * @param string|null $device_hash Device-derived identity hash.
+     * @return array<string, mixed>|null Snapshot payload or null when missing.
      */
     public static function get(?string $fingerprint, ?string $device_hash): ?array
     {
@@ -64,9 +73,10 @@ final class SparxstarUECSnapshotRepository
     }
 
     /**
-     * ADMIN LOOKUP (by WordPress User ID ONLY)
-     * This is the correct production method.
-     * The Admin DOES NOT and SHOULD NOT use fingerprint/device.
+     * Fetch the latest snapshot for a logged-in WordPress user.
+     *
+     * @param int $user_id WordPress user ID.
+     * @return array<string, mixed>|null Snapshot payload or null when missing.
      */
     public static function get_by_user_id(int $user_id): ?array
     {
@@ -99,7 +109,10 @@ final class SparxstarUECSnapshotRepository
     }
 
     /**
-     * Convert DB row → canonical array for Admin / API use.
+     * Convert a raw database row into the canonical snapshot payload shape.
+     *
+     * @param array<string, mixed> $row Raw row fetched from the snapshots table.
+     * @return array<string, mixed> Hydrated payload consumed by API/admin readers.
      */
     private static function hydrate(array $row): array
     {
@@ -125,7 +138,10 @@ final class SparxstarUECSnapshotRepository
     }
 
     /**
-     * Optional cache flush helper.
+     * Clear object-cache entry for an identity pair.
+     *
+     * @param string|null $fingerprint Stable anonymous fingerprint.
+     * @param string|null $device_hash Device-derived identity hash.
      */
     public static function flush(?string $fingerprint = null, ?string $device_hash = null): void
     {

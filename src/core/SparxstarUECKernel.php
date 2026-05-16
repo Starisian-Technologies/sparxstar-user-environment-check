@@ -1,6 +1,7 @@
 <?php
-
 /**
+ * SPARXSTAR User Environment Check
+ *
  * Kernel: Constructs and wires all service objects.
  *
  * This is the dependency injection container for the plugin.
@@ -8,6 +9,8 @@
  * to the orchestrator. No WordPress hooks or side effects here.
  *
  * @package SparxstarUserEnvironmentCheck
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);

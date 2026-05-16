@@ -1,4 +1,15 @@
 <?php
+/**
+ * SPARXSTAR User Environment Check
+ *
+ * Internal logger wrapper that standardizes plugin logs and redacts sensitive
+ * context fields before output.
+ *
+ * @package Starisian\SparxstarUEC\helpers
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
+ */
+declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\helpers;
 
@@ -8,7 +19,6 @@ if (!defined('ABSPATH')) {
 
 /**
  * Centralized logger for SPARXSTAR UEC.
- * Version 1.0.0: Standardized. Writes strictly to wp-content/debug.log via error_log().
  */
 class StarLogger
 {
@@ -54,6 +64,11 @@ class StarLogger
      * CONFIGURATION
      *=============================================================*/
 
+    /**
+     * Configure minimum accepted log level by level name.
+     *
+     * @param string $level_name PSR-3-like level string.
+     */
     public static function setMinLogLevel(string $level_name): void
     {
         $level_name = strtolower($level_name);
@@ -65,17 +80,29 @@ class StarLogger
     /**
      * Legacy method kept for backward compatibility.
      * Does nothing as we now rely on standard WP debug.log.
+     *
+     * @param string $path Deprecated custom path argument.
      */
     public static function setLogFilePath(string $path): void
     {
         // No-op
     }
 
+    /**
+     * Enable or disable JSON log output mode.
+     *
+     * @param bool $enabled True to emit JSON log entries.
+     */
     public static function enableJsonMode(bool $enabled = true): void
     {
         self::$json_mode = $enabled;
     }
 
+    /**
+     * Assign a correlation ID used to link related log lines.
+     *
+     * @param string|null $id Correlation ID, auto-generated when null.
+     */
     public static function setCorrelationId(?string $id = null): void
     {
         self::$correlation_id = $id ?? wp_generate_uuid4();
@@ -85,11 +112,23 @@ class StarLogger
      * CORE LOGGING
      *=============================================================*/
 
+    /**
+     * Resolve a textual log level to its numeric severity.
+     *
+     * @param string $level_name Log level name.
+     * @return int Numeric severity constant.
+     */
     protected static function getLevelInt(string $level_name): int
     {
         return self::$levels[strtolower($level_name)] ?? self::ERROR;
     }
 
+    /**
+     * Recursively redact sensitive fields in structured log context.
+     *
+     * @param array<string, mixed> $data Context array.
+     * @return array<string, mixed> Sanitized context.
+     */
     protected static function sanitizeData(array $data): array
     {
         foreach ($data as $k => &$v) {
@@ -106,6 +145,11 @@ class StarLogger
     /**
      * Main logging method.
      * Writes directly to PHP error_log (standard WP debug.log).
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Throwable, scalar, or structured message.
+     * @param string $level Severity label.
+     * @param array<string, mixed> $extra Structured metadata.
      */
     public static function log(string $context, mixed $msg, string $level = 'error', array $extra = []): void
     {
@@ -154,6 +198,12 @@ class StarLogger
         do_action('star_log_event', $level_name, $context, $msg, $extra);
     }
 
+    /**
+     * Convert mixed message payload into printable string output.
+     *
+     * @param mixed $msg Message payload.
+     * @return string Formatted message.
+     */
     protected static function formatMessageContent(mixed $msg): string
     {
         if ($msg instanceof \Throwable) {
@@ -173,11 +223,22 @@ class StarLogger
      * TIMER UTILITIES
      *=============================================================*/
 
+    /**
+     * Start a named high-resolution timer.
+     *
+     * @param string $label Timer identifier.
+     */
     public static function timeStart(string $label): void
     {
         self::$timers[$label] = microtime(true);
     }
 
+    /**
+     * Stop a named timer and write its duration as a debug message.
+     *
+     * @param string $label Timer identifier.
+     * @param string $context Log context for timer output.
+     */
     public static function timeEnd(string $label, string $context = 'Timer'): void
     {
         if (!isset(self::$timers[$label])) {
@@ -193,46 +254,109 @@ class StarLogger
     /*==============================================================
      * CONVENIENCE WRAPPERS
      *=============================================================*/
+    /**
+     * Write debug-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function debug(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'debug', $extra);
     }
 
+    /**
+     * Write info-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function info(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'info', $extra);
     }
 
+    /**
+     * Write notice-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function notice(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'notice', $extra);
     }
 
+    /**
+     * Write warning-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function warning(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'warning', $extra);
     }
 
+    /**
+     * Backward-compatible alias for warning().
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function warn(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'warning', $extra);
     }
 
+    /**
+     * Write error-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function error(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'error', $extra);
     }
 
+    /**
+     * Write critical-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function critical(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'critical', $extra);
     }
 
+    /**
+     * Write alert-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function alert(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'alert', $extra);
     }
 
+    /**
+     * Write emergency-level message.
+     *
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
+     * @param array<string, mixed> $extra Structured metadata.
+     */
     public static function emergency(string $context, mixed $msg, array $extra = []): void
     {
         self::log($context, $msg, 'emergency', $extra);
@@ -241,6 +365,9 @@ class StarLogger
     /*==============================================================
      * BOOTSTRAP
      *=============================================================*/
+    /**
+     * Optional bootstrap hook for logger initialization.
+     */
     public static function boot(): void
     {
         // No special boot logic needed for standard error_log

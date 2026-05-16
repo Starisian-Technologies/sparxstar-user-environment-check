@@ -1,9 +1,14 @@
 <?php
-
-declare(strict_types=1);
 /**
- * Service for performing GeoIP lookups.
+ * SPARXSTAR User Environment Check
+ *
+ * GeoIP service abstraction for optional provider-backed enrichment.
+ *
+ * @package Starisian\SparxstarUEC\services
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
+declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\services;
 
@@ -15,6 +20,9 @@ use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 
+/**
+ * Performs geolocation lookups using configured providers.
+ */
 final class SparxstarUECGeoIPService
 {
     /**

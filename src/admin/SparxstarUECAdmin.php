@@ -1,10 +1,13 @@
 <?php
-
 /**
- * SPARXSTAR User Environment Check - Admin Settings (Minimal, Stable)
- * Version 2.3: Fetch snapshots by User ID instead of browser session/fingerprint.
+ * SPARXSTAR User Environment Check
+ *
+ * Admin settings UI and diagnostics snapshot viewer for operational support.
+ *
+ * @package Starisian\SparxstarUEC\admin
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
-
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\admin;
@@ -18,6 +21,9 @@ use Starisian\SparxstarUEC\StarUserEnv;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\core\SparxstarUECSnapshotRepository;
 
+/**
+ * Registers settings pages, option fields, and admin notices.
+ */
 final class SparxstarUECAdmin
 {
     private const OPTION_KEY_PROVIDER     = 'sparxstar_uec_geoip_provider';
@@ -25,6 +31,9 @@ final class SparxstarUECAdmin
     private const OPTION_KEY_MAXMIND_PATH = 'sparxstar_uec_maxmind_db_path';
     private const PAGE_SLUG               = 'sparxstar-uec-settings';
 
+    /**
+     * Register admin-only hooks for the settings screen.
+     */
     public function __construct()
     {
         if (is_admin()) {

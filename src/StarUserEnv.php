@@ -1,10 +1,13 @@
 <?php
-
 /**
- * Shared utility helpers and public snapshot accessors
- * for SPARXSTAR environment diagnostics.
+ * SPARXSTAR User Environment Check
+ *
+ * Shared utility helpers and public snapshot accessors for SPARXSTAR
+ * environment diagnostics.
  *
  * @package SparxstarUserEnvironmentCheck
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);
@@ -118,16 +121,23 @@ final class StarUserEnv
 
     /**
      * Retrieve the latest stored snapshot for a user/session (public).
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @return array<string, mixed>|null Snapshot payload when available.
      */
     public static function get_snapshot(?int $user_id = null, ?string $session_id = null): ?array
     {
         return self::fetch_snapshot($user_id, $session_id);
     }
 
-   /**
-	 * Internal engine: fetch the full snapshot from session, runtime cache, 
-	 * object cache, or database.
-	 */
+    /**
+     * Internal engine fetching snapshot from runtime cache/session/cache/DB.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @return array<string, mixed>|null Snapshot payload when available.
+     */
 	private static function fetch_snapshot(?int $user_id, ?string $session_id): ?array
 	{
 	    // --- 1. CHECK RUNTIME CACHE (Fastest) ---
@@ -173,7 +183,13 @@ final class StarUserEnv
 	}
 	
     /**
-     * Generic "dot path" accessor into the snapshot structure.
+     * Generic dot-path accessor into snapshot structure.
+     *
+     * @param string $path Dot-path into snapshot array.
+     * @param mixed $default Default value when missing.
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @return mixed Resolved value or default.
      */
     private static function get_value_from_snapshot(
         string $path,
@@ -200,6 +216,9 @@ final class StarUserEnv
 
     /**
      * Flushes the cache for a given user, forcing the next getter call to fetch fresh data.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
      */
     public static function flush_cache(?int $user_id = null, ?string $session_id = null): void
     {
@@ -219,6 +238,10 @@ final class StarUserEnv
 
     /**
      * Retrieves the entire raw snapshot for debugging or full-data use cases.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @return array<string, mixed>|null Snapshot payload when available.
      */
     public static function get_full_snapshot(?int $user_id = null, ?string $session_id = null): ?array
     {
@@ -234,6 +257,9 @@ final class StarUserEnv
     /**
      * Get the user's stable, anonymous browser fingerprint ID from the snapshot.
      * This is the primary key for tracking anonymous users.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
      */
     public static function get_visitor_id(?int $user_id = null, ?string $session_id = null): string
     {
@@ -247,6 +273,12 @@ final class StarUserEnv
 
     // --- Performance & UX Optimization ---
 
+    /**
+     * Retrieve effective network type from the latest snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_network_type(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -257,6 +289,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Determine whether data-saver mode is enabled in snapshot data.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function is_data_saver_enabled(?int $user_id = null, ?string $session_id = null): bool
     {
         return (bool) self::get_value_from_snapshot(
@@ -267,6 +305,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get normalized device type from snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_device(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -277,6 +321,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get GPU identifier from snapshot fingerprinting data.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_gpu(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -287,6 +337,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get operating system label from snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_os_name(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -297,6 +353,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get browser name from snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_browser_name(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -309,6 +371,12 @@ final class StarUserEnv
 
     // --- Geolocation & Localization (Snapshot-based) ---
 
+    /**
+     * Get server-observed user IP from snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_ip(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -319,6 +387,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get user country from snapshot geolocation block.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_country(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -329,6 +403,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get user region/state from snapshot geolocation block.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_state(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -339,6 +419,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get user city from snapshot geolocation block.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_city(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -349,6 +435,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Get two-letter language code from snapshot context language.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_user_language(?int $user_id = null, ?string $session_id = null): string
     {
         $lang = (string) self::get_value_from_snapshot(
@@ -363,6 +455,12 @@ final class StarUserEnv
 
     // --- Legal & Security ---
 
+    /**
+     * Get UTC timestamp of the stored snapshot.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function get_snapshot_timestamp(?int $user_id = null, ?string $session_id = null): string
     {
         return (string) self::get_value_from_snapshot(
@@ -373,6 +471,12 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Determine if geolocation data flagged VPN/proxy usage.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     */
     public static function is_on_vpn(?int $user_id = null, ?string $session_id = null): bool
     {
         return (bool) self::get_value_from_snapshot(
@@ -383,6 +487,9 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Return active session ID from the session manager.
+     */
     public static function get_current_user_session_id(): string
     {
         return SparxstarUECSessionManager::get_session_id();
@@ -390,6 +497,13 @@ final class StarUserEnv
 
     // --- Snapshot-based Geolocation Convenience (camelCase variants) ---
 
+    /**
+     * Get full geolocation payload from snapshot server block.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @return array<string, mixed> Geolocation map.
+     */
     public static function get_geolocation(?int $user_id = null, ?string $session_id = null): array
     {
         $geo = self::get_value_from_snapshot(
@@ -402,6 +516,13 @@ final class StarUserEnv
         return is_array($geo) ? $geo : [];
     }
 
+    /**
+     * Geolocation convenience accessor for city.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @param string $default Default when value is missing.
+     */
     public static function get_city(
         ?int $user_id = null,
         ?string $session_id = null,
@@ -415,6 +536,13 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Geolocation convenience accessor for state.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @param string $default Default when value is missing.
+     */
     public static function get_state(
         ?int $user_id = null,
         ?string $session_id = null,
@@ -428,6 +556,13 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Geolocation convenience accessor for postal code.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @param string $default Default when value is missing.
+     */
     public static function get_postal_code(
         ?int $user_id = null,
         ?string $session_id = null,
@@ -441,6 +576,13 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Geolocation convenience accessor for region.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @param string $default Default when value is missing.
+     */
     public static function get_region(
         ?int $user_id = null,
         ?string $session_id = null,
@@ -454,6 +596,13 @@ final class StarUserEnv
         );
     }
 
+    /**
+     * Geolocation convenience accessor for country.
+     *
+     * @param int|null $user_id Optional user scope.
+     * @param string|null $session_id Optional session scope.
+     * @param string $default Default when value is missing.
+     */
     public static function get_country(
         ?int $user_id = null,
         ?string $session_id = null,
@@ -517,6 +666,8 @@ final class StarUserEnv
 
     /**
      * Retrieve a value from the $_SERVER superglobal with sanitization applied.
+     *
+     * @param string $key Server header/index key.
      */
     private static function get_server_value(string $key): string
     {
@@ -525,6 +676,8 @@ final class StarUserEnv
 
     /**
      * Sanitize and validate an IP address string.
+     *
+     * @param string|null $value Raw IP candidate string.
      */
     private static function filter_ip_address(?string $value): string
     {
@@ -591,6 +744,9 @@ final class StarUserEnv
 
     /**
      * Persist an arbitrary value in the session namespace.
+     *
+     * @param string $key Session key.
+     * @param mixed $value Value to persist.
      */
     public static function setSessionValue(string $key, mixed $value): void
     {
@@ -600,6 +756,10 @@ final class StarUserEnv
 
     /**
      * Retrieve a value from the session namespace.
+     *
+     * @param string $key Session key.
+     * @param mixed $default Default return when missing.
+     * @return mixed Resolved session value.
      */
     public static function getSessionValue(string $key, mixed $default = null): mixed
     {
@@ -609,6 +769,9 @@ final class StarUserEnv
 
     /**
      * Store an environment snapshot and its context within the PHP session.
+     *
+     * @param array<string, mixed> $snapshot Snapshot payload.
+     * @param array<string, mixed> $context Supplemental context metadata.
      */
     public static function storeEnvironmentSnapshot(array $snapshot, array $context = []): void
     {
@@ -677,6 +840,9 @@ final class StarUserEnv
 
     /**
      * Fetch geolocation data using an external provider hooked via WordPress filters.
+     *
+     * @param string $ip Optional specific IP override.
+     * @return array<string, mixed> Provider geolocation payload.
      */
     public static function getIPGeoLocation(string $ip = ''): array
     {
@@ -688,6 +854,9 @@ final class StarUserEnv
     /**
      * Retrieve a specific field from the geolocation payload or the full JSON
      * from the external provider (snapshot-independent).
+     *
+     * @param string $field Optional field key.
+     * @param string $ip Optional specific IP override.
      */
     public static function getGeoLocationData(string $field = '', string $ip = ''): string
     {
@@ -722,6 +891,8 @@ final class StarUserEnv
 
     /**
      * Determine the preferred language from the Accept-Language header.
+     *
+     * @param string $ret_type Output type ('code' or full locale).
      */
     public static function getUserLanguage(string $ret_type = 'code'): string
     {
@@ -897,7 +1068,9 @@ final class StarUserEnv
 
     /**
      * Allow snapshot creation if none exists for current identity.
-     * Clears the session block flag when admin visits settings but no snapshot exists.
+     *
+     * Clears the session block flag when admin visits settings and no snapshot
+     * exists yet for the current fingerprint/device pair.
      */
     public static function allow_snapshot_if_none_exist(): void
     {

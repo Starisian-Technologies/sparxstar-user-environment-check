@@ -1,5 +1,14 @@
 <?php
-
+/**
+ * SPARXSTAR User Environment Check
+ *
+ * Plugin lifecycle installer for activation, deactivation, and multisite site
+ * initialization routines.
+ *
+ * @package Starisian\SparxstarUEC\core
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
+ */
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\core;
