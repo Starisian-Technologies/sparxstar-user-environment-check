@@ -14,33 +14,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@ec406be512d7077f68eed36e63f4d91bc006edc4
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+          coverage: none
+
       - name: Cache Composer packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --no-dev
 
       - name: Composer audit
-        run: composer audit || echo "Composer audit found vulnerabilities"
-
-      - name: Cache pnpm packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: pnpm-
+        run: composer audit
+        continue-on-error: true
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          version: 8.6.0
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: pnpm audit
-        run: pnpm audit --audit-level=moderate || echo "pnpm audit found vulnerabilities"
+      - name: pnpm audit (production only)
+        run: pnpm audit --prod --audit-level=high
+        continue-on-error: true

@@ -26,7 +26,7 @@ jobs:
           coverage: none
       
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -54,28 +54,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
       - name: Setup pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
         with:
           version: 8.6.0
       
-      - name: Cache pnpm dependencies
-        uses: actions/cache@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          node-version: '20'
+          cache: 'pnpm'
       
       - name: Install Node dependencies
         run: pnpm install --frozen-lockfile
       
       - name: Run ESLint
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
         run: pnpm run lint:js || true
       
       - name: Run Stylelint
@@ -103,15 +98,16 @@ jobs:
           php-version: '8.3'
           tools: composer:v2
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
       - name: Setup pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
         with:
           version: 8.6.0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
       
       - name: Install dependencies
         run: |
@@ -128,6 +124,8 @@ jobs:
         run: composer phpcbf || true
       
       - name: Run ESLint fixes
+        env:
+          ESLINT_USE_FLAT_CONFIG: "false"
         run: pnpm run lint:fix || true
       
       - name: Run Stylelint fixes
