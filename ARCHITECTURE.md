@@ -27,7 +27,7 @@ SPARXSTAR User Environment Check is responsible for collecting, receiving, and s
 
 Primary namespace: `Starisian\SparxstarUEC\*`
 
-All plugin-defined global constants/functions are prefixed (`SPX_`, `spx_`, `sparxstar_`).
+All plugin-defined global constants/functions are prefixed (`SPX_`, `spx_`, `sparxstar_`, `STARLOGGER_`).
 
 ## Execution Flow
 
