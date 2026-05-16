@@ -37,7 +37,7 @@ This repository contains the production plugin implementation for:
 composer install
 corepack enable
 corepack prepare pnpm@8.6.0 --activate
-npm install
+pnpm install
 ```
 
 > Note: This repository currently contains pre-existing lint/static-analysis issues unrelated to this documentation hardening pass.
