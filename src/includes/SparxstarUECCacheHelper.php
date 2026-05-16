@@ -1,8 +1,15 @@
 <?php
-
 /**
- * Provides a caching layer for environment snapshots via the WordPress object cache.
+ * SPARXSTAR User Environment Check
+ *
+ * Cache helper for snapshot reads/writes to centralize cache key format and
+ * keep cache behavior deterministic across services.
+ *
+ * @package Starisian\SparxstarUEC\includes
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
+
 declare(strict_types=1);
 
 namespace Starisian\SparxstarUEC\includes;
@@ -11,10 +18,19 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Shared object-cache utility for snapshot reads and writes.
+ */
 final class SparxstarUECCacheHelper
 {
+    /**
+     * Cache group namespace for all snapshot entries.
+     */
     private const GROUP = 'sparxstar_env';
 
+    /**
+     * Default cache duration in seconds.
+     */
     private const TTL = DAY_IN_SECONDS;
 
     /**
@@ -37,7 +53,7 @@ final class SparxstarUECCacheHelper
      * Store a snapshot in the object cache.
      *
      * @param string $cache_key The key to store the data under.
-     * @param array $snapshot The snapshot data to store.
+     * @param array  $snapshot The snapshot data to store.
      */
     public static function set(string $cache_key, array $snapshot = []): void
     {
@@ -63,7 +79,12 @@ final class SparxstarUECCacheHelper
     }
 
     /**
-     * Build a deterministic cache key.
+     * Build the canonical cache key for a user/session/identity triple.
+     *
+     * @param int|null    $user_id Current WordPress user ID, or null for guests.
+     * @param string|null $session_id Current PHP session identifier.
+     * @param string      $ip_hash Hash source used for anonymous cache partitioning.
+     * @return string Deterministic cache key.
      */
     public static function make_key(?int $user_id, ?string $session_id, string $ip_hash): string
     {

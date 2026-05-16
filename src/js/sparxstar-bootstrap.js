@@ -1,8 +1,12 @@
 /**
- * @file sparxstar-bootstrap.js
- * @version 1.0.0
- * @description Bootstrap file that imports vendor dependencies and exposes them globally.
- * This is the Rollup entry point that bundles everything together.
+ * SPARXSTAR User Environment Check
+ *
+ * Bootstrap entrypoint that exposes required vendor dependencies and loads all
+ * first-party runtime modules.
+ *
+ * @module sparxstar-bootstrap
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 // Import vendor libraries from node_modules

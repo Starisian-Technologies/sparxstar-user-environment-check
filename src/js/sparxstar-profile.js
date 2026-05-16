@@ -1,9 +1,12 @@
 /**
- * @file sparxstar-profile.js
- * @version 3.0.0
- * @description Pure, stateless profiling logic. 
- * UPDATED: Prioritizes RAM over Core count to correctly classify 
- * older desktops and virtual machines.
+ * SPARXSTAR User Environment Check
+ *
+ * Stateless profile derivation logic that translates raw telemetry into
+ * actionable capability tiers.
+ *
+ * @module sparxstar-profile
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window) {
     'use strict';

@@ -1,10 +1,12 @@
 /**
- * @file sparxstar-sync.js
- * @version 2.2.0
- * @description Resilient server communication.
- * FIXES:
- * 1. Authenticated requests (credentials: 'same-origin') for Admin View.
- * 2. Payload structure aligned with PHP Controller v2.1 (nested client_side_data).
+ * SPARXSTAR User Environment Check
+ *
+ * Transport module responsible for authenticated snapshot submission to the
+ * plugin REST API.
+ *
+ * @module sparxstar-sync
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window) {
     'use strict';

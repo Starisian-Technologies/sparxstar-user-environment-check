@@ -1,8 +1,12 @@
 <?php
-
 /**
- * Handles all direct database interactions for snapshots.
- * Version 3.0.0: Finalized schema. Uses LONGTEXT for compatibility.
+ * SPARXSTAR User Environment Check
+ *
+ * Database gateway for snapshot table schema management and persistence.
+ *
+ * @package Starisian\SparxstarUEC\core
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);
@@ -110,6 +114,9 @@ final readonly class SparxstarUECDatabase
 
     /**
      * Insert or update a snapshot.
+     *
+     * @param array<string, mixed> $data Canonical or legacy snapshot payload.
+     * @return array<string, mixed>|\WP_Error Insert/update result or persistence error.
      */
     public function store_snapshot(array $data): array|\WP_Error
     {

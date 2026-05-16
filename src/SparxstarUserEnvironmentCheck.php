@@ -1,9 +1,12 @@
 <?php
-
 /**
+ * SPARXSTAR User Environment Check
+ *
  * Bootstrapper for the SPARXSTAR User Environment Check plugin.
  *
  * @package SparxstarUserEnvironmentCheck
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);
@@ -252,6 +255,7 @@ final class SparxstarUserEnvironmentCheck
      * Prevents serializing of the singleton instance.
      *
      * @since 0.1.0
+     * @param array<string, mixed> $data Serialized payload.
      * @throws LogicException If someone tries to serialize the object.
      */
     public function __unserialize(array $data): void

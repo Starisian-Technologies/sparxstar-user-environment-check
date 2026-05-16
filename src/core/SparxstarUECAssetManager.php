@@ -1,4 +1,13 @@
 <?php
+/**
+ * SPARXSTAR User Environment Check
+ *
+ * Asset registration/enqueue manager for frontend and admin runtime assets.
+ *
+ * @package Starisian\SparxstarUEC\core
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
+ */
 
 declare(strict_types=1);
 
@@ -9,11 +18,13 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Modern asset loader for Sparxstar User Environment Check plugin.
- * Version 4.0.1: Fixed REST API namespace and JS localization keys.
+ * Registers and localizes plugin JS/CSS assets for runtime diagnostics.
  */
 final class SparxstarUECAssetManager
 {
+    /**
+     * Fallback version for cache-busting when filemtime is unavailable.
+     */
     private const VERSION = '4.0.1';
 
     private const TEXT_DOMAIN = 'sparxstar-user-environment-check';
@@ -26,6 +37,9 @@ final class SparxstarUECAssetManager
 
     private const ADMIN_STYLE_HANDLE = 'sparxstar-uec-admin';
 
+    /**
+     * Register hook callbacks that enqueue plugin assets.
+     */
     public static function init(): void
     {
         add_action('wp_enqueue_scripts', self::enqueue_frontend(...));

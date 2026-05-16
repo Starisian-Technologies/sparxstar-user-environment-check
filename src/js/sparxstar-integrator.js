@@ -1,9 +1,12 @@
 /**
- * @file sparxstar-integrator.js
- * @version 3.2.0
- * @description Hardened master orchestrator.
- * UPDATED: Merged Technical + Identity data into a single request to prevent
- * partial data saves and 400 errors.
+ * SPARXSTAR User Environment Check
+ *
+ * Runtime orchestrator that coordinates collection, consent handling, profile
+ * derivation, and API synchronization.
+ *
+ * @module sparxstar-integrator
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window, document) {
     'use strict';

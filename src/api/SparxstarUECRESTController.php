@@ -1,8 +1,13 @@
 <?php
-
 /**
- * REST controller for handling environment diagnostics.
- * Version 2.1: Added deep logging to debug User ID mismatches.
+ * SPARXSTAR User Environment Check
+ *
+ * REST controller for ingesting client environment payloads and recorder
+ * telemetry into the canonical storage schema.
+ *
+ * @package Starisian\SparxstarUEC\api
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 
 declare(strict_types=1);
@@ -21,8 +26,16 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Handles API route registration, request validation, and payload mapping.
+ */
 final readonly class SparxstarUECRESTController
 {
+    /**
+     * Build the REST controller with its database dependency.
+     *
+     * @param SparxstarUECDatabase $database Snapshot persistence gateway.
+     */
     public function __construct(private SparxstarUECDatabase $database) {}
 
     /**
@@ -52,7 +65,10 @@ final readonly class SparxstarUECRESTController
     }
 
     /**
-     * Handle the incoming snapshot payload.
+     * Handle incoming environment snapshot payloads.
+     *
+     * @param WP_REST_Request $request HTTP request containing JSON payload.
+     * @return WP_REST_Response|WP_Error Success response or validation/storage error.
      */
     public function handle_log_request(WP_REST_Request $request): WP_REST_Response|WP_Error
     {
@@ -101,7 +117,7 @@ final readonly class SparxstarUECRESTController
     /**
      * Handle incoming recorder event logs from external plugins.
      *
-     * @param WP_REST_Request $request The incoming request
+     * @param WP_REST_Request $request The incoming request.
      * @return WP_REST_Response The response
      */
     public function handle_recorder_log(WP_REST_Request $request): WP_REST_Response
@@ -128,7 +144,10 @@ final readonly class SparxstarUECRESTController
     }
 
     /**
-     * Transform the raw incoming payload into the canonical database schema.
+     * Transform raw incoming payload into the canonical storage structure.
+     *
+     * @param array<string, mixed> $payload Raw client+server payload.
+     * @return array<string, mixed> Normalized structure expected by database layer.
      */
     private function map_and_normalize_snapshot(array $payload): array
     {
@@ -161,6 +180,12 @@ final readonly class SparxstarUECRESTController
 
     // --- Helper Methods ---
 
+    /**
+     * Validate request nonce for protected logging endpoint.
+     *
+     * @param WP_REST_Request $request Incoming REST request.
+     * @return bool|WP_Error True when allowed, WP_Error when rejected.
+     */
     public function check_permissions(WP_REST_Request $request): bool|WP_Error
     {
         $nonce = $request->get_header('X-WP-Nonce');
@@ -172,6 +197,12 @@ final readonly class SparxstarUECRESTController
         return true;
     }
 
+    /**
+     * Collect server-side metadata that cannot be trusted from the client.
+     *
+     * @param string $client_ip Sanitized client IP address.
+     * @return array<string, mixed> Server metadata and optional geolocation.
+     */
     private function collect_server_side_data(string $client_ip): array
     {
         $geoip_service = new SparxstarUECGeoIPService();
@@ -199,6 +230,11 @@ final readonly class SparxstarUECRESTController
         ];
     }
 
+    /**
+     * Collect supported Client Hint headers from the current HTTP request.
+     *
+     * @return array<string, string> Header-to-value map of available hints.
+     */
     private function collect_client_hints(): array
     {
         $client_hints = [];

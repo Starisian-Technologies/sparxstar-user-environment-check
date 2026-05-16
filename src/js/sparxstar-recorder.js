@@ -1,8 +1,11 @@
 /**
- * @file sparxstar-recorder.js
- * @version 1.0.0
- * @description Event recorder for logging errors and events from other plugins.
- * Integrates with Starmus Recorder and other monitoring plugins.
+ * SPARXSTAR User Environment Check
+ *
+ * Recorder telemetry bridge for cross-plugin diagnostic event capture.
+ *
+ * @module sparxstar-recorder
+ * @copyright Copyright (c) 2023-2026, Starisian Technologies
+ * @license Proprietary. All Rights Reserved.
  */
 (function (window) {
     'use strict';
