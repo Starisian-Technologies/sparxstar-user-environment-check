@@ -6,7 +6,7 @@
 composer install
 corepack enable
 corepack prepare pnpm@8.6.0 --activate
-npm install
+pnpm install
 ```
 
 ## Build and Validation
