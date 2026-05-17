@@ -512,27 +512,23 @@ final class StarUserEnvGettersTest extends TestCase
     }
 
     /**
-     * An Android User-Agent string contains "Linux" which matches before "android"
-     * in the implementation's pattern map, so 'Linux' is the expected result.
+     * An Android User-Agent string should be classified as 'Android'.
      */
-    public function test_get_user_os_returns_linux_for_android_ua(): void
+    public function test_get_user_os_detects_android(): void
     {
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36';
 
-        // The map checks 'linux' before 'android', so Android UAs resolve to 'Linux'.
-        $this->assertSame('Linux', StarUserEnv::getUserOS());
+        $this->assertSame('Android', StarUserEnv::getUserOS());
     }
 
     /**
-     * An iPhone User-Agent string contains "like Mac OS X" which matches the
-     * 'macintosh|mac os x|macos' pattern before 'ipad|ipod|iphone', so 'Mac' is returned.
+     * An iPhone User-Agent string should be classified as 'iOS'.
      */
-    public function test_get_user_os_returns_mac_for_ios_ua(): void
+    public function test_get_user_os_detects_ios(): void
     {
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)';
 
-        // 'mac os x' matches before 'iphone' in the ordered pattern map.
-        $this->assertSame('Mac', StarUserEnv::getUserOS());
+        $this->assertSame('iOS', StarUserEnv::getUserOS());
     }
 
     /**
