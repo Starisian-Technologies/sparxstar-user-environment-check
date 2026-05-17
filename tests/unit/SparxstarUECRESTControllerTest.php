@@ -114,8 +114,9 @@ final class SparxstarUECRESTControllerTest extends TestCase
 
     /**
      * A valid payload should be processed and produce a WP_REST_Response with
-     * status 200. (The DB stub returns a WP_Error for missing table, which is
-     * re-propagated; therefore we expect a WP_Error here.)
+     * status 200. Under the default stub wpdb, `get_var` returns null so
+     * `table_exists()` is false, and the database layer returns a
+     * `WP_Error('db_table_missing')` which the controller propagates directly.
      */
     public function test_handle_log_request_with_valid_payload_returns_result(): void
     {
@@ -133,13 +134,14 @@ final class SparxstarUECRESTControllerTest extends TestCase
             ],
         ]);
 
-        // The default stub wpdb reports the table as missing, so a WP_Error
-        // is returned from the database layer and propagated by the controller.
         $result = $controller->handle_log_request($request);
 
-        // Ensure it's either a successful response or a known DB error (not a
-        // "invalid_data" reject — the payload itself was valid).
-        $this->assertNotSame('invalid_data', $result instanceof \WP_Error ? $result->get_error_code() : '');
+        // The stub wpdb's get_var always returns null, so table_exists() → false.
+        // The database layer returns WP_Error('db_table_missing') and the
+        // controller propagates it unchanged — confirming the valid payload
+        // passed structural validation and reached the storage layer.
+        $this->assertInstanceOf(\WP_Error::class, $result);
+        $this->assertSame('db_table_missing', $result->get_error_code());
     }
 
     // -----------------------------------------------------------------------
