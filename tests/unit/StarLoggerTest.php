@@ -299,16 +299,19 @@ final class StarLoggerTest extends TestCase
      */
     public function test_log_formats_throwable_as_readable_string(): void
     {
-        $GLOBALS['fired_actions'] = [];
-
         $ex = new \RuntimeException('Something went wrong');
-        StarLogger::error('ExTest', $ex);
 
-        $events = $GLOBALS['fired_actions']['star_log_event'] ?? [];
-        $this->assertNotEmpty($events);
+        $ref      = new ReflectionClass(StarLogger::class);
+        $formatter = $ref->getMethod('formatMessageContent');
+        $formatter->setAccessible(true);
 
-        // The message argument (index 2) should be the original Throwable.
-        $this->assertInstanceOf(\RuntimeException::class, $events[0][2]);
+        $formatted = $formatter->invoke(null, $ex);
+
+        $this->assertIsString($formatted);
+        $this->assertStringContainsString(\RuntimeException::class, $formatted);
+        $this->assertStringContainsString('Something went wrong', $formatted);
+        $this->assertStringContainsString($ex->getFile(), $formatted);
+        $this->assertStringContainsString((string) $ex->getLine(), $formatted);
     }
 
     // -----------------------------------------------------------------------
