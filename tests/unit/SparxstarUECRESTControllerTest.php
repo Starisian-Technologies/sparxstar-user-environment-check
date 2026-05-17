@@ -113,13 +113,14 @@ final class SparxstarUECRESTControllerTest extends TestCase
     }
 
     /**
-     * A valid payload should be processed and produce a WP_REST_Response with
-     * status 200. Under the default stub wpdb, `get_var` returns null so
-     * `table_exists()` is false, and the database layer returns a
-     * `WP_Error('db_table_missing')` which the controller propagates directly.
+     * When the database table is absent the controller should propagate the
+     * `db_table_missing` WP_Error returned by the database layer verbatim,
+     * confirming the valid payload passed structural validation and reached
+     * the storage layer.
      */
-    public function test_handle_log_request_with_valid_payload_returns_result(): void
+    public function test_handle_log_request_propagates_db_table_missing_error(): void
     {
+        // Default stub wpdb: get_var always returns null → table_exists() = false.
         $controller = new SparxstarUECRESTController(
             new SparxstarUECDatabase($GLOBALS['wpdb'])
         );
@@ -136,12 +137,50 @@ final class SparxstarUECRESTControllerTest extends TestCase
 
         $result = $controller->handle_log_request($request);
 
-        // The stub wpdb's get_var always returns null, so table_exists() → false.
-        // The database layer returns WP_Error('db_table_missing') and the
-        // controller propagates it unchanged — confirming the valid payload
-        // passed structural validation and reached the storage layer.
         $this->assertInstanceOf(\WP_Error::class, $result);
         $this->assertSame('db_table_missing', $result->get_error_code());
+    }
+
+    /**
+     * When the database table exists and the payload is valid, the controller
+     * should return a 200 WP_REST_Response with status 'ok' and action
+     * 'inserted' for a new record.
+     */
+    public function test_handle_log_request_with_valid_payload_returns_200_response(): void
+    {
+        // Build a wpdb stub that simulates a healthy database: SHOW TABLES LIKE
+        // returns 1 (table exists) and SELECT id returns null (new record).
+        $seededWpdb = new class extends \wpdb {
+            public function get_var(string $query): ?int
+            {
+                $this->queries[] = ['query' => $query];
+                return str_contains($query, 'SHOW TABLES LIKE') ? 1 : null;
+            }
+        };
+
+        $controller = new SparxstarUECRESTController(
+            new SparxstarUECDatabase($seededWpdb)
+        );
+
+        $request = new \WP_REST_Request();
+        $request->set_json_params([
+            'client_side_data' => [
+                'identifiers' => [
+                    'fingerprint' => 'fp_success',
+                    'session_id'  => 'sess_success',
+                ],
+            ],
+        ]);
+
+        $result = $controller->handle_log_request($request);
+
+        // The payload passed validation and was inserted — expect a full 200.
+        $this->assertInstanceOf(\WP_REST_Response::class, $result);
+        $this->assertSame(200, $result->get_status());
+        $data = $result->get_data();
+        $this->assertSame('ok', $data['status']);
+        $this->assertSame('inserted', $data['action']);
+        $this->assertIsInt($data['id']);
     }
 
     // -----------------------------------------------------------------------
