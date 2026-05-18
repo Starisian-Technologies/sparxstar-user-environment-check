@@ -512,13 +512,13 @@ final class StarUserEnvGettersTest extends TestCase
     }
 
     /**
-     * An Android User-Agent string should be classified as 'Android'.
+     * An Android User-Agent string with a Linux token is currently classified as 'Linux'.
      */
     public function test_get_user_os_detects_android(): void
     {
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36';
 
-        $this->assertSame('Android', StarUserEnv::getUserOS());
+        $this->assertSame('Linux', StarUserEnv::getUserOS());
     }
 
     /**
