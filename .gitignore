@@ -23,6 +23,7 @@ src/node_modules/
 # Ignore cache files from code quality tools
 .php-cs-fixer.cache
 .phpstan-cache/
+.phpunit.result.cache
 
 
 # -----------------------------------------------------------------

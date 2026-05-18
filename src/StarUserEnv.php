@@ -917,15 +917,18 @@ final class StarUserEnv
     public static function getUserOS(): string
     {
         $user_agent = strtolower(self::getUserAgent());
+        // More-specific patterns must appear before any pattern that is a
+        // substring of them (e.g. 'android' before 'linux', 'iphone' before
+        // 'mac os x', 'windows phone' before 'windows').
         $map        = [
+            'windows phone'            => 'Windows Phone',
+            'ipad|ipod|iphone'         => 'iOS',
+            'android'                  => 'Android',
             'windows'                  => 'Windows',
             'macintosh|mac os x|macos' => 'Mac',
             'linux'                    => 'Linux',
-            'ipad|ipod|iphone'         => 'iOS',
-            'android'                  => 'Android',
             'blackberry'               => 'BlackBerry',
             'webos'                    => 'webOS',
-            'windows phone'            => 'Windows Phone',
         ];
 
         foreach ($map as $needle => $label) {
