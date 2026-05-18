@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *
@@ -29,8 +30,8 @@ final class SparxstarUECScheduler
      * Schedule a recurring event safely.
      *
      * @param string $hook The action hook to execute.
-     * @param int    $interval_in_seconds How often to run (e.g., 3600, 86400).
-     * @param array  $args Arguments to pass to the hook.
+     * @param int $interval_in_seconds How often to run (e.g., 3600, 86400).
+     * @param array $args Arguments to pass to the hook.
      */
     public static function schedule_recurring(string $hook, int $interval_in_seconds, array $args = []): void
     {
@@ -79,7 +80,7 @@ final class SparxstarUECScheduler
     /**
      * Clear all queued instances of a hook.
      *
-     * @param string                   $hook Scheduled action hook name.
+     * @param string $hook Scheduled action hook name.
      * @param array<int|string, mixed> $args Optional hook argument signature.
      */
     public static function clear(string $hook, array $args = []): void
