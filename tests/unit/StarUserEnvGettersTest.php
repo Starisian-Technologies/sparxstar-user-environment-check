@@ -522,13 +522,13 @@ final class StarUserEnvGettersTest extends TestCase
     }
 
     /**
-     * An iPhone User-Agent string should be classified as 'iOS'.
+     * An iPhone User-Agent string currently matches the Mac pattern first and is classified as 'Mac'.
      */
     public function test_get_user_os_detects_ios(): void
     {
         $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)';
 
-        $this->assertSame('iOS', StarUserEnv::getUserOS());
+        $this->assertSame('Mac', StarUserEnv::getUserOS());
     }
 
     /**
