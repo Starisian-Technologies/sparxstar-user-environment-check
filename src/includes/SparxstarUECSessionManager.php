@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *
@@ -58,7 +59,7 @@ final class SparxstarUECSessionManager
     /**
      * Read a single string value from the session namespace.
      *
-     * @param string      $key Session key to read.
+     * @param string $key Session key to read.
      * @param string|null $default Default value when key is missing.
      * @return string|null Resolved session value.
      */
@@ -100,8 +101,8 @@ final class SparxstarUECSessionManager
     /**
      * Looks up a value for ANY USER/SESSION by querying the historical database record.
      *
-     * @param string      $key Dot-path key to resolve.
-     * @param int|null    $user_id User context, when available.
+     * @param string $key Dot-path key to resolve.
+     * @param int|null $user_id User context, when available.
      * @param string|null $session_id Session context, when available.
      * @param string|null $default Default return value.
      * @return string|null Resolved value or default.
@@ -146,8 +147,8 @@ final class SparxstarUECSessionManager
      * Resolve a dot-path from a nested array.
      *
      * @param array<string, mixed> $array Nested source array.
-     * @param string               $path Dot-path expression.
-     * @param string|null          $default Value returned when lookup fails.
+     * @param string $path Dot-path expression.
+     * @param string|null $default Value returned when lookup fails.
      * @return string|null Scalar value cast to string, otherwise default.
      */
     public static function get_value_from_array(array $array, string $path, ?string $default = null): ?string
