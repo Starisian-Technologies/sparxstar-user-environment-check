@@ -15,19 +15,21 @@
 
     /**
      * Classifies the device hardware tier.
-     * 
-     * LOGIC CHANGE v3.0: 
+     *
+     * LOGIC CHANGE v3.0:
      * We no longer default to 'low_end' solely based on core count.
      * We first check RAM. If RAM is > 2GB, the device is at least 'midrange',
      * even if it only has 2 cores (common in office desktops).
      */
     function classifyDevice(performance) {
-        const cores  = performance && typeof performance.hardwareConcurrency === 'number'
-            ? performance.hardwareConcurrency
-            : 1;
-        const memory = performance && typeof performance.deviceMemory === 'number'
-            ? performance.deviceMemory
-            : 0; // GB
+        const cores =
+            performance && typeof performance.hardwareConcurrency === 'number'
+                ? performance.hardwareConcurrency
+                : 1;
+        const memory =
+            performance && typeof performance.deviceMemory === 'number'
+                ? performance.deviceMemory
+                : 0; // GB
 
         // 1. CRITICAL: True Low End (Africa/Budget Market)
         // If RAM is 2GB or less, the device struggles with modern JS heaps.
@@ -74,7 +76,7 @@
         }
 
         // 2. Limited Capability trigger
-        // Only triggered by ACTUAL low end hardware (<=2GB RAM) 
+        // Only triggered by ACTUAL low end hardware (<=2GB RAM)
         // OR unusable network (2G).
         if (deviceClass === 'low_end' || networkProfile === 'degraded') {
             return 'limited_capability';
@@ -93,22 +95,21 @@
      * @returns {object} The derived profile object.
      */
     function deriveProfile(rawTechnicalData) {
-        const performance    = (rawTechnicalData && rawTechnicalData.performance) || {};
-        const network        = (rawTechnicalData && rawTechnicalData.network) || {};
-        
-        const deviceClass    = classifyDevice(performance);
+        const performance = (rawTechnicalData && rawTechnicalData.performance) || {};
+        const network = (rawTechnicalData && rawTechnicalData.network) || {};
+
+        const deviceClass = classifyDevice(performance);
         const networkProfile = classifyNetwork(network);
         const overallProfile = synthesizeProfile(deviceClass, networkProfile);
 
         return {
             deviceClass: deviceClass,
             networkProfile: networkProfile,
-            overallProfile: overallProfile
+            overallProfile: overallProfile,
         };
     }
 
     window.SPARXSTAR.Profile = {
-        deriveProfile
+        deriveProfile,
     };
-
 })(window);
