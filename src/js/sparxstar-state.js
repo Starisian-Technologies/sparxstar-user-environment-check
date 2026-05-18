@@ -29,13 +29,13 @@
                 browser: {},
                 battery: {},
                 performance: {},
-                sessionId: null
+                sessionId: null,
             },
             profile: {
-                deviceClass: 'unknown',    // 'low_end', 'midrange', 'modern'
+                deviceClass: 'unknown', // 'low_end', 'midrange', 'modern'
                 networkProfile: 'unknown', // 'offline', 'intermittent', 'stable', 'degraded'
-                overallProfile: 'unknown'  // 'offline_first', 'limited_capability', 'high_capability'
-            }
+                overallProfile: 'unknown', // 'offline_first', 'limited_capability', 'high_capability'
+            },
         },
         identifiers: {
             // NOTE: sessionId is also mirrored here for internal organization,
@@ -43,12 +43,11 @@
             sessionId: null,
             ipAddress: null,
             visitorId: null,
-            deviceDetails: null // { brand, model, os, client, ... }
+            deviceDetails: null, // { brand, model, os, client, ... }
         },
         privacy: {
             consentGiven: false,
-            consentCategories: [] // e.g. ['statistics']
-        }
+            consentCategories: [], // e.g. ['statistics']
+        },
     };
-
 })(window);
