@@ -11,7 +11,7 @@
     'use strict';
 
     const localized = window.sparxstarUserEnvData || {};
-    const i18n      = localized.i18n || {};
+    const i18n = localized.i18n || {};
 
     function ensureBodyReady(callback) {
         if (document.readyState === 'loading') {
@@ -39,10 +39,11 @@
             createBanner({
                 id: 'sparxstar-offline-banner',
                 extraClass: 'sparxstar-banner--offline',
-                html: '<div class="sparxstar-banner__content">' +
+                html:
+                    '<div class="sparxstar-banner__content">' +
                     '<strong>Connection offline:</strong> ' +
                     'You appear to be offline. Some features may be limited.' +
-                    '</div>'
+                    '</div>',
             });
         });
     }
@@ -59,13 +60,17 @@
             createBanner({
                 id: 'sparxstar-upgrade-banner',
                 extraClass: 'sparxstar-banner--upgrade',
-                html: '<div class="sparxstar-banner__content">' +
-                    '<strong>' + (i18n.notice || 'Your browser may be out of date.') + '</strong> ' +
-                    (i18n.update_message || 'For the best experience, please update your browser.') +
+                html:
+                    '<div class="sparxstar-banner__content">' +
+                    '<strong>' +
+                    (i18n.notice || 'Your browser may be out of date.') +
+                    '</strong> ' +
+                    (i18n.update_message ||
+                        'For the best experience, please update your browser.') +
                     ' <a href="https://browsehappy.com/" target="_blank" rel="noopener noreferrer">' +
                     (i18n.update_link || 'Learn how to update') +
                     '</a>.' +
-                    '</div>'
+                    '</div>',
             });
         });
     }
@@ -83,5 +88,4 @@
     document.addEventListener('sparxstar:compatibility-failed', function () {
         displayUpgradeBanner();
     });
-
 })(window, document);

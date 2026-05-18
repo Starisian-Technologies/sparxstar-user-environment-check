@@ -151,15 +151,15 @@ final class SparxstarUECAdmin
         StarUserEnv::allow_snapshot_if_none_exist();
 
         ob_start();
-?>
+        ?>
         <div class="wrap">
             <h1><?php esc_html_e('SPARXSTAR User Environment Check Settings', 'sparxstar-user-environment-check'); ?></h1>
             <form action="options.php" method="post">
                 <?php
-                settings_fields('sparxstar_uec_options_group');
-                do_settings_sections(self::PAGE_SLUG);
-                submit_button(esc_html__('Save Settings', 'sparxstar-user-environment-check'));
-                ?>
+                        settings_fields('sparxstar_uec_options_group');
+        do_settings_sections(self::PAGE_SLUG);
+        submit_button(esc_html__('Save Settings', 'sparxstar-user-environment-check'));
+        ?>
             </form>
         </div>
     <?php
@@ -172,7 +172,7 @@ final class SparxstarUECAdmin
     public function render_provider_field(): void
     {
         $provider = get_option(self::OPTION_KEY_PROVIDER, 'none');
-    ?>
+        ?>
         <select name="<?php echo esc_attr(self::OPTION_KEY_PROVIDER); ?>">
             <option value="none" <?php selected($provider, 'none'); ?>>
                 <?php esc_html_e('None (Disabled)', 'sparxstar-user-environment-check'); ?>
