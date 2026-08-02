@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *
@@ -22,7 +23,6 @@ use LogicException;
 use Starisian\SparxstarUEC\helpers\StarLogger;
 use Starisian\SparxstarUEC\core\SparxstarUECKernel;
 use Starisian\SparxstarUEC\api\SparxstarUECRESTController;
-use Starisian\SparxstarUEC\StarUserEnv;
 
 /**
  * Orchestrates plugin services and exposes shared dependencies.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *
@@ -36,7 +37,9 @@ final readonly class SparxstarUECRESTController
      *
      * @param SparxstarUECDatabase $database Snapshot persistence gateway.
      */
-    public function __construct(private SparxstarUECDatabase $database) {}
+    public function __construct(private SparxstarUECDatabase $database)
+    {
+    }
 
     /**
      * Register REST endpoints for logging snapshots and recorder events.

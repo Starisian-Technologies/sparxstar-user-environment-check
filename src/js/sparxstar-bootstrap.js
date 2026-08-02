@@ -31,7 +31,10 @@ class SparxstarDeviceDetector {
             return this.detector.parse(ua);
         } catch (e) {
             if (window.console && console.warn) {
-                console.warn('[SPARXSTAR DeviceDetector] parse() failed', e && e.message ? e.message : e);
+                console.warn(
+                    '[SPARXSTAR DeviceDetector] parse() failed',
+                    e && e.message ? e.message : e
+                );
             }
             return null;
         }
