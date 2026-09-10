@@ -39,19 +39,19 @@
     // ---------- Core integrator ----------
 
     async function initialize() {
-        const SPX        = window.SPARXSTAR || {};
-        const State      = SPX.State || null;
+        const SPX = window.SPARXSTAR || {};
+        const State = SPX.State || null;
         const Collectors = SPX.Collectors || null;
-        const Profile    = SPX.Profile || null;
-        const Sync       = SPX.Sync || null;
-        const UI         = SPX.UI || null;
+        const Profile = SPX.Profile || null;
+        const Sync = SPX.Sync || null;
+        const UI = SPX.UI || null;
 
         if (!State || !Collectors || !Profile || !Sync) {
             log('Missing core modules, aborting initialization.', {
                 hasState: !!State,
                 hasCollectors: !!Collectors,
                 hasProfile: !!Profile,
-                hasSync: !!Sync
+                hasSync: !!Sync,
             });
             return;
         }
@@ -72,10 +72,12 @@
         if (!isCompatibleBrowser()) {
             log('Compatibility check failed; dispatching upgrade event.');
             try {
-                document.dispatchEvent(new CustomEvent('sparxstar:compatibility-failed', {
-                    bubbles: true,
-                    composed: true
-                }));
+                document.dispatchEvent(
+                    new CustomEvent('sparxstar:compatibility-failed', {
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
             } catch (e) {
                 log('Failed to dispatch compatibility event', e);
             }
@@ -94,12 +96,12 @@
         // Normalize and freeze
         State.technical = State.technical || {};
         State.technical.raw = Object.freeze({
-            network:   rawTechnicalData.network   || {},
-            battery:   rawTechnicalData.battery   || {},
+            network: rawTechnicalData.network || {},
+            battery: rawTechnicalData.battery || {},
             performance: rawTechnicalData.performance || {},
-            device:    rawTechnicalData.device    || {},
-            browser:   rawTechnicalData.browser   || {},
-            sessionId: rawTechnicalData.sessionId || null
+            device: rawTechnicalData.device || {},
+            browser: rawTechnicalData.browser || {},
+            sessionId: rawTechnicalData.sessionId || null,
         });
 
         // Extract Session ID for Sync calls
@@ -144,7 +146,7 @@
                 sessionId: currentSessionId,
                 visitorId: ids.visitorId || null,
                 deviceDetails: ids.deviceDetails || null,
-                ipAddress: ids.ipAddress || null
+                ipAddress: ids.ipAddress || null,
             };
 
             State.identifiers = Object.freeze(nextIdentifiers);
@@ -157,14 +159,14 @@
                     // This ensures the server gets everything at once.
                     const fullPayload = {
                         ...State.identifiers,
-                        technical: State.technical 
+                        technical: State.technical,
                     };
 
                     await Sync.sendIdentifyingSnapshot(
                         State.identifiers.visitorId, // Fingerprint
-                        null,                        // Device Hash (Calculated Server-Side)
-                        currentSessionId,            // Session ID
-                        fullPayload                  // The Merged Data
+                        null, // Device Hash (Calculated Server-Side)
+                        currentSessionId, // Session ID
+                        fullPayload // The Merged Data
                     );
                 } catch (e) {
                     log('sendIdentifyingSnapshot failed', e);
@@ -180,9 +182,16 @@
         let statsConsent = false;
 
         if (typeof window.wp_has_consent === 'function') {
-            try { statsConsent = !!window.wp_has_consent('statistics'); } catch (e) {}
-        } else if (window.wp_consent_api && typeof window.wp_consent_api.get_consent === 'function') {
-            try { statsConsent = !!window.wp_consent_api.get_consent('statistics'); } catch (e) {}
+            try {
+                statsConsent = !!window.wp_has_consent('statistics');
+            } catch (e) {}
+        } else if (
+            window.wp_consent_api &&
+            typeof window.wp_consent_api.get_consent === 'function'
+        ) {
+            try {
+                statsConsent = !!window.wp_consent_api.get_consent('statistics');
+            } catch (e) {}
         }
 
         if (statsConsent) {
@@ -206,7 +215,9 @@
                     if (!State.privacy.consentGiven) {
                         State.privacy.consentGiven = true;
                         State.privacy.consentCategories = Array.from(
-                            new Set([].concat(State.privacy.consentCategories || [], ['statistics']))
+                            new Set(
+                                [].concat(State.privacy.consentCategories || [], ['statistics'])
+                            )
                         );
                         log('Statistics consent granted via event; running identifiers pipeline.');
                         runIdentifiersPipeline();
@@ -218,14 +229,16 @@
         // 4. FINAL READY EVENT
         log('Dispatching sparxstar:environment-ready event.');
         try {
-            document.dispatchEvent(new CustomEvent('sparxstar:environment-ready', {
-                bubbles: true,
-                composed: true,
-                detail: {
-                    technical: State.technical,
-                    privacy: State.privacy
-                }
-            }));
+            document.dispatchEvent(
+                new CustomEvent('sparxstar:environment-ready', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        technical: State.technical,
+                        privacy: State.privacy,
+                    },
+                })
+            );
         } catch (e) {
             log('Failed to dispatch environment-ready event', e);
         }
@@ -239,5 +252,4 @@
     } else {
         initialize();
     }
-
 })(window, document);

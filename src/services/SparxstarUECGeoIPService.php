@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *

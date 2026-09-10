@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPARXSTAR User Environment Check
  *
@@ -147,9 +148,9 @@ class StarLogger
      * Main logging method.
      * Writes directly to PHP error_log (standard WP debug.log).
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Throwable, scalar, or structured message.
-     * @param string               $level Severity label.
+     * @param string $context Logical component name.
+     * @param mixed $msg Throwable, scalar, or structured message.
+     * @param string $level Severity label.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function log(string $context, mixed $msg, string $level = 'error', array $extra = []): void
@@ -258,8 +259,8 @@ class StarLogger
     /**
      * Write debug-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function debug(string $context, mixed $msg, array $extra = []): void
@@ -270,8 +271,8 @@ class StarLogger
     /**
      * Write info-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function info(string $context, mixed $msg, array $extra = []): void
@@ -282,8 +283,8 @@ class StarLogger
     /**
      * Write notice-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function notice(string $context, mixed $msg, array $extra = []): void
@@ -294,8 +295,8 @@ class StarLogger
     /**
      * Write warning-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function warning(string $context, mixed $msg, array $extra = []): void
@@ -306,8 +307,8 @@ class StarLogger
     /**
      * Backward-compatible alias for warning().
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function warn(string $context, mixed $msg, array $extra = []): void
@@ -318,8 +319,8 @@ class StarLogger
     /**
      * Write error-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function error(string $context, mixed $msg, array $extra = []): void
@@ -330,8 +331,8 @@ class StarLogger
     /**
      * Write critical-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function critical(string $context, mixed $msg, array $extra = []): void
@@ -342,8 +343,8 @@ class StarLogger
     /**
      * Write alert-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function alert(string $context, mixed $msg, array $extra = []): void
@@ -354,8 +355,8 @@ class StarLogger
     /**
      * Write emergency-level message.
      *
-     * @param string               $context Logical component name.
-     * @param mixed                $msg Message payload.
+     * @param string $context Logical component name.
+     * @param mixed $msg Message payload.
      * @param array<string, mixed> $extra Structured metadata.
      */
     public static function emergency(string $context, mixed $msg, array $extra = []): void
