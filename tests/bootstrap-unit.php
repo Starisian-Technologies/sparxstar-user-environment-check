@@ -73,6 +73,13 @@ if (!defined('SPX_ENV_CHECK_DB_TABLE_NAME')) {
 $GLOBALS['wp_options'] = $GLOBALS['wp_options'] ?? [];
 
 /**
+ * In-memory transient store used by WordPress transient shims.
+ *
+ * @var array<string, mixed>
+ */
+$GLOBALS['wp_transients'] = $GLOBALS['wp_transients'] ?? [];
+
+/**
  * In-memory cache store used by the WordPress cache shims.
  *
  * @var array<string, array<string, mixed>>
@@ -619,11 +626,11 @@ if (!class_exists('wpdb')) {
         /**
          * Stubbed getter for a row result.
          *
-         * @param string $query SQL string.
-         * @param int    $output Output type (unused).
+         * @param string     $query  SQL string.
+         * @param string|int $output Output type (unused).
          * @return array<string, mixed>|null Null to indicate no results.
          */
-        public function get_row(string $query, int $output = ARRAY_A): ?array
+        public function get_row(string $query, string|int $output = ARRAY_A): ?array
         {
             unset($output);
             $this->queries[] = ['query' => $query];
@@ -966,5 +973,359 @@ if (!function_exists('deactivate_plugins')) {
     function deactivate_plugins(string|array $plugins): void
     {
         $GLOBALS['deactivated_plugins'][] = $plugins;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// WordPress constants
+// ---------------------------------------------------------------------------
+
+if (! defined('ARRAY_A')) {
+    /**
+     * Flag requesting an associative-array result from wpdb::get_row().
+     */
+    define('ARRAY_A', 'ARRAY_A');
+}
+
+// ---------------------------------------------------------------------------
+// WordPress class stubs
+// ---------------------------------------------------------------------------
+
+if (! class_exists('WP_Error')) {
+    /**
+     * Minimal stand-in for WordPress' WP_Error class.
+     */
+    class WP_Error
+    {
+        /**
+         * Machine-readable error code.
+         *
+         * @var string
+         */
+        private string $code;
+
+        /**
+         * Human-readable error message.
+         *
+         * @var string
+         */
+        private string $message;
+
+        /**
+         * Optional structured error data.
+         *
+         * @var mixed
+         */
+        private mixed $data;
+
+        /**
+         * @param string $code    Machine-readable error code.
+         * @param string $message Human-readable message.
+         * @param mixed  $data    Optional extra data.
+         */
+        public function __construct(string $code = '', string $message = '', mixed $data = '')
+        {
+            $this->code    = $code;
+            $this->message = $message;
+            $this->data    = $data;
+        }
+
+        /** @return string */
+        public function get_error_code(): string
+        {
+            return $this->code;
+        }
+
+        /** @return string */
+        public function get_error_message(): string
+        {
+            return $this->message;
+        }
+
+        /** @return mixed */
+        public function get_error_data(): mixed
+        {
+            return $this->data;
+        }
+    }
+}
+
+if (! class_exists('WP_REST_Request')) {
+    /**
+     * Minimal stand-in for WordPress' WP_REST_Request class.
+     */
+    class WP_REST_Request
+    {
+        /**
+         * Decoded JSON body parameters.
+         *
+         * @var array<string, mixed>
+         */
+        private array $json_params = [];
+
+        /**
+         * Normalised request headers (lowercase keys).
+         *
+         * @var array<string, string>
+         */
+        private array $headers = [];
+
+        /**
+         * Raw request body.
+         *
+         * @var string
+         */
+        private string $body = '';
+
+        /**
+         * @param array<string, mixed> $params Decoded JSON parameters.
+         * @return void
+         */
+        public function set_json_params(array $params): void
+        {
+            $this->json_params = $params;
+        }
+
+        /**
+         * @return array<string, mixed>
+         */
+        public function get_json_params(): array
+        {
+            return $this->json_params;
+        }
+
+        /**
+         * @param string $key   Header name (case-insensitive).
+         * @param string $value Header value.
+         * @return void
+         */
+        public function set_header(string $key, string $value): void
+        {
+            $this->headers[strtolower($key)] = $value;
+        }
+
+        /**
+         * @param string $key Header name (case-insensitive).
+         * @return string|null Header value or null when absent.
+         */
+        public function get_header(string $key): ?string
+        {
+            return $this->headers[strtolower($key)] ?? null;
+        }
+
+        /**
+         * @param string $body Raw request body.
+         * @return void
+         */
+        public function set_body(string $body): void
+        {
+            $this->body = $body;
+        }
+
+        /** @return string */
+        public function get_body(): string
+        {
+            return $this->body;
+        }
+    }
+}
+
+if (! class_exists('WP_REST_Response')) {
+    /**
+     * Minimal stand-in for WordPress' WP_REST_Response class.
+     */
+    class WP_REST_Response
+    {
+        /**
+         * Response payload.
+         *
+         * @var mixed
+         */
+        private mixed $data;
+
+        /**
+         * HTTP status code.
+         *
+         * @var int
+         */
+        private int $status;
+
+        /**
+         * @param mixed $data   Response payload.
+         * @param int   $status HTTP status code.
+         */
+        public function __construct(mixed $data = null, int $status = 200)
+        {
+            $this->data   = $data;
+            $this->status = $status;
+        }
+
+        /** @return mixed */
+        public function get_data(): mixed
+        {
+            return $this->data;
+        }
+
+        /** @return int */
+        public function get_status(): int
+        {
+            return $this->status;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Additional WordPress function stubs
+// ---------------------------------------------------------------------------
+
+if (! function_exists('is_wp_error')) {
+    /**
+     * Determine whether the supplied value is a WP_Error instance.
+     *
+     * @param mixed $thing Value to inspect.
+     * @return bool True when the value is a WP_Error.
+     */
+    function is_wp_error(mixed $thing): bool
+    {
+        return $thing instanceof WP_Error;
+    }
+}
+
+if (! function_exists('wp_verify_nonce')) {
+    /**
+     * Verify a nonce value.
+     * In tests the only accepted value is the literal string 'valid_nonce'.
+     *
+     * @param string|null $nonce  Nonce to verify.
+     * @param string      $action Nonce action (unused in stub).
+     * @return bool True when the nonce is the expected test value.
+     */
+    function wp_verify_nonce(?string $nonce, string $action = ''): bool
+    {
+        unset($action);
+        return $nonce === 'valid_nonce';
+    }
+}
+
+if (! function_exists('wp_unslash')) {
+    /**
+     * Strip slashes from a string or array mirroring WordPress' helper.
+     *
+     * @param mixed $value String or array to unslash.
+     * @return mixed Unslashed value.
+     */
+    function wp_unslash(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            return stripslashes($value);
+        }
+
+        if (is_array($value)) {
+            return array_map('wp_unslash', $value);
+        }
+
+        return $value;
+    }
+}
+
+if (! function_exists('get_locale')) {
+    /**
+     * Return the current WordPress locale.
+     * Always returns 'en_US' in the test environment.
+     *
+     * @return string Locale string.
+     */
+    function get_locale(): string
+    {
+        return 'en_US';
+    }
+}
+
+if (! function_exists('get_transient')) {
+    /**
+     * Retrieve a transient value from the in-memory store.
+     *
+     * @param string $transient Transient name.
+     * @return mixed Stored value or false when absent.
+     */
+    function get_transient(string $transient): mixed
+    {
+        return $GLOBALS['wp_transients'][$transient] ?? false;
+    }
+}
+
+if (! function_exists('set_transient')) {
+    /**
+     * Store a transient value in the in-memory store.
+     *
+     * @param string $transient  Transient name.
+     * @param mixed  $value      Value to store.
+     * @param int    $expiration Ignored in the stub.
+     * @return bool Always true.
+     */
+    function set_transient(string $transient, mixed $value, int $expiration = 0): bool
+    {
+        unset($expiration);
+        $GLOBALS['wp_transients'][$transient] = $value;
+        return true;
+    }
+}
+
+if (! function_exists('wp_get_schedules')) {
+    /**
+     * Return the standard WordPress cron schedule definitions.
+     *
+     * @return array<string, array{interval: int, display: string}>
+     */
+    function wp_get_schedules(): array
+    {
+        return [
+            'hourly'     => ['interval' => 3600,   'display' => 'Once Hourly'],
+            'twicedaily' => ['interval' => 43200,  'display' => 'Twice Daily'],
+            'daily'      => ['interval' => 86400,  'display' => 'Once Daily'],
+            'weekly'     => ['interval' => 604800, 'display' => 'Once Weekly'],
+        ];
+    }
+}
+
+if (! function_exists('is_ssl')) {
+    /**
+     * Determine whether the current request uses HTTPS.
+     * Always returns false in the test environment.
+     *
+     * @return bool False.
+     */
+    function is_ssl(): bool
+    {
+        return false;
+    }
+}
+
+if (! function_exists('esc_url_raw')) {
+    /**
+     * Sanitise a URL for database storage (no HTML encoding).
+     *
+     * @param string $url Raw URL.
+     * @return string Sanitised URL.
+     */
+    function esc_url_raw(string $url): string
+    {
+        return filter_var($url, FILTER_SANITIZE_URL) ?: '';
+    }
+}
+
+if (! function_exists('__')) {
+    /**
+     * Translate a string.
+     * Returns the original text unchanged in the test environment.
+     *
+     * @param string $text   Text to translate.
+     * @param string $domain Text domain (unused in stub).
+     * @return string Original text.
+     */
+    function __(string $text, string $domain = ''): string
+    {
+        unset($domain);
+        return $text;
     }
 }
