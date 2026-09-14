@@ -921,7 +921,7 @@ final class StarUserEnv
         // More-specific patterns must appear before any pattern that is a
         // substring of them (e.g. 'android' before 'linux', 'iphone' before
         // 'mac os x', 'windows phone' before 'windows').
-        $map        = [
+        $map = [
             'windows phone'            => 'Windows Phone',
             'ipad|ipod|iphone'         => 'iOS',
             'android'                  => 'Android',
