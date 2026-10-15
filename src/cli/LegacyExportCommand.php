@@ -77,7 +77,9 @@ final class LegacyExportCommand
                 $rows = $this->database->get_rows_for_export($after, $batch);
                 foreach ($rows as $row) {
                     $row['site'] = $site;
-                    fwrite($handle, (string) wp_json_encode($row) . "\n");
+                    if (fwrite($handle, (string) wp_json_encode($row) . "\n") === false) {
+                        throw new \RuntimeException('Write failed on output file.');
+                    }
                     $after = (int) $row['id'];
                     ++$count;
                 }

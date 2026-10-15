@@ -224,12 +224,14 @@ namespace Starisian\SparxstarUEC\Tests\Unit {
             }
             $file  = tempnam(sys_get_temp_dir(), 'spx');
             $count = (new LegacyExportCommand(new SparxstarUECDatabase($wpdb)))->export($file, 2, 'aiwa.example');
-            $lines = array_filter(explode("\n", (string) file_get_contents($file)));
+            $lines = array_values(array_filter(explode("\n", (string) file_get_contents($file))));
             unlink($file);
 
             $this->assertSame(5, $count);
             $this->assertCount(5, $lines);
-            $this->assertSame('aiwa.example', json_decode((string) $lines[0], true)['site']);
+            $first = json_decode((string) $lines[0], true);
+            $this->assertIsArray($first, 'First exported line must be valid JSON');
+            $this->assertSame('aiwa.example', $first['site']);
             foreach ($wpdb->queries as $q) {
                 $this->assertDoesNotMatchRegularExpression('/\b(UPDATE|DELETE|INSERT|DROP|SELECT \*)\b/i', $q['query']);
             }

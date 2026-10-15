@@ -62,13 +62,15 @@
             return;
         }
         busy = true;
-        const client = new lib.DeviceTrustClient({
-            baseUrl: cfg.baseUrl,
-            issuer: cfg.issuer,
-            getAccessToken: detail.getAccessToken,
-            keyStore: keyStore,
-        });
         try {
+            // Constructed inside the try so a throwing constructor still
+            // reaches `finally` and never leaves the bridge locked.
+            const client = new lib.DeviceTrustClient({
+                baseUrl: cfg.baseUrl,
+                issuer: cfg.issuer,
+                getAccessToken: detail.getAccessToken,
+                keyStore: keyStore,
+            });
             await client.ensureEnrolled(detail.accountId, document.title ? 'Browser: ' + document.title.slice(0, 80) : 'Browser');
             const proof = await client.assertion(detail.accountId);
             if (proof) {
