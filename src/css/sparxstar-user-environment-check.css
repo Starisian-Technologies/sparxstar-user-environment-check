@@ -33,6 +33,14 @@
     padding: 0;
 }
 
+/* Ordered before the more specific .sparxstar-userenv-banner a:hover
+   (stylelint no-descending-specificity); the two classes never share an
+   element, so the cascade is unchanged. */
+.sparxstar-banner a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .sparxstar-userenv-banner a {
     color: #00c6ff;
     font-weight: 500;
@@ -165,11 +173,6 @@
 .sparxstar-banner--upgrade .sparxstar-banner__content {
     background: #1c3d5a;
     color: #fff;
-}
-
-.sparxstar-banner a {
-    color: inherit;
-    text-decoration: underline;
 }
 
 .sparxstar-banner strong {
