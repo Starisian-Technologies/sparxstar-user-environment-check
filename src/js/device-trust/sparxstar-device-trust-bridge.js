@@ -114,7 +114,7 @@
                     getAccessToken: () => Promise.reject(new Error('signed out')),
                     keyStore: keyStore,
                 }).forget(detail.accountId);
-            } catch (e) {
+            } catch {
                 // Nothing to forget.
             }
         }
