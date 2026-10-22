@@ -284,7 +284,7 @@ final readonly class SparxstarUECDatabase
      * legacy export. Read-only; explicit columns; LIMIT always applied.
      *
      * @param int $after_id Return rows with id greater than this.
-     * @param int $limit    Page size (1-2000).
+     * @param int $limit Page size (1-2000).
      * @return array<int, array<string, mixed>> Rows (empty when none or table missing).
      */
     public function get_rows_for_export(int $after_id, int $limit): array

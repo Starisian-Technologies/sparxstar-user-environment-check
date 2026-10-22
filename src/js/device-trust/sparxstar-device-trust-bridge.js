@@ -36,7 +36,9 @@
     }
 
     const keyStore =
-        'indexedDB' in window ? new lib.IndexedDbKeyStore(window.indexedDB) : new lib.MemoryKeyStore();
+        'indexedDB' in window
+            ? new lib.IndexedDbKeyStore(window.indexedDB)
+            : new lib.MemoryKeyStore();
     let busy = false;
 
     function emit(name, detail) {
@@ -55,7 +57,11 @@
 
     async function onSession(event) {
         const detail = event && event.detail;
-        if (!detail || typeof detail.accountId !== 'string' || typeof detail.getAccessToken !== 'function') {
+        if (
+            !detail ||
+            typeof detail.accountId !== 'string' ||
+            typeof detail.getAccessToken !== 'function'
+        ) {
             return;
         }
         if (busy) {
@@ -71,13 +77,20 @@
                 getAccessToken: detail.getAccessToken,
                 keyStore: keyStore,
             });
-            await client.ensureEnrolled(detail.accountId, document.title ? 'Browser: ' + document.title.slice(0, 80) : 'Browser');
+            await client.ensureEnrolled(
+                detail.accountId,
+                document.title ? 'Browser: ' + document.title.slice(0, 80) : 'Browser'
+            );
             const proof = await client.assertion(detail.accountId);
             if (proof) {
                 emit('sparxstar:device-assertion', proof);
             }
             const view = await client.capabilities(detail.accountId);
-            emit('sparxstar:device-capabilities', { view: view, offline: false, profile: view ? view.profile : localProfile() });
+            emit('sparxstar:device-capabilities', {
+                view: view,
+                offline: false,
+                profile: view ? view.profile : localProfile(),
+            });
         } catch (err) {
             // Offline or refused: degrade to the local profile; never block the page.
             emit('sparxstar:device-capabilities', {

@@ -41,7 +41,7 @@ final class LegacyExportCommand
     /**
      * Export rows.
      *
-     * @param array<int, string>    $args       Positional arguments (unused).
+     * @param array<int, string> $args Positional arguments (unused).
      * @param array<string, string> $assoc_args `output`, optional `batch`.
      */
     public function __invoke(array $args, array $assoc_args): void
@@ -60,8 +60,8 @@ final class LegacyExportCommand
      * Write rows to a file. Separated from WP-CLI for testing.
      *
      * @param string $output Destination path.
-     * @param int    $batch  Rows per query.
-     * @param string $site   Site reference written on every row.
+     * @param int $batch Rows per query.
+     * @param string $site Site reference written on every row.
      * @return int Rows written.
      */
     public function export(string $output, int $batch, string $site): int
