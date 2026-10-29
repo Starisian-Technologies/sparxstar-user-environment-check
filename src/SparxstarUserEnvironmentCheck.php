@@ -83,6 +83,17 @@ final class SparxstarUserEnvironmentCheck
             // Initialize asset manager hooks (must be called to enqueue scripts/styles)
             \Starisian\SparxstarUEC\core\SparxstarUECAssetManager::init();
 
+            // Device Trust Node adapter. Off unless explicitly configured; the
+            // legacy pipeline above is untouched in every mode.
+            (new \Starisian\SparxstarUEC\adapters\DeviceTrustAdapter())->register();
+
+            if (defined('WP_CLI') && WP_CLI && class_exists('\WP_CLI')) {
+                \WP_CLI::add_command(
+                    'sparxstar-uec export-legacy',
+                    new \Starisian\SparxstarUEC\cli\LegacyExportCommand($kernel->get_database())
+                );
+            }
+
             StarLogger::info('SparxstarUserEnvironmentCheck', 'Kernel initialized services successfully.');
             $this->register_hooks();
         } catch (Throwable $throwable) {
