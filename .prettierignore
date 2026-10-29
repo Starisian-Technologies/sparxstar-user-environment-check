@@ -1,2 +1,5 @@
 node_modules/
 dist/
+# Vendored third-party and derived bundles are byte-pinned (see
+# src/js/vendor/*.PROVENANCE.md); formatting them breaks their checksums.
+src/js/vendor/
