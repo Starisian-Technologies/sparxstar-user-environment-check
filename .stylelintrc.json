@@ -3,7 +3,6 @@
     "stylelint-config-standard"
   ],
   "rules": {
-    "indentation": "tab",
     "selector-class-pattern": null,
     "custom-property-pattern": null
   }
