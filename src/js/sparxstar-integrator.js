@@ -184,14 +184,18 @@
         if (typeof window.wp_has_consent === 'function') {
             try {
                 statsConsent = !!window.wp_has_consent('statistics');
-            } catch (e) {}
+            } catch (e) {
+                // Consent API threw: treat as no consent (fail closed).
+            }
         } else if (
             window.wp_consent_api &&
             typeof window.wp_consent_api.get_consent === 'function'
         ) {
             try {
                 statsConsent = !!window.wp_consent_api.get_consent('statistics');
-            } catch (e) {}
+            } catch (e) {
+                // Consent API threw: treat as no consent (fail closed).
+            }
         }
 
         if (statsConsent) {
