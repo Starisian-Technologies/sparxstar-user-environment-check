@@ -280,6 +280,40 @@ final readonly class SparxstarUECDatabase
     }
 
     /**
+     * Read a bounded page of rows in id order for the Device Trust Node
+     * legacy export. Read-only; explicit columns; LIMIT always applied.
+     *
+     * @param int $after_id Return rows with id greater than this.
+     * @param int $limit Page size (1-2000).
+     * @return array<int, array<string, mixed>> Rows (empty when none or table missing).
+     */
+    public function get_rows_for_export(int $after_id, int $limit): array
+    {
+        try {
+            $table_name = $this->get_table_name();
+            if (! $this->table_exists($table_name)) {
+                return [];
+            }
+            $limit = max(1, min(2000, $limit));
+            $rows  = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    sprintf(
+                        'SELECT id, fingerprint, device_hash, session_id, user_id, snapshot_data, created_at, updated_at FROM %s WHERE id > %%d ORDER BY id ASC LIMIT %%d',
+                        $table_name
+                    ),
+                    $after_id,
+                    $limit
+                ),
+                ARRAY_A
+            );
+            return is_array($rows) ? $rows : [];
+        } catch (\Throwable $throwable) {
+            StarLogger::log('SparxstarUECDatabase', $throwable);
+            return [];
+        }
+    }
+
+    /**
      * Drop the snapshots table for the current site context.
      */
     public function delete_table(): void

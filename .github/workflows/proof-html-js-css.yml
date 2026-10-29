@@ -55,11 +55,9 @@ jobs:
         # We run WITHOUT --fix here.
         run: pnpm exec stylelint "src/css/**/*.css"
 
-      - name: Proof HTML files
-        uses: anishathalye/proof-html@a76b66427e600c6992e8937a741afffd2264a613
-        # uses: anishathalye/proof-html@v2
-        with:
-          directory: "./src/templates"
+      # The "Proof HTML files" step was removed: it pointed proof-html at
+      # ./src/templates, which does not exist in this plugin, so it failed on
+      # every run. Re-add it with a real directory if HTML templates are added.
 
   ################################################################
   # JOB 2: AUTO-FIXER (The "Helper Bot")
