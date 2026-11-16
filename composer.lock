@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "05f9fed1e7b996dbb141e7f6b5f7f032",
+    "content-hash": "836973409cd5cb11dbbd4ca58e70c606",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -295,20 +295,17 @@
         },
         {
             "name": "automattic/eslint-config-target-es",
-            "version": "v5.0.0",
+            "version": "v7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/eslint-config-target-es.git",
-                "reference": "c02a5780a6b56d6f0f96a9d81dce03b48dc10187"
+                "reference": "d078c7b632f8787a10bab34db46e90151f06e875"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/eslint-config-target-es/zipball/c02a5780a6b56d6f0f96a9d81dce03b48dc10187",
-                "reference": "c02a5780a6b56d6f0f96a9d81dce03b48dc10187",
+                "url": "https://api.github.com/repos/Automattic/eslint-config-target-es/zipball/d078c7b632f8787a10bab34db46e90151f06e875",
+                "reference": "d078c7b632f8787a10bab34db46e90151f06e875",
                 "shasum": ""
-            },
-            "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.12"
             },
             "type": "library",
             "extra": {
@@ -321,12 +318,12 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "GPL-2.0-or-later"
+                "MIT"
             ],
             "support": {
-                "source": "https://github.com/Automattic/eslint-config-target-es/tree/v5.0.0"
+                "source": "https://github.com/Automattic/eslint-config-target-es/tree/v7.0.0"
             },
-            "time": "2026-01-12T02:49:23+00:00"
+            "time": "2026-09-17T16:11:13+00:00"
         },
         {
             "name": "automattic/vipwpcs",
